@@ -1,27 +1,35 @@
 name: bps_sso_sdk
-description: "A new Flutter package project."
+description: A Flutter SDK for BPS (Badan Pusat Statistik) SSO authentication integration
 version: 0.0.1
-homepage:
+homepage: https://github.com/IPDS-59/bps_sso_flutter_sdk
+repository: https://github.com/IPDS-59/bps_sso_flutter_sdk
 
 environment:
   sdk: ^3.9.2
   flutter: ">=1.17.0"
 
 dependencies:
+  crypto: ^3.0.6
+  dio: ^5.9.0
   flutter:
     sdk: flutter
+  flutter_custom_tabs: ^2.4.0
+  intl: ^0.20.2
+  url_launcher: ^6.3.2
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  very_good_analysis: ^10.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  uses-material-design: true
   # To add assets to your package, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
