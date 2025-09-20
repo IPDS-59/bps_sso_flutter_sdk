@@ -5,6 +5,7 @@
 /// with OAuth2/OpenID Connect flow.
 library;
 
+export 'src/bps_sso_client.dart';
 export 'src/config/config.dart';
 export 'src/exceptions/exceptions.dart';
 export 'src/models/models.dart';
