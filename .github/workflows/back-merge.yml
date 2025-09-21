@@ -72,8 +72,13 @@ jobs:
           TARGET_BRANCH="${{ steps.branch_info.outputs.target_branch }}"
 
           echo "🔄 Fetching latest changes..."
-          git fetch origin "$SOURCE_BRANCH:$SOURCE_BRANCH"
-          git fetch origin "$TARGET_BRANCH:$TARGET_BRANCH"
+
+          # Fetch all remote references
+          git fetch origin
+
+          # Update local branch references without checking them out
+          git fetch origin "$SOURCE_BRANCH"
+          git fetch origin "$TARGET_BRANCH"
 
           echo "✅ Latest changes fetched"
 
@@ -83,21 +88,21 @@ jobs:
           SOURCE_BRANCH="${{ steps.branch_info.outputs.source_branch }}"
           TARGET_BRANCH="${{ steps.branch_info.outputs.target_branch }}"
 
-          # Check if there are differences between branches
-          DIFF_COUNT=$(git rev-list --count "$TARGET_BRANCH..$SOURCE_BRANCH" 2>/dev/null || echo "0")
+          # Check if there are differences between branches using remote refs
+          DIFF_COUNT=$(git rev-list --count "origin/$TARGET_BRANCH..origin/$SOURCE_BRANCH" 2>/dev/null || echo "0")
 
           echo "diff_count=$DIFF_COUNT" >> $GITHUB_OUTPUT
 
           if [ "$DIFF_COUNT" -eq 0 ]; then
-            echo "✅ No differences found between $SOURCE_BRANCH and $TARGET_BRANCH"
+            echo "✅ No differences found between origin/$SOURCE_BRANCH and origin/$TARGET_BRANCH"
             echo "needs_merge=false" >> $GITHUB_OUTPUT
           else
-            echo "🔄 Found $DIFF_COUNT commits in $SOURCE_BRANCH not in $TARGET_BRANCH"
+            echo "🔄 Found $DIFF_COUNT commits in origin/$SOURCE_BRANCH not in origin/$TARGET_BRANCH"
             echo "needs_merge=true" >> $GITHUB_OUTPUT
 
             # Show commit summary
             echo "Commits to be merged:"
-            git log --oneline --graph "$TARGET_BRANCH..$SOURCE_BRANCH" | head -10
+            git log --oneline --graph "origin/$TARGET_BRANCH..origin/$SOURCE_BRANCH" | head -10
           fi
 
       - name: Create back-merge branch
@@ -116,9 +121,8 @@ jobs:
           echo "backmerge_branch=$BACKMERGE_BRANCH" >> $GITHUB_OUTPUT
 
           # Checkout target branch and create new branch
-          echo "🌿 Creating branch $BACKMERGE_BRANCH from $TARGET_BRANCH"
-          git checkout "$TARGET_BRANCH"
-          git checkout -b "$BACKMERGE_BRANCH"
+          echo "🌿 Creating branch $BACKMERGE_BRANCH from origin/$TARGET_BRANCH"
+          git checkout -b "$BACKMERGE_BRANCH" "origin/$TARGET_BRANCH"
 
           echo "✅ Branch created: $BACKMERGE_BRANCH"
 
@@ -132,10 +136,10 @@ jobs:
           VERSION="${{ steps.branch_info.outputs.version }}"
           WORKING_BRANCH="${{ steps.create_branch.outputs.backmerge_branch }}"
 
-          echo "🔄 Merging $SOURCE_BRANCH into $WORKING_BRANCH"
+          echo "🔄 Merging origin/$SOURCE_BRANCH into $WORKING_BRANCH"
 
           # Attempt merge with automatic conflict resolution
-          if ! git merge --no-ff "$SOURCE_BRANCH" -m "chore: back-merge $VERSION $TYPE from $SOURCE_BRANCH to $TARGET_BRANCH
+          if ! git merge --no-ff "origin/$SOURCE_BRANCH" -m "chore: back-merge $VERSION $TYPE from $SOURCE_BRANCH to $TARGET_BRANCH
 
           Automatic back-merge after $TYPE $VERSION was merged to main.
           Original PR: ${{ github.event.pull_request.html_url }}
