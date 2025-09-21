@@ -63,4 +63,16 @@ class BPSSsoSecurityConfig {
     maxSessionDuration: Duration(hours: 4), // Shorter session for security
     auditLogLevel: AuditLogLevel.detailed,
   );
+
+  static const BPSSsoSecurityConfig development = BPSSsoSecurityConfig(
+    enableCertificatePinning: false,
+    enableTokenEncryption: false,
+    enableRuntimeSecurityChecks: false,
+    enableMemoryProtection: false,
+    tokenTimeoutDuration: Duration(hours: 1),
+    maxSessionDuration: Duration(hours: 24),
+    auditLogLevel: AuditLogLevel.debug,
+    enableDebugDetection: false,
+    enableRootDetection: false,
+  );
 }
