@@ -11,4 +11,10 @@ enum BPSRealmType {
     internal => 'pegawai-bps',
     external => 'eksternal',
   };
+
+  /// Display name for the realm type
+  String get displayName => switch (this) {
+    internal => 'BPS Internal',
+    external => 'External',
+  };
 }
