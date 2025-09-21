@@ -115,10 +115,14 @@ class OperationCard extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           color: isPrimary
-                              ? theme.colorScheme.onPrimary.withValues(alpha: 0.8)
+                              ? theme.colorScheme.onPrimary.withValues(
+                                  alpha: 0.8,
+                                )
                               : isDestructive
                               ? Colors.red.shade600.withValues(alpha: 0.8)
-                              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              : theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
                         ),
                       ),
                     ],

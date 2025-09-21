@@ -1,4 +1,5 @@
 import 'package:bps_sso_sdk/src/config/config.dart';
+import 'package:dio/dio.dart';
 
 /// Configuration class for BPS SSO settings
 class BPSSsoConfig {
@@ -11,9 +12,16 @@ class BPSSsoConfig {
     this.errorConfig = const BPSSsoErrorConfig(),
     this.securityConfig = BPSSsoSecurityConfig.iso27001,
     this.authCallbacks = BPSSsoAuthCallback.none,
+    this.interceptors = const <Interceptor>[],
   });
 
   /// Factory constructor to create BPS SSO config with sensible defaults
+  ///
+  /// Parameters:
+  /// - [internalRealmName]: Custom realm name for internal BPS realm.
+  ///   If null, defaults to 'pegawai-bps' (BPSRealmType.internal.value)
+  /// - [externalRealmName]: Custom realm name for external BPS realm.
+  ///   If null, defaults to 'eksternal' (BPSRealmType.external.value)
   factory BPSSsoConfig.create({
     required String appName,
     required String internalClientId,
@@ -22,10 +30,13 @@ class BPSSsoConfig {
     List<String> responseTypes = const ['code'],
     List<String> scopes = const ['openid', 'profile', 'email'],
     String codeChallengeMethod = 'S256',
+    String? internalRealmName,
+    String? externalRealmName,
     BPSSsoCustomTabsConfig? customTabsConfig,
     BPSSsoErrorConfig? errorConfig,
     BPSSsoSecurityConfig? securityConfig,
     BPSSsoAuthCallback? authCallbacks,
+    List<Interceptor> interceptors = const <Interceptor>[],
   }) {
     return BPSSsoConfig(
       baseUrl: baseUrl,
@@ -37,6 +48,7 @@ class BPSSsoConfig {
         responseTypes: responseTypes,
         scopes: scopes,
         codeChallengeMethod: codeChallengeMethod,
+        realmName: internalRealmName,
       ),
       external: BPSRealmConfig(
         clientId: externalClientId,
@@ -46,11 +58,13 @@ class BPSSsoConfig {
         responseTypes: responseTypes,
         scopes: scopes,
         codeChallengeMethod: codeChallengeMethod,
+        realmName: externalRealmName,
       ),
       customTabsConfig: customTabsConfig ?? const BPSSsoCustomTabsConfig(),
       errorConfig: errorConfig ?? const BPSSsoErrorConfig(),
       securityConfig: securityConfig ?? BPSSsoSecurityConfig.iso27001,
       authCallbacks: authCallbacks ?? BPSSsoAuthCallback.none,
+      interceptors: interceptors,
     );
   }
 
@@ -74,6 +88,26 @@ class BPSSsoConfig {
 
   /// Authentication callbacks
   final BPSSsoAuthCallback authCallbacks;
+
+  /// Custom Dio interceptors for HTTP requests
+  ///
+  /// Use this to add logging, retry logic, SSL pinning, etc.
+  /// Example:
+  /// ```dart
+  /// import 'package:dio/dio.dart';
+  ///
+  /// final config = BPSSsoConfig.create(
+  ///   appName: 'MyApp',
+  ///   internalClientId: 'client_id',
+  ///   externalClientId: 'external_id',
+  ///   interceptors: [
+  ///     LogInterceptor(requestBody: true, responseBody: true),
+  ///     // Custom SSL pinning interceptor
+  ///     // Retry interceptor
+  ///   ],
+  /// );
+  /// ```
+  final List<Interceptor> interceptors;
 
   /// Get configuration for specific realm type
   BPSRealmConfig getConfig(BPSRealmType realmType) {

@@ -74,7 +74,9 @@ class SectionCard extends StatelessWidget {
                           subtitle,
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.6,
+                            ),
                           ),
                         ),
                       ],

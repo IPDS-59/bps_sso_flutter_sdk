@@ -91,100 +91,25 @@ develop ───●────●───●────●───●──
 
 ### Branch-Based Workflow Triggers
 
-```mermaid
-graph TD
-    A[Create release/v1.2.0] --> B[Version Bump Workflow]
-    B --> C[Prepare Release Workflow]
-
-    D[Merge release to main] --> E[Release Workflow]
-    E --> F[Create Tag v1.2.0]
-    F --> G[Publish Workflow]
-    E --> H[Back Merge Workflow]
-    H --> I[Create PR: main → develop]
-
-    J[Push to develop/main] --> K[CI Workflow]
-    L[Create PR] --> K
-```
+![Branch-Based Workflow Triggers](img/branch_workflow_triggers.png)
 
 ## Workflow Diagrams
 
 ### 1. Version Bump Workflow
 
-```mermaid
-flowchart TD
-    A[Release Branch Created<br/>release/v1.2.0] --> B[Automatic Trigger<br/>GitHub Create Event]
-    B --> C[Extract Version<br/>from Branch Name]
-    C --> D[Checkout develop<br/>Branch]
-    D --> E[Bump Minor Version<br/>in pubspec.yaml]
-    E --> F[Commit Changes<br/>& Push to develop]
-
-    style A fill:#e1f5fe
-    style F fill:#c8e6c9
-```
+![Version Bump Workflow](img/version_bump_workflow.png)
 
 ### 2. Release Workflow
 
-```mermaid
-flowchart TD
-    A[Release/Hotfix → Main<br/>Merged] --> B[Extract Branch Info<br/>& Validate Version]
-    B --> C[Create Git Tag<br/>v1.2.0]
-    C --> D[Trigger Publish<br/>Workflow]
-    C --> E[Trigger Back-merge<br/>Workflow]
-
-    D --> F[pub.dev Publishing]
-    E --> G[Create PR:<br/>main → develop]
-
-    style A fill:#e1f5fe
-    style C fill:#fff3e0
-    style F fill:#c8e6c9
-    style G fill:#f3e5f5
-```
+![Release Workflow](img/release_workflow.png)
 
 ### 3. Publish Workflow
 
-```mermaid
-flowchart TD
-    A[Tag Created<br/>v1.2.0] --> B[Validate Package]
-    B --> C[Structure Check<br/>Dependencies<br/>Tests]
-    C --> D[Dry Run<br/>Always Perform]
-    D --> E{Force Publish?}
-
-    E -->|true| F[Official Publish<br/>to pub.dev]
-    E -->|false| G[Dry Run Only]
-
-    F --> H[Create GitHub<br/>Release]
-    G --> I[Validation<br/>Complete]
-
-    style A fill:#e1f5fe
-    style D fill:#fff3e0
-    style F fill:#c8e6c9
-    style H fill:#c8e6c9
-```
+![Publish Workflow](img/publish_workflow.png)
 
 ### 4. CI Workflow with Smart Execution
 
-```mermaid
-flowchart TD
-    A[Push/PR to<br/>main/develop] --> B[Detect Changes]
-    B --> C{What Changed?}
-
-    C -->|Dart Files| D[Static Analysis]
-    C -->|Config Files| D
-    C -->|Tests| D
-    C -->|Example App| D
-
-    D --> E[flutter analyze<br/>dart format<br/>Example analysis]
-    E --> F[Tests & Coverage]
-    F --> G[Unit tests<br/>Coverage report]
-    G --> H[Summary & Report]
-    H --> I[PR Comments<br/>Job Status]
-
-    style A fill:#e1f5fe
-    style C fill:#fff3e0
-    style E fill:#f3e5f5
-    style G fill:#c8e6c9
-    style I fill:#e8f5e8
-```
+![CI Workflow with Smart Execution](img/ci_workflow_smart_execution.png)
 
 ## Manual Triggers
 

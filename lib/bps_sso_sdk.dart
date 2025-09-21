@@ -9,3 +9,4 @@ export 'src/bps_sso_client.dart';
 export 'src/config/config.dart';
 export 'src/exceptions/exceptions.dart';
 export 'src/models/models.dart';
+export 'src/sdk_info.dart';

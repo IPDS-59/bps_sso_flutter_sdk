@@ -1,12 +1,16 @@
 name: bps_sso_sdk
 description: A Flutter SDK for BPS (Badan Pusat Statistik) SSO authentication integration
-version: 1.0.2
+version: 1.1.0
 homepage: https://github.com/IPDS-59/bps_sso_flutter_sdk
 repository: https://github.com/IPDS-59/bps_sso_flutter_sdk
 
 environment:
   sdk: ^3.9.2
   flutter: ">=1.17.0"
+
+platforms:
+  android:
+  ios:
 
 dependencies:
   crypto: ^3.0.6
