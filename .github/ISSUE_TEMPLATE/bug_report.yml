@@ -1,0 +1,194 @@
+name: 🐛 Bug Report
+description: Report a bug or issue with the BPS SSO SDK
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the form below to help us investigate and fix the issue.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please check the following before submitting your bug report
+      options:
+        - label: I have searched existing issues to make sure this bug hasn't been reported already
+          required: true
+        - label: I have read the [documentation](../../README.md) and [troubleshooting guide](../../README.md#troubleshooting)
+          required: true
+        - label: I can reproduce this issue consistently
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened and what you expected to happen instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior
+      placeholder: |
+        1. Configure SDK with...
+        2. Call method...
+        3. Observe error...
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened instead?
+      placeholder: Describe the expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened, including error messages
+    validations:
+      required: true
+
+  - type: dropdown
+    id: realm
+    attributes:
+      label: Realm Type
+      description: Which BPS realm were you using?
+      options:
+        - Internal (BPS Employee)
+        - External (Third-party)
+        - Both
+        - Not applicable
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform(s) does this issue occur on?
+      multiple: true
+      options:
+        - Android
+        - iOS
+        - Both
+    validations:
+      required: true
+
+  - type: input
+    id: flutter-version
+    attributes:
+      label: Flutter Version
+      description: Run `flutter --version` to get this information
+      placeholder: "e.g., Flutter 3.35.3"
+    validations:
+      required: true
+
+  - type: input
+    id: dart-version
+    attributes:
+      label: Dart Version
+      description: Run `dart --version` to get this information
+      placeholder: "e.g., Dart 3.5.0"
+    validations:
+      required: true
+
+  - type: input
+    id: sdk-version
+    attributes:
+      label: BPS SSO SDK Version
+      description: Which version of the SDK are you using?
+      placeholder: "e.g., 1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device-type
+    attributes:
+      label: Device Type
+      description: What type of device are you testing on?
+      options:
+        - Physical Device
+        - Emulator/Simulator
+        - Both
+    validations:
+      required: true
+
+  - type: input
+    id: android-version
+    attributes:
+      label: Android Version (if applicable)
+      description: Android API level or version
+      placeholder: "e.g., Android 13 (API 33)"
+
+  - type: input
+    id: ios-version
+    attributes:
+      label: iOS Version (if applicable)
+      description: iOS version
+      placeholder: "e.g., iOS 17.1"
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: SDK Configuration
+      description: Share your BPSSsoConfig setup (remove sensitive information like client IDs)
+      render: dart
+      placeholder: |
+        final config = BPSSsoConfig.create(
+          appName: 'myapp',
+          internalClientId: '[REDACTED]',
+          externalClientId: '[REDACTED]',
+          // other configuration...
+        );
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: Include relevant error logs, stack traces, or console output
+      render: text
+      placeholder: Paste error logs here (remove any sensitive information)
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: If you found a temporary workaround, please describe it
+      placeholder: Describe any workaround you found
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: Screenshots, network conditions, etc.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Privacy Notice
+      description: Please confirm the following
+      options:
+        - label: I have removed all sensitive information (client IDs, tokens, personal data) from this report
+          required: true
+        - label: I understand this issue will be publicly visible
+          required: true
+          
