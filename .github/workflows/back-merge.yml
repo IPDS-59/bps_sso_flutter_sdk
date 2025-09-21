@@ -114,13 +114,25 @@ jobs:
           TYPE="${{ steps.branch_info.outputs.type }}"
           VERSION="${{ steps.branch_info.outputs.version }}"
 
+          # Clean up any uncommitted changes that might interfere
+          echo "🧹 Cleaning up workspace before branch operations..."
+
+          # Remove backup files that might cause conflicts
+          find . -name "*.bak" -delete || true
+
+          # Reset any modified tracked files
+          git checkout -- . 2>/dev/null || true
+
+          # Clean untracked files that might cause issues
+          git clean -fd || true
+
           # Create unique branch name
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           BACKMERGE_BRANCH="chore/back-merge-$VERSION-$TYPE-to-$TARGET_BRANCH-$TIMESTAMP"
 
           echo "backmerge_branch=$BACKMERGE_BRANCH" >> $GITHUB_OUTPUT
 
-          # Checkout target branch and create new branch
+          # Checkout target branch and create new branch from remote
           echo "🌿 Creating branch $BACKMERGE_BRANCH from origin/$TARGET_BRANCH"
           git checkout -b "$BACKMERGE_BRANCH" "origin/$TARGET_BRANCH"
 
@@ -153,13 +165,16 @@ jobs:
             # Common conflict resolution strategies for Flutter projects
             if git status --porcelain | grep -q "pubspec.yaml"; then
               echo "🔄 Resolving pubspec.yaml conflict..."
-              # For version conflicts, prefer target branch (develop) version
+              # For version conflicts when back-merging to develop, prefer develop's version
+              # because develop should have the next development version from version-bump workflow
               if [ "$TARGET_BRANCH" = "develop" ]; then
+                echo "📦 Version conflict detected: keeping develop branch version (next development version)"
                 git checkout --ours pubspec.yaml
-                echo "Kept develop branch version in pubspec.yaml"
+                echo "✅ Kept develop branch version in pubspec.yaml (maintains next dev version)"
               else
+                echo "📦 Version conflict detected: using main branch version (released version)"
                 git checkout --theirs pubspec.yaml
-                echo "Used source branch version in pubspec.yaml"
+                echo "✅ Used main branch version in pubspec.yaml"
               fi
             fi
 
@@ -174,9 +189,17 @@ jobs:
 
             if git status --porcelain | grep -q "example/"; then
               echo "🔄 Resolving example app conflicts..."
-              # Prefer source branch for example app
-              git checkout --theirs example/
-              echo "Used source branch version for example app"
+
+              # Handle example app pubspec.yaml specifically for version conflicts
+              if git status --porcelain | grep -q "example/pubspec.yaml" && [ "$TARGET_BRANCH" = "develop" ]; then
+                echo "📦 Example app version conflict: keeping develop version (next dev version)"
+                git checkout --ours example/pubspec.yaml
+                echo "✅ Kept develop branch version for example app"
+              else
+                # For other example app files, prefer main branch updates
+                git checkout --theirs example/
+                echo "✅ Used main branch updates for example app"
+              fi
             fi
 
             if git status --porcelain | grep -q "README.md"; then
