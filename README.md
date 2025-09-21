@@ -65,69 +65,11 @@ A Flutter SDK for seamless integration with BPS (Badan Pusat Statistik) SSO auth
 
 ### Authentication Flow Sequence Diagram
 
-```mermaid
-sequenceDiagram
-    participant App
-    participant SDK
-    participant Chrome Custom Tab
-    participant BPS SSO
-    participant Deep Link
-
-    App->>SDK: login(context, realmType)
-    SDK->>SDK: Generate PKCE verifier & challenge
-    SDK->>SDK: Generate state parameter
-    SDK->>Chrome Custom Tab: Launch auth URL
-    Chrome Custom Tab->>BPS SSO: Navigate to login page
-    BPS SSO->>BPS SSO: User authenticates
-    BPS SSO->>Chrome Custom Tab: Redirect with auth code
-    Chrome Custom Tab->>Deep Link: Handle redirect URI
-    Deep Link->>SDK: Capture auth code
-    SDK->>BPS SSO: Exchange code for tokens
-    BPS SSO->>SDK: Return access & refresh tokens
-    SDK->>BPS SSO: Get user info
-    BPS SSO->>SDK: Return user details
-    SDK->>App: Return BPSUser object
-```
+![Authentication Flow Sequence Diagram](img/authentication_flow_sequence.png)
 
 ### SDK Architecture Diagram
 
-```mermaid
-graph TB
-    subgraph "Application Layer"
-        A[Flutter App]
-    end
-
-    subgraph "BPS SSO SDK"
-        B[BPSSsoClient]
-        C[BPSSsoService]
-        D[BPSSsoConfig]
-        E[BPSUser Model]
-        F[Exception Handlers]
-    end
-
-    subgraph "External Dependencies"
-        G[Chrome Custom Tabs]
-        H[Deep Links/app_links]
-        I[Dio HTTP Client]
-    end
-
-    subgraph "BPS Infrastructure"
-        J[BPS SSO Server]
-        K[Keycloak]
-    end
-
-    A --> B
-    B --> C
-    B --> D
-    C --> E
-    C --> F
-    C --> G
-    C --> H
-    C --> I
-    G --> J
-    I --> J
-    J --> K
-```
+![SDK Architecture Diagram](img/sdk_architecture.png)
 
 ## Installation
 
@@ -508,27 +450,7 @@ Text(user.initials); // e.g., "JD" for John Doe
 
 ### Configuration Flow Diagram
 
-```mermaid
-graph LR
-    A[BPSSsoConfig] --> B[Internal Realm]
-    A --> C[External Realm]
-
-    B --> D[Client ID]
-    B --> E[Redirect URI]
-    B --> F[OAuth2 Params]
-
-    C --> G[Client ID]
-    C --> H[Redirect URI]
-    C --> I[OAuth2 Params]
-
-    F --> J[Response Types]
-    F --> K[Scopes]
-    F --> L[PKCE Method]
-
-    I --> M[Response Types]
-    I --> N[Scopes]
-    I --> O[PKCE Method]
-```
+![Configuration Flow Diagram](img/configuration_flow.png)
 
 ### Easy Configuration (Recommended)
 
@@ -876,24 +798,7 @@ Supported values:
 
 ### Error Flow Diagram
 
-```mermaid
-graph TD
-    A[Login Request] --> B{Success?}
-    B -->|Yes| C[Return BPSUser]
-    B -->|No| D{Error Type}
-
-    D --> E[AuthenticationCancelledException]
-    D --> F[TokenExchangeException]
-    D --> G[NetworkException]
-    D --> H[MissingUserDataException]
-    D --> I[BPSSsoException]
-
-    E --> J[User cancelled]
-    F --> K[Invalid auth code]
-    G --> L[Network issue]
-    H --> M[Incomplete user data]
-    I --> N[Generic SSO error]
-```
+![Error Flow Diagram](img/error_flow.png)
 
 The SDK provides specific exception types:
 
@@ -1263,17 +1168,7 @@ This repository uses automated GitHub Actions workflows for CI/CD. See our [Work
 
 ### Workflow Overview
 
-```mermaid
-graph TD
-    A[Push/PR] --> B[CI Workflow]
-    C[Create Release Branch] --> D[Version Bump]
-    E[Merge to Main] --> F[Release & Publish]
-    F --> G[Back Merge to Develop]
-
-    B --> H[Static Analysis]
-    B --> I[Tests & Coverage]
-    B --> J[Build Validation]
-```
+![Workflow Overview](img/workflow_overview.png)
 
 For complete workflow documentation, see [WORKFLOWS.md](WORKFLOWS.md).
 
