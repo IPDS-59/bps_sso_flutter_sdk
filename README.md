@@ -496,10 +496,12 @@ final config = BPSSsoConfig.create(
 ```
 
 **Default behavior:** If `internalRealmName` and `externalRealmName` are `null` (default), the SDK uses the standard BPS realm names:
+
 - Internal realm: `pegawai-bps`
 - External realm: `eksternal`
 
 **Use cases for custom realm names:**
+
 - Testing with different Keycloak realm configurations
 - Integration with custom or development SSO environments
 - Multi-tenant setups with organization-specific realms
@@ -527,6 +529,7 @@ The configuration screen provides an intuitive UI for setting up the SDK with re
 Users can configure custom realm names directly in the UI:
 
 - **Internal Realm Field**: Allows customization of the internal BPS realm name
+
   - Default: `pegawai-bps`
   - Placeholder hint: "pegawai-bps (default)"
   - Real-time validation and state updates
@@ -830,11 +833,13 @@ try {
 The SDK supports different user structures for internal and external realms:
 
 #### Internal Users (BPS Employees)
+
 - Full employee data including NIP, organization, position, rank
 - Office location information (region, province, address)
 - Complete profile data with photos
 
 #### External Users (Third-party)
+
 - Basic profile information (name, email, username)
 - Simplified structure without employee-specific fields
 - OAuth standard fields (given_name, family_name)
@@ -1214,20 +1219,3 @@ flutter run
 - **Error Handling**: User-friendly error messages and recovery
 - **HTTP Inspector**: Built-in Alice integration for network debugging
 - **Real-time Validation**: Form validation with immediate feedback
-
-## Changelog
-
-### Version 1.0.0
-
-- Initial release with Chrome Custom Tabs authentication
-- OAuth2/OIDC support with PKCE
-- Multi-realm support (internal/external)
-- Type-safe configuration with lists
-- Comprehensive error handling
-- Token management functionality
-- External user structure support
-- Privacy mode for sensitive data
-- Authenticated image loading
-- Enhanced deep link handling
-- Real-time SDK status checking
-- Complete example application
