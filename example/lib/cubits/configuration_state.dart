@@ -21,14 +21,14 @@ class ConfigurationState extends Equatable {
 
   const ConfigurationState({
     this.baseUrl = 'https://sso.bps.go.id',
-    this.internalClientId = '***REMOVED***',
-    this.internalRedirectUri = 'id.go.bps://***REMOVED***',
+    this.internalClientId = 'your-internal-client-id',
+    this.internalRedirectUri = 'id.go.bps://your-app-sso-internal',
     this.internalRealm = 'bps',
     this.internalResponseTypes = const ['code'],
     this.internalScopes = const ['openid', 'profile-pegawai'],
     this.internalCodeChallengeMethod = 'S256',
-    this.externalClientId = '***REMOVED***',
-    this.externalRedirectUri = 'id.go.bps://***REMOVED***',
+    this.externalClientId = 'your-external-client-id',
+    this.externalRedirectUri = 'id.go.bps://your-app-sso-eksternal',
     this.externalRealm = 'eksternal',
     this.externalResponseTypes = const ['code'],
     this.externalScopes = const ['openid', 'email', 'profile'],
@@ -109,10 +109,10 @@ class ConfigurationState extends Equatable {
   factory ConfigurationState.fromJson(Map<String, dynamic> json) {
     return ConfigurationState(
       baseUrl: json['baseUrl'] as String? ?? 'https://sso.bps.go.id',
-      internalClientId: json['internalClientId'] as String? ?? '',
+      internalClientId: json['internalClientId'] as String? ?? 'your-internal-client-id',
       internalRedirectUri:
           json['internalRedirectUri'] as String? ??
-          'id.go.bps.examplesso://sso-internal',
+          'id.go.bps://your-app-sso-internal',
       internalRealm: json['internalRealm'] as String? ?? 'bps',
       internalResponseTypes:
           (json['internalResponseTypes'] as List<dynamic>?)?.cast<String>() ??
@@ -122,10 +122,10 @@ class ConfigurationState extends Equatable {
           const ['openid', 'profile', 'email'],
       internalCodeChallengeMethod:
           json['internalCodeChallengeMethod'] as String? ?? 'S256',
-      externalClientId: json['externalClientId'] as String? ?? '',
+      externalClientId: json['externalClientId'] as String? ?? 'your-external-client-id',
       externalRedirectUri:
           json['externalRedirectUri'] as String? ??
-          'id.go.bps.examplesso://sso-eksternal',
+          'id.go.bps://your-app-sso-eksternal',
       externalRealm: json['externalRealm'] as String? ?? 'eksternal',
       externalResponseTypes:
           (json['externalResponseTypes'] as List<dynamic>?)?.cast<String>() ??

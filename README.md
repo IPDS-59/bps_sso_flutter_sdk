@@ -188,12 +188,12 @@ Add the following to your `android/app/src/main/AndroidManifest.xml`:
 </manifest>
 ```
 
-**Example for FASIH app:**
+**Example configuration:**
 
 ```xml
-<!-- FASIH app specific configuration -->
-<data android:scheme="id.go.bps" android:host="***REMOVED***" />
-<data android:scheme="id.go.bps" android:host="***REMOVED***" />
+<!-- Replace 'your-app' with your actual app name -->
+<data android:scheme="id.go.bps" android:host="your-app-sso-internal" />
+<data android:scheme="id.go.bps" android:host="your-app-sso-eksternal" />
 ```
 
 </details>
