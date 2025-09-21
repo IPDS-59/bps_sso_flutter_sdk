@@ -13,6 +13,7 @@ class BPSRealmConfig {
     this.responseTypes = const ['code'],
     this.scopes = const ['openid', 'profile', 'email'],
     this.codeChallengeMethod = 'S256',
+    this.realmName,
   });
 
   /// OAuth2 client ID for this realm
@@ -41,6 +42,10 @@ class BPSRealmConfig {
   /// PKCE code challenge method (default: 'S256')
   /// Supported values: 'plain', 'S256'
   final String codeChallengeMethod;
+
+  /// Optional custom realm name
+  /// If null, uses realmType.value as the realm name
+  final String? realmName;
 
   /// Get space-separated response type string for OAuth2 URL
   String get responseType => responseTypes.join(' ');
@@ -74,22 +79,24 @@ class BPSRealmConfig {
         )
         .join('&');
 
-    return '$baseUrl/realms/$realm/protocol/openid-connect/auth?$query';
+    return '$baseUrl/auth/realms/$realm/protocol/openid-connect/auth?$query';
   }
 
   /// Keycloak realm name
-  String get realm => realmType.value;
+  /// Uses custom realmName if provided, otherwise defaults to realmType.value
+  String get realm => realmName ?? realmType.value;
 
   /// Get token endpoint URL
-  String get tokenUrl => '$baseUrl/realms/$realm/protocol/openid-connect/token';
+  String get tokenUrl =>
+      '$baseUrl/auth/realms/$realm/protocol/openid-connect/token';
 
   /// Get user info endpoint URL
   String get userInfoUrl =>
-      '$baseUrl/realms/$realm/protocol/openid-connect/userinfo';
+      '$baseUrl/auth/realms/$realm/protocol/openid-connect/userinfo';
 
   /// Get logout endpoint URL
   String get logoutUrl =>
-      '$baseUrl/realms/$realm/protocol/openid-connect/logout';
+      '$baseUrl/auth/realms/$realm/protocol/openid-connect/logout';
 
   @override
   bool operator ==(Object other) {
@@ -101,7 +108,8 @@ class BPSRealmConfig {
         other.baseUrl == baseUrl &&
         _listEquals(other.responseTypes, responseTypes) &&
         _listEquals(other.scopes, scopes) &&
-        other.codeChallengeMethod == codeChallengeMethod;
+        other.codeChallengeMethod == codeChallengeMethod &&
+        other.realmName == realmName;
   }
 
   @override
@@ -114,6 +122,7 @@ class BPSRealmConfig {
       Object.hashAll(responseTypes),
       Object.hashAll(scopes),
       codeChallengeMethod,
+      realmName,
     );
   }
 

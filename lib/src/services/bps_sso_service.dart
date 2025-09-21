@@ -3,6 +3,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:bps_sso_sdk/src/config/config.dart';
 import 'package:bps_sso_sdk/src/exceptions/exceptions.dart';
 import 'package:bps_sso_sdk/src/models/models.dart';
@@ -22,6 +23,9 @@ class BPSSsoService {
     _dio.options.connectTimeout = config.securityConfig.tokenTimeoutDuration;
     _dio.options.receiveTimeout = config.securityConfig.tokenTimeoutDuration;
 
+    // Add custom interceptors from configuration
+    config.interceptors.forEach(_dio.interceptors.add);
+
     // Initialize security manager with configuration
     _securityManager.initialize(config.securityConfig);
   }
@@ -31,7 +35,23 @@ class BPSSsoService {
   final Dio _dio;
   final BPSSsoSecurityManager _securityManager;
 
+  /// Close Custom Tabs only on iOS platform
+  Future<void> _closeCustomTabsIfIOS() async {
+    try {
+      if (Platform.isIOS) {
+        await closeCustomTabs();
+      }
+    } on Exception catch (e) {
+      // Ignore platform check errors (e.g., on web)
+      debugPrint('Platform check failed, skipping closeCustomTabs: $e');
+    }
+  }
+
   /// Authenticate user using webview OAuth2 flow
+  ///
+  /// Opens Custom Tabs (Android) or SFSafariViewController (iOS) for
+  /// authentication. The browser will automatically close after successful
+  /// authentication or on error.
   Future<BPSUser> loginWithWebview({
     required BuildContext context,
     required BPSRealmType realmType,
@@ -416,6 +436,10 @@ class BPSSsoService {
 
           if (error != null) {
             completer.complete(null);
+            // Close Custom Tabs after authentication error
+            Future.delayed(const Duration(milliseconds: 1000), () async {
+              await _closeCustomTabsIfIOS();
+            });
             final sanitizedError = _securityManager.sanitizeError(
               NetworkException('Authentication failed: $error'),
               isProduction:
@@ -427,8 +451,16 @@ class BPSSsoService {
 
           if (code != null && state == expectedState) {
             completer.complete(code);
+            // Close Custom Tabs after successful authentication with delay
+            Future.delayed(const Duration(milliseconds: 1000), () async {
+              await _closeCustomTabsIfIOS();
+            });
           } else {
             completer.complete(null);
+            // Close Custom Tabs after authentication failure
+            Future.delayed(const Duration(milliseconds: 1000), () async {
+              await _closeCustomTabsIfIOS();
+            });
             final sanitizedError = _securityManager.sanitizeError(
               const InvalidStateException(),
               isProduction:
@@ -451,11 +483,19 @@ class BPSSsoService {
         const Duration(minutes: 5),
         onTimeout: () async {
           await linkSubscription?.cancel();
+          // Close Custom Tabs on timeout
+          Future.delayed(const Duration(milliseconds: 500), () async {
+            await _closeCustomTabsIfIOS();
+          });
           return null;
         },
       );
     } on Exception catch (e) {
       debugPrint('Custom Tabs auth failed: $e');
+      // Close Custom Tabs on exception
+      Future.delayed(const Duration(milliseconds: 500), () async {
+        await _closeCustomTabsIfIOS();
+      });
       return null;
     }
   }

@@ -103,8 +103,8 @@ class UserInfoScreen extends StatelessWidget {
                             'Detailed account information',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 
-                                0.7,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
                               ),
                             ),
                           ),
@@ -206,146 +206,38 @@ class UserInfoScreen extends StatelessWidget {
                     const Gap(24),
 
                     // Profile Information
-                    _buildSection(
-                      context: context,
-                      icon: PhosphorIcons.user(PhosphorIconsStyle.duotone),
-                      title: 'Profile Information',
+                    _ProfileSection(
+                      user: user,
+                      privacyMode: privacyMode,
                       delay: 400.ms,
-                      children: [
-                        _buildInfoTile(
-                          context: context,
-                          icon: PhosphorIcons.identificationCard(
-                            PhosphorIconsStyle.duotone,
-                          ),
-                          label: 'Full Name',
-                          value: user.fullName,
-                          shouldObscure: false, // Don't obscure name
-                          isPrivacyMode: privacyMode,
-                        ),
-                        _buildInfoTile(
-                          context: context,
-                          icon: PhosphorIcons.at(PhosphorIconsStyle.duotone),
-                          label: 'Email',
-                          value: user.email,
-                          isPrivacyMode: privacyMode,
-                        ),
-                        _buildInfoTile(
-                          context: context,
-                          icon: PhosphorIcons.fingerprint(
-                            PhosphorIconsStyle.duotone,
-                          ),
-                          label: 'User ID',
-                          value: user.id,
-                          isPrivacyMode: privacyMode,
-                        ),
-                        _buildInfoTile(
-                          context: context,
-                          icon: PhosphorIcons.user(PhosphorIconsStyle.duotone),
-                          label: 'Username',
-                          value: user.username,
-                          isPrivacyMode: privacyMode,
-                        ),
-                      ],
                     ),
 
                     // Work Information (only for internal users)
                     if (user.isInternal) ...[
                       const Gap(24),
-                      _buildSection(
-                        context: context,
-                        icon: PhosphorIcons.briefcase(
-                          PhosphorIconsStyle.duotone,
-                        ),
-                        title: 'Work Information',
+                      _WorkInfoSection(
+                        user: user,
+                        privacyMode: privacyMode,
                         delay: 600.ms,
-                        children: [
-                          _buildInfoTile(
-                            context: context,
-                            icon: PhosphorIcons.identificationBadge(
-                              PhosphorIconsStyle.duotone,
-                            ),
-                            label: 'NIP',
-                            value: user.nip,
-                            isPrivacyMode: privacyMode,
-                          ),
-                          _buildInfoTile(
-                            context: context,
-                            icon: PhosphorIcons.building(
-                              PhosphorIconsStyle.duotone,
-                            ),
-                            label: 'Organization',
-                            value: user.organization,
-                            isPrivacyMode: privacyMode,
-                          ),
-                          if (user.position != null)
-                            _buildInfoTile(
-                              context: context,
-                              icon: PhosphorIcons.crown(
-                                PhosphorIconsStyle.duotone,
-                              ),
-                              label: 'Position',
-                              value: user.position!,
-                              isPrivacyMode: privacyMode,
-                            ),
-                          if (user.rank != null)
-                            _buildInfoTile(
-                              context: context,
-                              icon: PhosphorIcons.medal(
-                                PhosphorIconsStyle.duotone,
-                              ),
-                              label: 'Rank',
-                              value: user.rank!,
-                              isPrivacyMode: privacyMode,
-                            ),
-                        ],
                       ),
                     ],
 
                     const Gap(24),
 
                     // Authentication Information
-                    _buildSection(
-                      context: context,
-                      icon: PhosphorIcons.shield(PhosphorIconsStyle.duotone),
-                      title: 'Authentication Information',
+                    _AuthInfoSection(
+                      user: user,
+                      privacyMode: privacyMode,
                       delay: 800.ms,
-                      children: [
-                        _buildInfoTile(
-                          context: context,
-                          icon: PhosphorIcons.globeHemisphereWest(
-                            PhosphorIconsStyle.duotone,
-                          ),
-                          label: 'Realm',
-                          value: user.realmDisplayName,
-                          shouldObscure: false,
-                          isPrivacyMode: privacyMode,
-                        ),
-                        _buildInfoTile(
-                          context: context,
-                          icon: PhosphorIcons.clock(PhosphorIconsStyle.duotone),
-                          label: 'Token Expires',
-                          value: _formatDateTime(user.tokenExpiry),
-                          shouldObscure: false,
-                          isPrivacyMode: privacyMode,
-                        ),
-                        _buildInfoTile(
-                          context: context,
-                          icon: user.isTokenExpired
-                              ? PhosphorIcons.warning(
-                                  PhosphorIconsStyle.duotone,
-                                )
-                              : PhosphorIcons.checkCircle(
-                                  PhosphorIconsStyle.duotone,
-                                ),
-                          label: 'Token Status',
-                          value: user.isTokenExpired ? 'Expired' : 'Valid',
-                          valueColor: user.isTokenExpired
-                              ? Colors.red
-                              : Colors.green,
-                          shouldObscure: false,
-                          isPrivacyMode: privacyMode,
-                        ),
-                      ],
+                    ),
+
+                    const Gap(24),
+
+                    // Token Information
+                    _TokenInfoSection(
+                      user: user,
+                      privacyMode: privacyMode,
+                      delay: 1000.ms,
                     ),
 
                     const Gap(32),
@@ -358,14 +250,213 @@ class UserInfoScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildSection({
-    required BuildContext context,
-    required PhosphorIconData icon,
-    required String title,
-    required Duration delay,
-    required List<Widget> children,
-  }) {
+class _ProfileSection extends StatelessWidget {
+  const _ProfileSection({
+    required this.user,
+    required this.privacyMode,
+    required this.delay,
+  });
+
+  final BPSUser user;
+  final bool privacyMode;
+  final Duration delay;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SectionCard(
+      icon: PhosphorIcons.user(PhosphorIconsStyle.duotone),
+      title: 'Profile Information',
+      delay: delay,
+      children: [
+        _InfoTile(
+          icon: PhosphorIcons.identificationCard(PhosphorIconsStyle.duotone),
+          label: 'Full Name',
+          value: user.fullName,
+          shouldObscure: false,
+          isPrivacyMode: privacyMode,
+        ),
+        _InfoTile(
+          icon: PhosphorIcons.at(PhosphorIconsStyle.duotone),
+          label: 'Email',
+          value: user.email,
+          isPrivacyMode: privacyMode,
+        ),
+        _InfoTile(
+          icon: PhosphorIcons.fingerprint(PhosphorIconsStyle.duotone),
+          label: 'User ID',
+          value: user.id,
+          isPrivacyMode: privacyMode,
+        ),
+        _InfoTile(
+          icon: PhosphorIcons.user(PhosphorIconsStyle.duotone),
+          label: 'Username',
+          value: user.username,
+          isPrivacyMode: privacyMode,
+        ),
+      ],
+    );
+  }
+}
+
+class _WorkInfoSection extends StatelessWidget {
+  const _WorkInfoSection({
+    required this.user,
+    required this.privacyMode,
+    required this.delay,
+  });
+
+  final BPSUser user;
+  final bool privacyMode;
+  final Duration delay;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SectionCard(
+      icon: PhosphorIcons.briefcase(PhosphorIconsStyle.duotone),
+      title: 'Work Information',
+      delay: delay,
+      children: [
+        _InfoTile(
+          icon: PhosphorIcons.identificationBadge(PhosphorIconsStyle.duotone),
+          label: 'NIP',
+          value: user.nip,
+          isPrivacyMode: privacyMode,
+        ),
+        _InfoTile(
+          icon: PhosphorIcons.building(PhosphorIconsStyle.duotone),
+          label: 'Organization',
+          value: user.organization,
+          shouldObscure: false,
+        ),
+        if (user.position != null)
+          _InfoTile(
+            icon: PhosphorIcons.crown(PhosphorIconsStyle.duotone),
+            label: 'Position',
+            value: user.position!,
+            shouldObscure: false,
+          ),
+        if (user.rank != null)
+          _InfoTile(
+            icon: PhosphorIcons.medal(PhosphorIconsStyle.duotone),
+            label: 'Rank',
+            value: user.rank!,
+            shouldObscure: false,
+          ),
+      ],
+    );
+  }
+}
+
+class _AuthInfoSection extends StatelessWidget {
+  const _AuthInfoSection({
+    required this.user,
+    required this.privacyMode,
+    required this.delay,
+  });
+
+  final BPSUser user;
+  final bool privacyMode;
+  final Duration delay;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SectionCard(
+      icon: PhosphorIcons.shield(PhosphorIconsStyle.duotone),
+      title: 'Authentication Information',
+      delay: delay,
+      children: [
+        _InfoTile(
+          icon: PhosphorIcons.globeHemisphereWest(PhosphorIconsStyle.duotone),
+          label: 'Realm',
+          value: user.realm.name.toUpperCase(),
+          valueColor: user.realm == BPSRealmType.internal
+              ? Colors.blue.shade600
+              : Colors.green.shade600,
+          shouldObscure: false,
+          isPrivacyMode: privacyMode,
+        ),
+        _InfoTile(
+          icon: PhosphorIcons.clock(PhosphorIconsStyle.duotone),
+          label: 'Token Expires',
+          value: _formatDateTime(user.tokenExpiry),
+          shouldObscure: false,
+          isPrivacyMode: privacyMode,
+        ),
+        _InfoTile(
+          icon: user.isTokenExpired
+              ? PhosphorIcons.clockCounterClockwise(PhosphorIconsStyle.duotone)
+              : PhosphorIcons.checkCircle(PhosphorIconsStyle.duotone),
+          label: 'Token Status',
+          value: user.isTokenExpired ? 'Expired' : 'Valid',
+          valueColor: user.isTokenExpired
+              ? Colors.red.shade600
+              : Colors.green.shade600,
+          shouldObscure: false,
+        ),
+      ],
+    );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    final localDateTime = dateTime.toLocal();
+    return '${localDateTime.day}/${localDateTime.month}/${localDateTime.year} '
+        '${localDateTime.hour.toString().padLeft(2, '0')}:'
+        '${localDateTime.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+class _TokenInfoSection extends StatelessWidget {
+  const _TokenInfoSection({
+    required this.user,
+    required this.privacyMode,
+    required this.delay,
+  });
+
+  final BPSUser user;
+  final bool privacyMode;
+  final Duration delay;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SectionCard(
+      icon: PhosphorIcons.key(PhosphorIconsStyle.duotone),
+      title: 'Token Information',
+      delay: delay,
+      children: [
+        _TokenTile(
+          icon: PhosphorIcons.lockKey(PhosphorIconsStyle.duotone),
+          label: 'Access Token',
+          value: user.accessToken,
+          isPrivacyMode: privacyMode,
+        ),
+        _TokenTile(
+          icon: PhosphorIcons.clockCounterClockwise(PhosphorIconsStyle.duotone),
+          label: 'Refresh Token',
+          value: user.refreshToken,
+          isPrivacyMode: privacyMode,
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({
+    required this.icon,
+    required this.title,
+    required this.delay,
+    required this.children,
+  });
+
+  final PhosphorIconData icon;
+  final String title;
+  final Duration delay;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Container(
@@ -426,16 +517,27 @@ class UserInfoScreen extends StatelessWidget {
         .fadeIn(delay: delay, duration: 600.ms)
         .slideY(begin: 0.3, end: 0);
   }
+}
 
-  Widget _buildInfoTile({
-    required BuildContext context,
-    required PhosphorIconData icon,
-    required String label,
-    required String value,
-    Color? valueColor,
-    bool shouldObscure = true,
-    bool isPrivacyMode = false,
-  }) {
+class _InfoTile extends StatelessWidget {
+  const _InfoTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.valueColor,
+    this.shouldObscure = true,
+    this.isPrivacyMode = false,
+  });
+
+  final PhosphorIconData icon;
+  final String label;
+  final String value;
+  final Color? valueColor;
+  final bool shouldObscure;
+  final bool isPrivacyMode;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Row(
@@ -472,11 +574,123 @@ class UserInfoScreen extends StatelessWidget {
       ],
     );
   }
+}
 
-  String _formatDateTime(DateTime dateTime) {
-    final localDateTime = dateTime.toLocal();
-    return '${localDateTime.day}/${localDateTime.month}/${localDateTime.year} '
-        '${localDateTime.hour.toString().padLeft(2, '0')}:'
-        '${localDateTime.minute.toString().padLeft(2, '0')}';
+class _TokenTile extends StatelessWidget {
+  const _TokenTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.isPrivacyMode = false,
+  });
+
+  final PhosphorIconData icon;
+  final String label;
+  final String value;
+  final bool isPrivacyMode;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    void copyToken() {
+      Clipboard.setData(ClipboardData(text: value));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              PhosphorIcon(
+                PhosphorIcons.copy(PhosphorIconsStyle.fill),
+                color: Colors.white,
+                size: 20,
+              ),
+              const Gap(8),
+              Text('$label copied to clipboard'),
+            ],
+          ),
+          backgroundColor: Colors.green.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+
+    // Truncate token for display (show first 20 and last 10 characters)
+    String displayValue = value;
+    if (value.length > 40) {
+      displayValue =
+          '${value.substring(0, 20)}...${value.substring(value.length - 10)}';
+    }
+
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PhosphorIcon(
+              icon,
+              size: 16,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+            const Gap(12),
+            SizedBox(
+              width: 100,
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ),
+            const Gap(12),
+            Expanded(
+              child: GestureDetector(
+                onTap: copyToken,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ObscuredText(
+                          text: displayValue,
+                          isObscured: isPrivacyMode,
+                          style: GoogleFonts.robotoMono(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w400,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      const Gap(8),
+                      PhosphorIcon(
+                        PhosphorIcons.copy(PhosphorIconsStyle.bold),
+                        size: 14,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const Gap(16),
+      ],
+    );
   }
 }

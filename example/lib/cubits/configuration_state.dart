@@ -23,7 +23,7 @@ class ConfigurationState extends Equatable {
     this.baseUrl = 'https://sso.bps.go.id',
     this.internalClientId = 'your-internal-client-id',
     this.internalRedirectUri = 'id.go.bps://your-app-sso-internal',
-    this.internalRealm = 'bps',
+    this.internalRealm = 'pegawai-bps',
     this.internalResponseTypes = const ['code'],
     this.internalScopes = const ['openid', 'profile-pegawai'],
     this.internalCodeChallengeMethod = 'S256',
@@ -114,7 +114,7 @@ class ConfigurationState extends Equatable {
       internalRedirectUri:
           json['internalRedirectUri'] as String? ??
           'id.go.bps://your-app-sso-internal',
-      internalRealm: json['internalRealm'] as String? ?? 'bps',
+      internalRealm: json['internalRealm'] as String? ?? 'pegawai-bps',
       internalResponseTypes:
           (json['internalResponseTypes'] as List<dynamic>?)?.cast<String>() ??
           const ['code'],
