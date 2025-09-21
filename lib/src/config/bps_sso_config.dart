@@ -10,6 +10,7 @@ class BPSSsoConfig {
     this.customTabsConfig = const BPSSsoCustomTabsConfig(),
     this.errorConfig = const BPSSsoErrorConfig(),
     this.securityConfig = BPSSsoSecurityConfig.iso27001,
+    this.authCallbacks = BPSSsoAuthCallback.none,
   });
 
   /// Base URL for BPS SSO server
@@ -29,6 +30,9 @@ class BPSSsoConfig {
 
   /// Security configuration
   final BPSSsoSecurityConfig securityConfig;
+
+  /// Authentication callbacks
+  final BPSSsoAuthCallback authCallbacks;
 
   /// Get configuration for specific realm type
   BPSRealmConfig getConfig(BPSRealmType realmType) {
