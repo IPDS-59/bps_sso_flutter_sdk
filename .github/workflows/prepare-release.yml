@@ -115,25 +115,79 @@ jobs:
           # Get all commits since last tag
           COMMITS=$(git log --pretty=format:"%s (%h)" "$BASE_COMMIT..HEAD" 2>/dev/null || git log --pretty=format:"%s (%h)")
 
-          # Categorize commits
+          # Categorize commits with enhanced pattern matching
           echo "### ✨ Features" >> $CHANGELOG_FILE
-          echo "$COMMITS" | grep -E "^(feat|feature):" | sed 's/^/- /' >> $CHANGELOG_FILE || echo "- No new features" >> $CHANGELOG_FILE
+          FEATURE_COMMITS=$(echo "$COMMITS" | grep -E "^(feat|feature)(\([^)]*\))?:" || echo "")
+          if [ -n "$FEATURE_COMMITS" ]; then
+            echo "$FEATURE_COMMITS" | sed 's/^/- /' >> $CHANGELOG_FILE
+          else
+            echo "" >> $CHANGELOG_FILE
+          fi
           echo "" >> $CHANGELOG_FILE
 
           echo "### 🐛 Bug Fixes" >> $CHANGELOG_FILE
-          echo "$COMMITS" | grep -E "^(fix|bugfix):" | sed 's/^/- /' >> $CHANGELOG_FILE || echo "- No bug fixes" >> $CHANGELOG_FILE
+          BUG_COMMITS=$(echo "$COMMITS" | grep -E "^(fix|bugfix)(\([^)]*\))?:" || echo "")
+          if [ -n "$BUG_COMMITS" ]; then
+            echo "$BUG_COMMITS" | sed 's/^/- /' >> $CHANGELOG_FILE
+          else
+            echo "" >> $CHANGELOG_FILE
+          fi
           echo "" >> $CHANGELOG_FILE
 
           echo "### 📱 Platform Updates" >> $CHANGELOG_FILE
-          echo "$COMMITS" | grep -E "^(android|ios|platform):" | sed 's/^/- /' >> $CHANGELOG_FILE || echo "- No platform updates" >> $CHANGELOG_FILE
+          PLATFORM_COMMITS=$(echo "$COMMITS" | grep -E "^(android|ios|platform|refactor\((android|ios)\)):" || echo "")
+          if [ -n "$PLATFORM_COMMITS" ]; then
+            echo "$PLATFORM_COMMITS" | sed 's/^/- /' >> $CHANGELOG_FILE
+          else
+            echo "" >> $CHANGELOG_FILE
+          fi
           echo "" >> $CHANGELOG_FILE
 
           echo "### 📚 Documentation" >> $CHANGELOG_FILE
-          echo "$COMMITS" | grep -E "^(docs|doc):" | sed 's/^/- /' >> $CHANGELOG_FILE || echo "- No documentation changes" >> $CHANGELOG_FILE
+          DOC_COMMITS=$(echo "$COMMITS" | grep -E "^(docs?|doc)(\([^)]*\))?:" || echo "")
+          if [ -n "$DOC_COMMITS" ]; then
+            echo "$DOC_COMMITS" | sed 's/^/- /' >> $CHANGELOG_FILE
+          else
+            echo "" >> $CHANGELOG_FILE
+          fi
           echo "" >> $CHANGELOG_FILE
 
           echo "### 🔧 Maintenance" >> $CHANGELOG_FILE
-          echo "$COMMITS" | grep -E "^(chore|refactor|perf|style|test):" | sed 's/^/- /' >> $CHANGELOG_FILE || echo "- No maintenance changes" >> $CHANGELOG_FILE
+          # Enhanced maintenance pattern to catch refactor(component), style(code), test(config), etc.
+          MAINTENANCE_COMMITS=$(echo "$COMMITS" | grep -E "^(chore|refactor|perf|style|test)(\([^)]*\))?:" | grep -v "^refactor\((android|ios)\):" || echo "")
+          if [ -n "$MAINTENANCE_COMMITS" ]; then
+            echo "$MAINTENANCE_COMMITS" | sed 's/^/- /' >> $CHANGELOG_FILE
+          else
+            echo "" >> $CHANGELOG_FILE
+          fi
+          echo "" >> $CHANGELOG_FILE
+
+          echo "### 📦 Dependencies" >> $CHANGELOG_FILE
+          DEP_COMMITS=$(echo "$COMMITS" | grep -E "^(chore\((pub|deps?|package)\)|chore:.*(install|update|upgrade|dependency|dependencies))" || echo "")
+          if [ -n "$DEP_COMMITS" ]; then
+            echo "$DEP_COMMITS" | sed 's/^/- /' >> $CHANGELOG_FILE
+          fi
+          echo "- Flutter SDK: ${{ env.FLUTTER_VERSION }}+" >> $CHANGELOG_FILE
+          echo "- Dart SDK: Compatible with Flutter ${{ env.FLUTTER_VERSION }}" >> $CHANGELOG_FILE
+          echo "" >> $CHANGELOG_FILE
+
+          echo "### 🎯 Key Highlights" >> $CHANGELOG_FILE
+          # Generate key highlights based on significant changes
+          if echo "$COMMITS" | grep -q "interceptor\|alice\|di\|dependency injection"; then
+            echo "- **HTTP Interceptor Support**: Added comprehensive Dio interceptor support for request/response modification" >> $CHANGELOG_FILE
+          fi
+          if echo "$COMMITS" | grep -q "realm.*name\|realmName\|custom.*realm"; then
+            echo "- **Custom Realm Names**: Enhanced configuration to support custom realm names while maintaining backward compatibility" >> $CHANGELOG_FILE
+          fi
+          if echo "$COMMITS" | grep -q "sdk.*info\|expose.*sdk"; then
+            echo "- **SDK Information Exposure**: Added SDK version and metadata access for client applications" >> $CHANGELOG_FILE
+          fi
+          if echo "$COMMITS" | grep -q "configuration.*screen\|config.*screen\|realm.*input"; then
+            echo "- **Enhanced Configuration UI**: Improved configuration screen with realm name inputs and enhanced UX" >> $CHANGELOG_FILE
+          fi
+          if echo "$COMMITS" | grep -q "ios.*tab\|close.*tab"; then
+            echo "- **iOS Platform Improvements**: Enhanced iOS support with proper tab closing functionality" >> $CHANGELOG_FILE
+          fi
           echo "" >> $CHANGELOG_FILE
 
           # Check for breaking changes
