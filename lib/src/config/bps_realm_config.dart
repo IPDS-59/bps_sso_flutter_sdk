@@ -1,6 +1,8 @@
 import 'package:bps_sso_sdk/src/config/config.dart';
+import 'package:flutter/foundation.dart';
 
 /// Configuration for a specific BPS realm
+@immutable
 class BPSRealmConfig {
   /// Create instance of [BPSRealmConfig]
   const BPSRealmConfig({
@@ -72,7 +74,7 @@ class BPSRealmConfig {
         )
         .join('&');
 
-    return '$baseUrl/auth/realms/$realm/protocol/openid-connect/auth?$query';
+    return '$baseUrl/realms/$realm/protocol/openid-connect/auth?$query';
   }
 
   /// Keycloak realm name
@@ -80,13 +82,48 @@ class BPSRealmConfig {
 
   /// Get token endpoint URL
   String get tokenUrl =>
-      '$baseUrl/auth/realms/$realm/protocol/openid-connect/token';
+      '$baseUrl/realms/$realm/protocol/openid-connect/token';
 
   /// Get user info endpoint URL
   String get userInfoUrl =>
-      '$baseUrl/auth/realms/$realm/protocol/openid-connect/userinfo';
+      '$baseUrl/realms/$realm/protocol/openid-connect/userinfo';
 
   /// Get logout endpoint URL
   String get logoutUrl =>
-      '$baseUrl/auth/realms/$realm/protocol/openid-connect/logout';
+      '$baseUrl/realms/$realm/protocol/openid-connect/logout';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is BPSRealmConfig &&
+        other.clientId == clientId &&
+        other.redirectUri == redirectUri &&
+        other.realmType == realmType &&
+        other.baseUrl == baseUrl &&
+        _listEquals(other.responseTypes, responseTypes) &&
+        _listEquals(other.scopes, scopes) &&
+        other.codeChallengeMethod == codeChallengeMethod;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      clientId,
+      redirectUri,
+      realmType,
+      baseUrl,
+      Object.hashAll(responseTypes),
+      Object.hashAll(scopes),
+      codeChallengeMethod,
+    );
+  }
+
+  /// Helper method to compare lists
+  bool _listEquals<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 }

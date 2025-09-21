@@ -205,6 +205,20 @@ class BPSUser {
   /// Check if user is from internal realm
   bool get isInternal => realm == BPSRealmType.internal;
 
+  /// Get user initials from full name
+  String get initials {
+    final names = fullName.split(' ');
+    if (names.isEmpty) return '';
+    if (names.length == 1) return names[0].substring(0, 1).toUpperCase();
+    return names.map((name) => name.substring(0, 1).toUpperCase()).join();
+  }
+
+  /// Check if user has a photo
+  bool get hasPhoto => photo != null && photo!.isNotEmpty;
+
+  /// Get display name for the realm
+  String get realmDisplayName => realm.displayName;
+
   /// Convert to JSON for storage
   Map<String, dynamic> toJson() {
     return {
