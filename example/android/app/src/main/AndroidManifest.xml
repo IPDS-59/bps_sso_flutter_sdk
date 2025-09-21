@@ -26,17 +26,18 @@
             </intent-filter>
 
             <!-- Deep link intent filters for SSO callback -->
+            <!-- TODO: Replace 'your-app' with your actual app name -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="id.go.bps" android:host="***REMOVED***" />
+                <data android:scheme="id.go.bps" android:host="your-app-sso-internal" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="id.go.bps" android:host="***REMOVED***" />
+                <data android:scheme="id.go.bps" android:host="your-app-sso-eksternal" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
