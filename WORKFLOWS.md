@@ -110,112 +110,80 @@ graph TD
 
 ### 1. Version Bump Workflow
 
-```
-Release Branch Created (release/v1.2.0)
-            │
-            ▼
-    ┌───────────────────┐
-    │ Automatic Trigger │
-    │ (GitHub Create)   │
-    └─────────┬─────────┘
-              │
-              ▼
-    ┌─────────────────────┐
-    │ Checkout develop    │
-    │ Extract version     │
-    │ Bump minor version  │
-    │ Update pubspec.yaml │
-    │ Commit & push       │
-    └─────────────────────┘
+```mermaid
+flowchart TD
+    A[Release Branch Created<br/>release/v1.2.0] --> B[Automatic Trigger<br/>GitHub Create Event]
+    B --> C[Extract Version<br/>from Branch Name]
+    C --> D[Checkout develop<br/>Branch]
+    D --> E[Bump Minor Version<br/>in pubspec.yaml]
+    E --> F[Commit Changes<br/>& Push to develop]
+
+    style A fill:#e1f5fe
+    style F fill:#c8e6c9
 ```
 
 ### 2. Release Workflow
 
-```
-Release/Hotfix → Main (Merged)
-            │
-            ▼
-    ┌──────────────────────┐
-    │ Extract branch info  │
-    │ Validate version     │
-    └──────────┬───────────┘
-               │
-               ▼
-    ┌──────────────────────┐      ┌─────────────────────┐
-    │ Create Git Tag       │ ────▶│ Trigger Publish     │
-    │ (v1.2.0)            │      │ Workflow            │
-    └──────────┬───────────┘      └─────────────────────┘
-               │
-               ▼
-    ┌──────────────────────┐
-    │ Trigger Back-merge   │
-    │ Workflow             │
-    └──────────────────────┘
+```mermaid
+flowchart TD
+    A[Release/Hotfix → Main<br/>Merged] --> B[Extract Branch Info<br/>& Validate Version]
+    B --> C[Create Git Tag<br/>v1.2.0]
+    C --> D[Trigger Publish<br/>Workflow]
+    C --> E[Trigger Back-merge<br/>Workflow]
+
+    D --> F[pub.dev Publishing]
+    E --> G[Create PR:<br/>main → develop]
+
+    style A fill:#e1f5fe
+    style C fill:#fff3e0
+    style F fill:#c8e6c9
+    style G fill:#f3e5f5
 ```
 
 ### 3. Publish Workflow
 
-```
-Tag Created (v1.2.0)
-            │
-            ▼
-    ┌─────────────────────┐
-    │ Validate Package    │
-    │ • Structure check   │
-    │ • Version verify    │
-    │ • Dependencies      │
-    │ • Run tests         │
-    └─────────┬───────────┘
-              │
-              ▼
-    ┌─────────────────────┐
-    │ Dry Run            │
-    │ (Always perform)    │
-    └─────────┬───────────┘
-              │
-              ▼
-    ┌─────────────────────┐      ┌─────────────────────┐
-    │ Official Publish    │ ────▶│ Create GitHub       │
-    │ (if force=true)     │      │ Release             │
-    └─────────────────────┘      └─────────────────────┘
+```mermaid
+flowchart TD
+    A[Tag Created<br/>v1.2.0] --> B[Validate Package]
+    B --> C[Structure Check<br/>Dependencies<br/>Tests]
+    C --> D[Dry Run<br/>Always Perform]
+    D --> E{Force Publish?}
+
+    E -->|true| F[Official Publish<br/>to pub.dev]
+    E -->|false| G[Dry Run Only]
+
+    F --> H[Create GitHub<br/>Release]
+    G --> I[Validation<br/>Complete]
+
+    style A fill:#e1f5fe
+    style D fill:#fff3e0
+    style F fill:#c8e6c9
+    style H fill:#c8e6c9
 ```
 
 ### 4. CI Workflow with Smart Execution
 
-```
-Push/PR to main/develop
-            │
-            ▼
-    ┌─────────────────────┐
-    │ Detect Changes      │
-    │ • Dart files?       │
-    │ • Example app?      │
-    │ • Tests changed?    │
-    │ • Config files?     │
-    └─────────┬───────────┘
-              │
-              ▼
-    ┌─────────────────────┐
-    │ Static Analysis     │
-    │ • flutter analyze   │
-    │ • dart format       │
-    │ • Example analysis  │
-    └─────────┬───────────┘
-              │
-              ▼
-    ┌─────────────────────┐
-    │ Tests & Coverage    │
-    │ • Unit tests        │
-    │ • Coverage report   │
-    │ • PR comments       │
-    └─────────┬───────────┘
-              │
-              ▼
-    ┌─────────────────────┐
-    │ Summary & Report    │
-    │ • Job status        │
-    │ • PR comments       │
-    └─────────────────────┘
+```mermaid
+flowchart TD
+    A[Push/PR to<br/>main/develop] --> B[Detect Changes]
+    B --> C{What Changed?}
+
+    C -->|Dart Files| D[Static Analysis]
+    C -->|Config Files| D
+    C -->|Tests| D
+    C -->|Example App| D
+
+    D --> E[flutter analyze<br/>dart format<br/>Example analysis]
+    E --> F[Tests & Coverage]
+    F --> G[Unit tests<br/>Coverage report]
+    G --> H[Summary & Report]
+    H --> I[PR Comments<br/>Job Status]
+
+    style A fill:#e1f5fe
+    style C fill:#fff3e0
+    style E fill:#f3e5f5
+    style G fill:#c8e6c9
+    style I fill:#e8f5e8
 ```
 
 ## Manual Triggers
