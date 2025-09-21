@@ -138,25 +138,46 @@ jobs:
           fi
           echo "" >> $CHANGELOG_FILE
 
-          # Categorize changes for Flutter/Dart projects
+          # Enhanced categorization for Flutter/Dart projects with better pattern matching
+          ALL_COMMITS=$(git log --pretty=format:"- %s (%h)" "$BASE_COMMIT..HEAD")
+
           echo "✨ Features:" >> $CHANGELOG_FILE
-          git log --pretty=format:"- %s (%h)" "$BASE_COMMIT..HEAD" | \
-          grep -E "^- (feat|feature):" | head -10 >> $CHANGELOG_FILE || echo "- No new features" >> $CHANGELOG_FILE
+          FEATURE_COMMITS=$(echo "$ALL_COMMITS" | grep -E "^- (feat|feature)(\([^)]*\))?:" | head -10 || echo "")
+          if [ -n "$FEATURE_COMMITS" ]; then
+            echo "$FEATURE_COMMITS" >> $CHANGELOG_FILE
+          fi
           echo "" >> $CHANGELOG_FILE
 
           echo "🐛 Bug Fixes:" >> $CHANGELOG_FILE
-          git log --pretty=format:"- %s (%h)" "$BASE_COMMIT..HEAD" | \
-          grep -E "^- (fix|bugfix):" | head -10 >> $CHANGELOG_FILE || echo "- No bug fixes" >> $CHANGELOG_FILE
+          BUG_COMMITS=$(echo "$ALL_COMMITS" | grep -E "^- (fix|bugfix)(\([^)]*\))?:" | head -10 || echo "")
+          if [ -n "$BUG_COMMITS" ]; then
+            echo "$BUG_COMMITS" >> $CHANGELOG_FILE
+          fi
           echo "" >> $CHANGELOG_FILE
 
           echo "📱 Platform Updates:" >> $CHANGELOG_FILE
-          git log --pretty=format:"- %s (%h)" "$BASE_COMMIT..HEAD" | \
-          grep -E "^- (android|ios|platform):" | head -5 >> $CHANGELOG_FILE || echo "- No platform updates" >> $CHANGELOG_FILE
+          PLATFORM_COMMITS=$(echo "$ALL_COMMITS" | grep -E "^- (android|ios|platform|refactor\((android|ios)\)):" | head -5 || echo "")
+          if [ -n "$PLATFORM_COMMITS" ]; then
+            echo "$PLATFORM_COMMITS" >> $CHANGELOG_FILE
+          fi
+          echo "" >> $CHANGELOG_FILE
+
+          echo "📚 Documentation:" >> $CHANGELOG_FILE
+          DOC_COMMITS=$(echo "$ALL_COMMITS" | grep -E "^- (docs?|doc)(\([^)]*\))?:" | head -5 || echo "")
+          if [ -n "$DOC_COMMITS" ]; then
+            echo "$DOC_COMMITS" >> $CHANGELOG_FILE
+          fi
+          echo "" >> $CHANGELOG_FILE
+
+          echo "🔧 Maintenance:" >> $CHANGELOG_FILE
+          MAINTENANCE_COMMITS=$(echo "$ALL_COMMITS" | grep -E "^- (chore|refactor|perf|style|test)(\([^)]*\))?:" | grep -v "^- refactor\((android|ios)\):" | head -10 || echo "")
+          if [ -n "$MAINTENANCE_COMMITS" ]; then
+            echo "$MAINTENANCE_COMMITS" >> $CHANGELOG_FILE
+          fi
           echo "" >> $CHANGELOG_FILE
 
           # Check for breaking changes
-          BREAKING_COMMITS=$(git log --pretty=format:"- %s (%h)" "$BASE_COMMIT..HEAD" | \
-                            grep -E "(BREAKING CHANGE|!:|feat!:|fix!:)" || echo "")
+          BREAKING_COMMITS=$(echo "$ALL_COMMITS" | grep -E "(BREAKING CHANGE|!:|feat!:|fix!:)" || echo "")
 
           if [ -n "$BREAKING_COMMITS" ]; then
             echo "⚠️ Breaking Changes:" >> $CHANGELOG_FILE
@@ -166,10 +187,20 @@ jobs:
           fi
           echo "" >> $CHANGELOG_FILE
 
-          echo "🔧 Other Changes:" >> $CHANGELOG_FILE
-          git log --pretty=format:"- %s (%h)" "$BASE_COMMIT..HEAD" | \
-          grep -vE "^- (feat|feature|fix|bugfix|android|ios|platform):|Merge branch|Merge pull request|chore.*auto-bump|chore.*back-merge|(BREAKING CHANGE|!:|feat!:|fix!:)" | \
-          head -10 >> $CHANGELOG_FILE || echo "- No other changes" >> $CHANGELOG_FILE
+          echo "🎯 Key Highlights:" >> $CHANGELOG_FILE
+          # Generate intelligent highlights based on commit content
+          if echo "$ALL_COMMITS" | grep -q "interceptor\|alice\|di\|dependency"; then
+            echo "- Enhanced HTTP interceptor and dependency injection support" >> $CHANGELOG_FILE
+          fi
+          if echo "$ALL_COMMITS" | grep -q "realm.*name\|realmName\|custom.*realm"; then
+            echo "- Added custom realm names configuration support" >> $CHANGELOG_FILE
+          fi
+          if echo "$ALL_COMMITS" | grep -q "sdk.*info\|expose.*sdk"; then
+            echo "- Exposed SDK version and metadata information" >> $CHANGELOG_FILE
+          fi
+          if echo "$ALL_COMMITS" | grep -q "configuration.*screen\|config.*screen"; then
+            echo "- Enhanced configuration screen with improved UX" >> $CHANGELOG_FILE
+          fi
           echo "" >> $CHANGELOG_FILE
           echo "📦 Package available on pub.dev after release." >> $CHANGELOG_FILE
 
