@@ -22,6 +22,9 @@ class BPSSsoService {
     _dio.options.connectTimeout = config.securityConfig.tokenTimeoutDuration;
     _dio.options.receiveTimeout = config.securityConfig.tokenTimeoutDuration;
 
+    // Add custom interceptors from configuration
+    config.interceptors.forEach(_dio.interceptors.add);
+
     // Initialize security manager with configuration
     _securityManager.initialize(config.securityConfig);
   }
@@ -32,6 +35,10 @@ class BPSSsoService {
   final BPSSsoSecurityManager _securityManager;
 
   /// Authenticate user using webview OAuth2 flow
+  ///
+  /// Opens Custom Tabs (Android) or SFSafariViewController (iOS) for
+  /// authentication. The browser will automatically close after successful
+  /// authentication or on error.
   Future<BPSUser> loginWithWebview({
     required BuildContext context,
     required BPSRealmType realmType,

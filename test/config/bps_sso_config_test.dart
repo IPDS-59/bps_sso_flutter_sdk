@@ -1,4 +1,5 @@
 import 'package:bps_sso_sdk/src/config/config.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -24,6 +25,20 @@ void main() {
         expect(config.external.scopes, equals(['openid', 'profile', 'email']));
         expect(config.internal.codeChallengeMethod, equals('S256'));
         expect(config.external.codeChallengeMethod, equals('S256'));
+        expect(config.interceptors, isEmpty);
+      });
+
+      test('should create config with custom interceptors', () {
+        final logInterceptor = LogInterceptor();
+        final config = BPSSsoConfig.create(
+          appName: 'testapp',
+          internalClientId: 'internal-client',
+          externalClientId: 'external-client',
+          interceptors: [logInterceptor],
+        );
+
+        expect(config.interceptors, hasLength(1));
+        expect(config.interceptors.first, equals(logInterceptor));
       });
 
       test('should create config with custom values', () {
