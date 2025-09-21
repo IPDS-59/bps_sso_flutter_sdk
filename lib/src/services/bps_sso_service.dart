@@ -519,6 +519,7 @@ class BPSSsoService {
       preferredControlTintColor: Colors.white,
       barCollapsingEnabled: uiConfig.enableUrlBarHiding,
       entersReaderIfAvailable: false,
+      dismissButtonStyle: SafariViewControllerDismissButtonStyle.close,
     );
   }
 
