@@ -24,7 +24,7 @@ jobs:
         with:
           ref: ${{ github.event.ref }}
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Configure Git
         run: |
@@ -271,7 +271,7 @@ jobs:
       - name: Create required labels if they don't exist
         if: steps.pr_branch.outputs.has_changes == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           echo "🏷️ Ensuring required labels exist..."
 
@@ -287,7 +287,7 @@ jobs:
       - name: Create preparation PR
         if: steps.pr_branch.outputs.has_changes == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           VERSION="${{ steps.version_info.outputs.version }}"
           TYPE="${{ steps.version_info.outputs.type }}"
@@ -398,7 +398,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Analyze branch and version
         id: version_info
@@ -429,7 +429,7 @@ jobs:
       - name: Check for existing PR to main
         id: check_existing_pr
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           BRANCH_NAME="${{ steps.version_info.outputs.branch_name }}"
 
@@ -451,7 +451,7 @@ jobs:
       - name: Create required labels if they don't exist
         if: steps.check_existing_pr.outputs.skip_pr == 'false'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           echo "🏷️ Ensuring required labels exist..."
 
@@ -467,7 +467,7 @@ jobs:
       - name: Create PR to main branch
         if: steps.check_existing_pr.outputs.skip_pr == 'false'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           BRANCH_NAME="${{ steps.version_info.outputs.branch_name }}"
           VERSION="${{ steps.version_info.outputs.version }}"

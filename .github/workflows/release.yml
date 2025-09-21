@@ -23,7 +23,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          token: ${{ secrets.WORKFLOW_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Configure Git
         run: |
@@ -337,7 +337,7 @@ jobs:
 
       - name: Create required labels if they don't exist
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           echo "🏷️ Ensuring required labels exist..."
 
@@ -349,7 +349,7 @@ jobs:
 
       - name: Create back-merge PR
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           BACKMERGE_BRANCH="${{ steps.backmerge.outputs.backmerge_branch }}"
           BASE_BRANCH_EXISTS="${{ steps.check_branch.outputs.base_branch_exists }}"
@@ -396,7 +396,7 @@ jobs:
       # STEP 3: CLEANUP MERGED BRANCH
       - name: Delete merged release/hotfix branch
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           BRANCH_NAME="${{ steps.version.outputs.branch_name }}"
 
@@ -410,7 +410,7 @@ jobs:
       # STEP 4: UPDATE ORIGINAL PR WITH STATUS
       - name: Comment on original PR with status
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           TYPE="${{ steps.version.outputs.type }}"
@@ -504,7 +504,7 @@ jobs:
     steps:
       - name: Comment on PR about failure
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
           PR_NUMBER="${{ github.event.pull_request.number }}"
