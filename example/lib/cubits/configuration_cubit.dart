@@ -151,7 +151,9 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
         responseTypes: state.internalResponseTypes,
         scopes: state.internalScopes,
         codeChallengeMethod: state.internalCodeChallengeMethod,
-        realmName: state.internalRealm == 'pegawai-bps' ? null : state.internalRealm,
+        realmName: state.internalRealm == 'pegawai-bps'
+            ? null
+            : state.internalRealm,
       ),
       external: BPSRealmConfig(
         clientId: state.externalClientId,
@@ -161,7 +163,9 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
         responseTypes: state.externalResponseTypes,
         scopes: state.externalScopes,
         codeChallengeMethod: state.externalCodeChallengeMethod,
-        realmName: state.externalRealm == 'eksternal' ? null : state.externalRealm,
+        realmName: state.externalRealm == 'eksternal'
+            ? null
+            : state.externalRealm,
       ),
       securityConfig: BPSSsoSecurityConfig.development,
       interceptors: [_aliceDioAdapter],
@@ -179,7 +183,9 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
         responseTypes: state.internalResponseTypes,
         scopes: state.internalScopes,
         codeChallengeMethod: state.internalCodeChallengeMethod,
-        realmName: state.internalRealm == 'pegawai-bps' ? null : state.internalRealm,
+        realmName: state.internalRealm == 'pegawai-bps'
+            ? null
+            : state.internalRealm,
       ),
       external: BPSRealmConfig(
         clientId: state.externalClientId,
@@ -189,7 +195,9 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
         responseTypes: state.externalResponseTypes,
         scopes: state.externalScopes,
         codeChallengeMethod: state.externalCodeChallengeMethod,
-        realmName: state.externalRealm == 'eksternal' ? null : state.externalRealm,
+        realmName: state.externalRealm == 'eksternal'
+            ? null
+            : state.externalRealm,
       ),
       securityConfig: BPSSsoSecurityConfig.development,
       interceptors: [_aliceDioAdapter],

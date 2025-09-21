@@ -103,8 +103,8 @@ class UserInfoScreen extends StatelessWidget {
                             'Detailed account information',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 
-                                0.7,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
                               ),
                             ),
                           ),
@@ -390,7 +390,9 @@ class _AuthInfoSection extends StatelessWidget {
               : PhosphorIcons.checkCircle(PhosphorIconsStyle.duotone),
           label: 'Token Status',
           value: user.isTokenExpired ? 'Expired' : 'Valid',
-          valueColor: user.isTokenExpired ? Colors.red.shade600 : Colors.green.shade600,
+          valueColor: user.isTokenExpired
+              ? Colors.red.shade600
+              : Colors.green.shade600,
           shouldObscure: false,
         ),
       ],
@@ -609,7 +611,9 @@ class _TokenTile extends StatelessWidget {
           ),
           backgroundColor: Colors.green.shade600,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -618,7 +622,8 @@ class _TokenTile extends StatelessWidget {
     // Truncate token for display (show first 20 and last 10 characters)
     String displayValue = value;
     if (value.length > 40) {
-      displayValue = '${value.substring(0, 20)}...${value.substring(value.length - 10)}';
+      displayValue =
+          '${value.substring(0, 20)}...${value.substring(value.length - 10)}';
     }
 
     return Column(
@@ -647,7 +652,10 @@ class _TokenTile extends StatelessWidget {
               child: GestureDetector(
                 onTap: copyToken,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
