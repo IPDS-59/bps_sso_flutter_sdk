@@ -81,8 +81,7 @@ class BPSRealmConfig {
   String get realm => realmType.value;
 
   /// Get token endpoint URL
-  String get tokenUrl =>
-      '$baseUrl/realms/$realm/protocol/openid-connect/token';
+  String get tokenUrl => '$baseUrl/realms/$realm/protocol/openid-connect/token';
 
   /// Get user info endpoint URL
   String get userInfoUrl =>
