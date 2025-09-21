@@ -16,6 +16,12 @@ class BPSSsoConfig {
   });
 
   /// Factory constructor to create BPS SSO config with sensible defaults
+  ///
+  /// Parameters:
+  /// - [internalRealmName]: Custom realm name for internal BPS realm.
+  ///   If null, defaults to 'pegawai-bps' (BPSRealmType.internal.value)
+  /// - [externalRealmName]: Custom realm name for external BPS realm.
+  ///   If null, defaults to 'eksternal' (BPSRealmType.external.value)
   factory BPSSsoConfig.create({
     required String appName,
     required String internalClientId,
@@ -24,6 +30,8 @@ class BPSSsoConfig {
     List<String> responseTypes = const ['code'],
     List<String> scopes = const ['openid', 'profile', 'email'],
     String codeChallengeMethod = 'S256',
+    String? internalRealmName,
+    String? externalRealmName,
     BPSSsoCustomTabsConfig? customTabsConfig,
     BPSSsoErrorConfig? errorConfig,
     BPSSsoSecurityConfig? securityConfig,
@@ -40,6 +48,7 @@ class BPSSsoConfig {
         responseTypes: responseTypes,
         scopes: scopes,
         codeChallengeMethod: codeChallengeMethod,
+        realmName: internalRealmName,
       ),
       external: BPSRealmConfig(
         clientId: externalClientId,
@@ -49,6 +58,7 @@ class BPSSsoConfig {
         responseTypes: responseTypes,
         scopes: scopes,
         codeChallengeMethod: codeChallengeMethod,
+        realmName: externalRealmName,
       ),
       customTabsConfig: customTabsConfig ?? const BPSSsoCustomTabsConfig(),
       errorConfig: errorConfig ?? const BPSSsoErrorConfig(),
