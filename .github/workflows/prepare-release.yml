@@ -18,6 +18,12 @@ jobs:
       contents: write
       pull-requests: write
 
+    outputs:
+      branch_name: ${{ steps.version_info.outputs.branch_name }}
+      version: ${{ steps.version_info.outputs.version }}
+      type: ${{ steps.version_info.outputs.type }}
+      clean_version: ${{ steps.version_info.outputs.clean_version }}
+
     steps:
       - name: Checkout the new branch
         uses: actions/checkout@v4
@@ -400,31 +406,26 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
 
-      - name: Analyze branch and version
+      - name: Set version info from previous job
         id: version_info
         run: |
-          BRANCH_NAME="${{ github.event.ref }}"
-          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          BRANCH_NAME="${{ needs.release-branch-setup.outputs.branch_name }}"
+          VERSION="${{ needs.release-branch-setup.outputs.version }}"
+          TYPE="${{ needs.release-branch-setup.outputs.type }}"
+          CLEAN_VERSION="${{ needs.release-branch-setup.outputs.clean_version }}"
 
-          if [[ $BRANCH_NAME == release/* ]]; then
-            VERSION=$(echo $BRANCH_NAME | sed 's/release\///')
-            TYPE="release"
+          # Set PR title based on type
+          if [[ "$TYPE" == "release" ]]; then
             PR_TITLE="release: $VERSION"
-          elif [[ $BRANCH_NAME == hotfix/* ]]; then
-            VERSION=$(echo $BRANCH_NAME | sed 's/hotfix\///')
-            TYPE="hotfix"
+          elif [[ "$TYPE" == "hotfix" ]]; then
             PR_TITLE="fix: $VERSION"
           fi
 
-          # Ensure version starts with 'v'
-          if [[ ! $VERSION == v* ]]; then
-            VERSION="v$VERSION"
-          fi
-
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "type=$TYPE" >> $GITHUB_OUTPUT
           echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
-          echo "clean_version=$(echo $VERSION | sed 's/^v//')" >> $GITHUB_OUTPUT
+          echo "clean_version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
 
       - name: Check for existing PR to main
         id: check_existing_pr
