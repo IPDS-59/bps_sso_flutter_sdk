@@ -241,8 +241,8 @@ class OperationsScreen extends StatelessWidget {
                             'Manage authentication and user sessions',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 
-                                0.7,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
                               ),
                             ),
                           ),
@@ -330,15 +330,16 @@ class OperationsScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: theme.colorScheme.primary
-                                        .withValues(alpha: 0.05),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.05,
+                                    ),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
                                 ],
                                 border: Border.all(
-                                  color: theme.colorScheme.outline.withValues(alpha: 
-                                    0.1,
+                                  color: theme.colorScheme.outline.withValues(
+                                    alpha: 0.1,
                                   ),
                                 ),
                               ),
@@ -412,7 +413,8 @@ class OperationsScreen extends StatelessWidget {
                                       ),
                                     ],
                                     selected: {state.selectedRealm},
-                                    onSelectionChanged: state.currentUser != null
+                                    onSelectionChanged:
+                                        state.currentUser != null
                                         ? null
                                         : (Set<BPSRealmType> selection) {
                                             context
@@ -473,7 +475,8 @@ class OperationsScreen extends StatelessWidget {
                               title: 'Login',
                               subtitle:
                                   'Authenticate with BPS SSO using selected realm',
-                              onPressed: state.isLoading || state.currentUser != null
+                              onPressed:
+                                  state.isLoading || state.currentUser != null
                                   ? null
                                   : () => _performLogin(context),
                               isPrimary: true,
@@ -600,7 +603,8 @@ class OperationsScreen extends StatelessWidget {
                               title: 'HTTP Inspector',
                               subtitle: 'View network requests and responses',
                               onPressed: () {
-                                final configCubit = context.read<ConfigurationCubit>();
+                                final configCubit = context
+                                    .read<ConfigurationCubit>();
                                 configCubit.alice.showInspector();
                               },
                               delay: 1200.ms,

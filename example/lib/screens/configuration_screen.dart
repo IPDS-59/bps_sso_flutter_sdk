@@ -163,8 +163,8 @@ class ConfigurationScreen extends StatelessWidget {
                             'Set up authentication parameters',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 
-                                0.7,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
                               ),
                             ),
                           ),
@@ -406,8 +406,9 @@ class ConfigurationScreen extends StatelessWidget {
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
                               elevation: 8,
-                              shadowColor: theme.colorScheme.primary
-                                  .withValues(alpha: 0.3),
+                              shadowColor: theme.colorScheme.primary.withValues(
+                                alpha: 0.3,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -724,9 +725,7 @@ class _InternalRealmFieldState extends State<_InternalRealmField> {
     super.initState();
     _controller = TextEditingController(text: widget.state.internalRealm);
     _controller.addListener(() {
-      context.read<ConfigurationCubit>().updateInternalRealm(
-        _controller.text,
-      );
+      context.read<ConfigurationCubit>().updateInternalRealm(_controller.text);
     });
   }
 
@@ -770,9 +769,7 @@ class _ExternalRealmFieldState extends State<_ExternalRealmField> {
     super.initState();
     _controller = TextEditingController(text: widget.state.externalRealm);
     _controller.addListener(() {
-      context.read<ConfigurationCubit>().updateExternalRealm(
-        _controller.text,
-      );
+      context.read<ConfigurationCubit>().updateExternalRealm(_controller.text);
     });
   }
 
