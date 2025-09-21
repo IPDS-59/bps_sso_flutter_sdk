@@ -1,0 +1,469 @@
+name: Publish Package - pub.dev Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0, v2.1.3, etc.
+  workflow_dispatch:  # Allow manual triggering
+    inputs:
+      tag:
+        description: 'Tag to publish (e.g., v2.3.0)'
+        required: false
+        type: string
+      dry_run:
+        description: 'Perform dry run (validate only, do not publish)'
+        required: true
+        default: true
+        type: boolean
+      force_publish:
+        description: 'Force publish to pub.dev (skip dry run)'
+        required: true
+        default: false
+        type: boolean
+
+env:
+  FLUTTER_VERSION: '3.35.3'
+
+jobs:
+  # Validation and preparation job
+  validate-package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      clean_version: ${{ steps.version.outputs.clean_version }}
+      should_publish: ${{ steps.check_publish.outputs.should_publish }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper version info
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Get version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.tag }}" ]; then
+            VERSION="${{ github.event.inputs.tag }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+
+          # Remove 'v' prefix for clean version
+          CLEAN_VERSION=$(echo $VERSION | sed 's/^v//')
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "clean_version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+          echo "Publishing version: $VERSION"
+
+      - name: Validate package structure
+        run: |
+          echo "📦 Validating Flutter package structure..."
+
+          # Check required files exist
+          if [ ! -f "pubspec.yaml" ]; then
+            echo "❌ pubspec.yaml not found"
+            exit 1
+          fi
+
+          if [ ! -f "README.md" ]; then
+            echo "❌ README.md not found"
+            exit 1
+          fi
+
+          if [ ! -f "CHANGELOG.md" ]; then
+            echo "❌ CHANGELOG.md not found"
+            exit 1
+          fi
+
+          if [ ! -f "LICENSE" ]; then
+            echo "❌ LICENSE file not found"
+            exit 1
+          fi
+
+          if [ ! -d "lib" ]; then
+            echo "❌ lib directory not found"
+            exit 1
+          fi
+
+          echo "✅ Package structure validation passed"
+
+      - name: Verify version consistency
+        run: |
+          EXPECTED_VERSION="${{ steps.version.outputs.clean_version }}"
+
+          # Check pubspec.yaml version
+          PUBSPEC_VERSION=$(grep "^version:" pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+
+          if [ "$PUBSPEC_VERSION" != "$EXPECTED_VERSION" ]; then
+            echo "❌ Version mismatch!"
+            echo "Tag version: $EXPECTED_VERSION"
+            echo "pubspec.yaml version: $PUBSPEC_VERSION"
+            exit 1
+          fi
+
+          echo "✅ Version consistency verified: $EXPECTED_VERSION"
+
+      - name: Install dependencies
+        run: |
+          echo "📦 Installing package dependencies..."
+          flutter pub get
+
+      - name: Run static analysis
+        run: |
+          echo "🔍 Running static analysis..."
+          flutter analyze lib/
+
+          echo "🎨 Checking code formatting..."
+          if ! dart format --output=none --set-exit-if-changed lib/; then
+            echo "❌ Code formatting issues found"
+            echo "Run 'dart format lib/' to fix formatting"
+            exit 1
+          fi
+
+      - name: Run tests
+        run: |
+          echo "🧪 Running tests..."
+
+          if [ -d "test" ] && [ "$(find test -name '*_test.dart' | wc -l)" -gt 0 ]; then
+            flutter test --coverage
+
+            if [ -f "coverage/lcov.info" ]; then
+              echo "✅ Tests completed with coverage"
+            else
+              echo "⚠️ Tests completed but no coverage generated"
+            fi
+          else
+            echo "⚠️ No test files found, skipping tests"
+          fi
+
+      - name: Validate package for publishing
+        run: |
+          echo "🔍 Validating package for pub.dev publishing..."
+
+          # Run pub publish --dry-run to validate the package
+          flutter pub publish --dry-run
+
+          echo "✅ Package validation successful"
+
+      - name: Determine publish action
+        id: check_publish
+        run: |
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          FORCE_PUBLISH="${{ github.event.inputs.force_publish }}"
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # For automatic tag pushes, always do dry run only
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+            echo "🏃‍♂️ Automatic tag push - will perform dry run only"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "$FORCE_PUBLISH" = "true" ]; then
+              echo "should_publish=true" >> $GITHUB_OUTPUT
+              echo "🚀 Manual trigger with force_publish=true - will publish to pub.dev"
+            else
+              echo "should_publish=false" >> $GITHUB_OUTPUT
+              echo "🏃‍♂️ Manual trigger - will perform dry run only"
+            fi
+          else
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Dry run job - always runs for validation
+  dry-run:
+    needs: validate-package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Perform dry run
+        run: |
+          echo "🏃‍♂️ Performing dry run publication to pub.dev..."
+          flutter pub publish --dry-run
+          echo "✅ Dry run successful - package is ready for publication"
+
+  # Official pub.dev publishing job using dart-lang reusable workflow
+  publish-to-pubdev:
+    if: needs.validate-package.outputs.should_publish == 'true'
+    needs: [validate-package, dry-run]
+    permissions:
+      id-token: write # Required for authentication using OIDC
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    with:
+      environment: pub.dev
+
+  # Create GitHub release and assets
+  create-release:
+    needs: validate-package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Get previous tag for changelog
+        id: previous_tag
+        run: |
+          VERSION="${{ needs.validate-package.outputs.version }}"
+          # Get the most recent tag before this one
+          PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "^${VERSION}$" | head -n1 || echo "")
+          echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+          echo "Previous tag: $PREVIOUS_TAG"
+
+          # Determine base commit for changelog
+          if [ -n "$PREVIOUS_TAG" ]; then
+            BASE_COMMIT="$PREVIOUS_TAG"
+          else
+            # If no tags exist, use first commit
+            BASE_COMMIT=$(git rev-list --max-parents=0 HEAD)
+          fi
+          echo "base_commit=$BASE_COMMIT" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          VERSION="${{ needs.validate-package.outputs.version }}"
+          CLEAN_VERSION="${{ needs.validate-package.outputs.clean_version }}"
+          PREVIOUS_TAG="${{ steps.previous_tag.outputs.previous_tag }}"
+          BASE_COMMIT="${{ steps.previous_tag.outputs.base_commit }}"
+
+          # Create release notes
+          cat > release_notes.md << EOF
+          ## 🚀 BPS SSO SDK $CLEAN_VERSION
+
+          ### 📦 Package Information
+          - **Version**: $CLEAN_VERSION
+          - **Flutter SDK**: ${{ env.FLUTTER_VERSION }}+
+          - **Platform**: Flutter/Dart
+
+          ### 📋 What's Changed
+          EOF
+
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "Changes since $PREVIOUS_TAG:" >> release_notes.md
+            echo "" >> release_notes.md
+
+            # Categorize changes for Flutter/Dart projects
+            echo "### ✨ Features" >> release_notes.md
+            git log --pretty=format:"- %s (%h)" "$BASE_COMMIT..HEAD" | \
+            grep -E "^- (feat|feature):" | head -10 >> release_notes.md || echo "- No new features" >> release_notes.md
+            echo "" >> release_notes.md
+
+            echo "### 🐛 Bug Fixes" >> release_notes.md
+            git log --pretty=format:"- %s (%h)" "$BASE_COMMIT..HEAD" | \
+            grep -E "^- (fix|bugfix):" | head -10 >> release_notes.md || echo "- No bug fixes" >> release_notes.md
+            echo "" >> release_notes.md
+
+            echo "### 📚 Documentation" >> release_notes.md
+            git log --pretty=format:"- %s (%h)" "$BASE_COMMIT..HEAD" | \
+            grep -E "^- (docs|doc):" | head -5 >> release_notes.md || echo "- No documentation changes" >> release_notes.md
+            echo "" >> release_notes.md
+          else
+            echo "### 🎉 Initial Release" >> release_notes.md
+            echo "This is the initial release of the BPS SSO SDK for Flutter." >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+
+          # Add installation instructions
+          cat >> release_notes.md << EOF
+          ### 📦 Installation
+
+          Add this to your package's \`pubspec.yaml\` file:
+
+          \`\`\`yaml
+          dependencies:
+            bps_sso_sdk: ^$CLEAN_VERSION
+          \`\`\`
+
+          Then run:
+          \`\`\`bash
+          flutter pub get
+          \`\`\`
+
+          ### 📖 Usage
+
+          \`\`\`dart
+          import 'package:bps_sso_sdk/bps_sso_sdk.dart';
+          \`\`\`
+
+          ### 🔗 Links
+          - [Package on pub.dev](https://pub.dev/packages/bps_sso_sdk)
+          - [Documentation](https://pub.dev/documentation/bps_sso_sdk/latest/)
+          - [Repository](https://github.com/${{ github.repository }})
+          EOF
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          VERSION="${{ needs.validate-package.outputs.version }}"
+
+          # Create release
+          gh release create "$VERSION" \
+            --title "🚀 BPS SSO SDK $VERSION" \
+            --notes-file release_notes.md \
+            --target main
+
+          echo "✅ GitHub Release created: $VERSION"
+
+      - name: Create release assets
+        run: |
+          VERSION="${{ needs.validate-package.outputs.version }}"
+          CLEAN_VERSION="${{ needs.validate-package.outputs.clean_version }}"
+
+          echo "📦 Creating release assets..."
+          mkdir -p release_assets
+
+          # Create package archive
+          tar -czf "release_assets/bps_sso_sdk-$CLEAN_VERSION.tar.gz" \
+            --exclude='.git' \
+            --exclude='build' \
+            --exclude='.dart_tool' \
+            --exclude='example/build' \
+            --exclude='example/.dart_tool' \
+            --exclude='coverage' \
+            --exclude='*.tar.gz' \
+            .
+
+          # Create installation guide
+          cat > "release_assets/INSTALLATION.md" << EOF
+          # BPS SSO SDK Installation Guide
+
+          ## Requirements
+          - Flutter SDK ${{ env.FLUTTER_VERSION }} or later
+          - Dart SDK compatible with Flutter ${{ env.FLUTTER_VERSION }}
+
+          ## Installation
+
+          ### 1. Add dependency
+          Add this to your \`pubspec.yaml\`:
+          \`\`\`yaml
+          dependencies:
+            bps_sso_sdk: ^$CLEAN_VERSION
+          \`\`\`
+
+          ### 2. Install packages
+          \`\`\`bash
+          flutter pub get
+          \`\`\`
+
+          ### 3. Import the package
+          \`\`\`dart
+          import 'package:bps_sso_sdk/bps_sso_sdk.dart';
+          \`\`\`
+
+          ## Links
+          - [pub.dev Package](https://pub.dev/packages/bps_sso_sdk)
+          - [API Documentation](https://pub.dev/documentation/bps_sso_sdk/latest/)
+          - [GitHub Repository](https://github.com/${{ github.repository }})
+          EOF
+
+          echo "✅ Release assets created"
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          VERSION="${{ needs.validate-package.outputs.version }}"
+
+          # Upload assets to release
+          gh release upload "$VERSION" release_assets/* --clobber
+
+          echo "✅ Assets uploaded to release $VERSION"
+
+  # Summary job
+  summary:
+    if: always()
+    needs: [validate-package, dry-run, publish-to-pubdev, create-release]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create publication summary
+        run: |
+          VERSION="${{ needs.validate-package.outputs.version || github.ref_name }}"
+          CLEAN_VERSION="${{ needs.validate-package.outputs.clean_version }}"
+          SHOULD_PUBLISH="${{ needs.validate-package.outputs.should_publish }}"
+
+          VALIDATION_STATUS="${{ needs.validate-package.result }}"
+          DRY_RUN_STATUS="${{ needs.dry-run.result }}"
+          PUBLISH_STATUS="${{ needs.publish-to-pubdev.result }}"
+          RELEASE_STATUS="${{ needs.create-release.result }}"
+
+          echo "## 📦 Publication Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Package**: bps_sso_sdk" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: $CLEAN_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "**Flutter SDK**: ${{ env.FLUTTER_VERSION }}+" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 📊 Job Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Validation | $( [ "$VALIDATION_STATUS" = "success" ] && echo "✅ Passed" || echo "❌ Failed" ) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dry Run | $( [ "$DRY_RUN_STATUS" = "success" ] && echo "✅ Passed" || echo "❌ Failed" ) |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$SHOULD_PUBLISH" = "true" ]; then
+            echo "| pub.dev Publish | $( [ "$PUBLISH_STATUS" = "success" ] && echo "✅ Published" || echo "❌ Failed" ) |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| pub.dev Publish | ⏭️ Skipped (dry run only) |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "| GitHub Release | $( [ "$RELEASE_STATUS" = "success" ] && echo "✅ Created" || echo "❌ Failed" ) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [GitHub Release](https://github.com/${{ github.repository }}/releases/tag/$VERSION)" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$SHOULD_PUBLISH" = "true" ] && [ "$PUBLISH_STATUS" = "success" ]; then
+            echo "- [pub.dev Package](https://pub.dev/packages/bps_sso_sdk)" >> $GITHUB_STEP_SUMMARY
+            echo "- [API Documentation](https://pub.dev/documentation/bps_sso_sdk/latest/)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- pub.dev Package: Ready for manual publication" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Next Steps" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$SHOULD_PUBLISH" = "true" ] && [ "$PUBLISH_STATUS" = "success" ]; then
+            echo "1. ✅ Package published successfully to pub.dev!" >> $GITHUB_STEP_SUMMARY
+            echo "2. Monitor pub.dev for package indexing" >> $GITHUB_STEP_SUMMARY
+            echo "3. Update documentation with new version" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "1. Review the dry run results above" >> $GITHUB_STEP_SUMMARY
+            echo "2. To publish to pub.dev, re-run this workflow with force_publish=true" >> $GITHUB_STEP_SUMMARY
+            echo "3. Monitor pub.dev for package availability after publishing" >> $GITHUB_STEP_SUMMARY
+          fi

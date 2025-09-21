@@ -1,0 +1,186 @@
+name: ❓ Question / Help
+description: Ask a question about using the BPS SSO SDK
+title: "[Question]: "
+labels: ["question", "needs-response"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about using the BPS SSO SDK? We're here to help! Please fill out the form below.
+
+        **💡 Tip**: For general discussions, consider using [GitHub Discussions](../../discussions) instead.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please check the following before asking your question
+      options:
+        - label: I have read the [documentation](../../README.md) and [API reference](../../README.md#api-reference)
+          required: true
+        - label: I have checked the [troubleshooting guide](../../README.md#troubleshooting)
+          required: true
+        - label: I have searched existing issues and discussions for similar questions
+          required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What type of question is this?
+      options:
+        - Setup and Configuration
+        - Authentication Flow
+        - Error Handling
+        - Deep Link Integration
+        - Chrome Custom Tabs
+        - User Management
+        - Token Management
+        - Security and Compliance
+        - Performance and Optimization
+        - Best Practices
+        - Integration with Other Libraries
+        - Deployment and Production
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: |
+        Please be as specific as possible. Include:
+        - What you're trying to achieve
+        - What you've tried so far
+        - Where you're getting stuck
+    validations:
+      required: true
+
+  - type: dropdown
+    id: realm
+    attributes:
+      label: Realm Context
+      description: Is your question related to a specific realm?
+      options:
+        - Internal (BPS Employee)
+        - External (Third-party)
+        - Both
+        - Not realm-specific
+        - Not sure
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and Background
+      description: Provide any relevant context about your project or use case
+      placeholder: |
+        - What type of application are you building?
+        - Are there any specific requirements or constraints?
+        - What's your level of experience with OAuth2/SSO?
+
+  - type: textarea
+    id: current-setup
+    attributes:
+      label: Current Setup (Optional)
+      description: Share your current configuration or code (remove sensitive information)
+      render: dart
+      placeholder: |
+        // Your current SDK configuration or code snippet
+        final config = BPSSsoConfig.create(
+          appName: 'myapp',
+          // configuration...
+        );
+
+  - type: textarea
+    id: attempted-solutions
+    attributes:
+      label: What Have You Tried?
+      description: What solutions have you attempted so far?
+      placeholder: |
+        - Solution 1: ...
+        - Solution 2: ...
+        - Results: ...
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency Level
+      description: How urgently do you need an answer?
+      options:
+        - Low - Just curious, no rush
+        - Medium - Would like to know soon
+        - High - Needed for current sprint/milestone
+        - Critical - Blocking immediate work
+
+  - type: input
+    id: flutter-version
+    attributes:
+      label: Flutter Version (if relevant)
+      description: Run `flutter --version` to get this information
+      placeholder: "e.g., Flutter 3.35.3"
+
+  - type: input
+    id: sdk-version
+    attributes:
+      label: BPS SSO SDK Version (if relevant)
+      description: Which version of the SDK are you using?
+      placeholder: "e.g., 1.0.0"
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform (if relevant)
+      description: Which platform(s) are you working with?
+      multiple: true
+      options:
+        - Android
+        - iOS
+        - Both
+        - Not platform-specific
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: Error Messages or Logs (if applicable)
+      description: Include any relevant error messages or logs
+      render: text
+      placeholder: Paste error messages here (remove any sensitive information)
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Any other details that might be helpful
+      placeholder: |
+        - Links to relevant documentation you've found
+        - Screenshots of error messages or UI issues
+        - Related GitHub issues or Stack Overflow questions
+        - Any other context that might help
+
+  - type: checkboxes
+    id: help-options
+    attributes:
+      label: How Can We Help?
+      description: What type of response would be most helpful?
+      options:
+        - label: Code example or snippet
+        - label: Link to relevant documentation
+        - label: Step-by-step guidance
+        - label: Explanation of concepts
+        - label: Best practices recommendation
+        - label: Alternative approach suggestion
+
+  - type: checkboxes
+    id: follow-up
+    attributes:
+      label: Follow-up
+      description: After getting an answer
+      options:
+        - label: I'm willing to test proposed solutions and provide feedback
+        - label: I can help improve documentation based on the answer
+        - label: I'd like to contribute examples for this use case
+          

@@ -1,0 +1,229 @@
+name: 🔒 Security Issue
+description: Report a security vulnerability in the BPS SSO SDK
+title: "[Security]: "
+labels: ["security", "needs-triage", "high-priority"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # ⚠️ Security Issue Report
+
+        **IMPORTANT**: If this is a critical security vulnerability that could be exploited, please **DO NOT** create a public issue. Instead, please email the maintainers directly at [security contact email].
+
+        Use this form only for:
+        - Security configuration questions
+        - Non-critical security improvements
+        - General security best practices discussions
+
+  - type: checkboxes
+    id: severity-check
+    attributes:
+      label: Severity Assessment
+      description: Please confirm this is not a critical vulnerability
+      options:
+        - label: This is NOT a critical security vulnerability that could be actively exploited
+          required: true
+        - label: I understand that critical vulnerabilities should be reported privately via email
+          required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Security Issue Type
+      description: What type of security issue is this?
+      options:
+        - Configuration Security
+        - Best Practices Question
+        - Security Enhancement Request
+        - Compliance Question (ISO 27001)
+        - Token Security
+        - Deep Link Security
+        - Chrome Custom Tabs Security
+        - Certificate Pinning
+        - Audit Logging
+        - Data Privacy
+        - Other Security Topic
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity Level
+      description: How would you rate the severity of this issue?
+      options:
+        - Info - General security question
+        - Low - Minor security improvement
+        - Medium - Security configuration issue
+        - High - Security concern but not immediately exploitable
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Security Issue Description
+      description: Describe the security concern or question
+      placeholder: |
+        Please provide a clear description of:
+        - The security aspect you're concerned about
+        - Why you think it might be a security issue
+        - The potential impact if applicable
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the SDK does this relate to?
+      multiple: true
+      options:
+        - Authentication Flow
+        - Token Management
+        - Deep Link Handling
+        - Chrome Custom Tabs Configuration
+        - Certificate Pinning
+        - PKCE Implementation
+        - User Data Handling
+        - Error Messages
+        - Logging and Audit
+        - Configuration Options
+        - Network Communications
+        - Local Storage
+        - Not Sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: realm
+    attributes:
+      label: Realm Scope
+      description: Which realm(s) does this security issue affect?
+      multiple: true
+      options:
+        - Internal (BPS Employee)
+        - External (Third-party)
+        - Both
+        - Not realm-specific
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Provide details about your environment
+      placeholder: |
+        - SDK Version:
+        - Flutter Version:
+        - Platform: Android/iOS/Both
+        - Security Configuration: (ISO 27001, custom, etc.)
+        - Environment: Development/Staging/Production
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce (if applicable)
+      description: If this is a specific security issue, how can it be reproduced?
+      placeholder: |
+        1. Configure SDK with...
+        2. Perform action...
+        3. Observe security concern...
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Security Behavior
+      description: What should happen from a security perspective?
+      placeholder: Describe what you believe the secure behavior should be
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: What is currently happening that concerns you?
+      placeholder: Describe the current behavior that raises security concerns
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Security Configuration
+      description: Share your security-related configuration (remove sensitive data)
+      render: dart
+      placeholder: |
+        final config = BPSSsoConfig.create(
+          appName: 'myapp',
+          securityConfig: BPSSsoSecurityConfig.iso27001,
+          // other security-related configuration...
+        );
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential Security Impact
+      description: What could be the security implications of this issue?
+      placeholder: |
+        - Who might be affected?
+        - What data could be at risk?
+        - What actions could an attacker take?
+        - Are there any compliance implications?
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Suggested Mitigation
+      description: Do you have suggestions for how to address this security concern?
+      placeholder: |
+        - Immediate workarounds
+        - Long-term fixes
+        - Configuration changes
+        - Best practices
+
+  - type: checkboxes
+    id: compliance
+    attributes:
+      label: Compliance Considerations
+      description: Are there any compliance frameworks this relates to?
+      options:
+        - label: ISO 27001
+        - label: GDPR/Data Privacy
+        - label: Government Security Standards
+        - label: OAuth2/OpenID Connect Standards
+        - label: Mobile App Security Guidelines
+        - label: Other Compliance Requirements
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Security References
+      description: Any relevant security documentation, standards, or resources
+      placeholder: |
+        - Links to security standards
+        - References to best practices
+        - Similar issues in other projects
+        - Security research or articles
+
+  - type: checkboxes
+    id: disclosure
+    attributes:
+      label: Responsible Disclosure
+      description: Please confirm your understanding
+      options:
+        - label: I understand that security issues should be handled responsibly
+          required: true
+        - label: I have not publicly disclosed details about any potential vulnerability
+          required: true
+        - label: I am willing to work with maintainers to address this issue appropriately
+          required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Security Context
+      description: Any other security-related information
+      placeholder: |
+        - Security testing performed
+        - Tools used for analysis
+        - Other security considerations
+        - Timeline considerations
