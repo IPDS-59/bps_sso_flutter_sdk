@@ -8,6 +8,10 @@ environment:
   sdk: ^3.9.2
   flutter: ">=1.17.0"
 
+platforms:
+  android:
+  ios:
+
 dependencies:
   crypto: ^3.0.6
   dio: ^5.9.0
