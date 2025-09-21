@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.2] - 2025-09-21
+
+### ✨ Features
+
+### 🐛 Bug Fixes
+- fix: resolve workflow issues for automatic publishing and back-merge conflicts (214ba9b)
+
+### 📱 Platform Updates
+
+### 📚 Documentation
+
+### 🔧 Maintenance
+
+### 📦 Dependencies
+- Flutter SDK: 3.35.3+
+- Dart SDK: Compatible with Flutter 3.35.3
+
+
+
 ## [1.0.1] - 2025-09-21
 
 ### ✨ Features

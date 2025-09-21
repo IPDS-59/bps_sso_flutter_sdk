@@ -10,13 +10,8 @@ on:
         description: 'Tag to publish (e.g., v2.3.0)'
         required: false
         type: string
-      dry_run:
-        description: 'Perform dry run (validate only, do not publish)'
-        required: true
-        default: true
-        type: boolean
-      force_publish:
-        description: 'Force publish to pub.dev (skip dry run)'
+      publish_to_pubdev:
+        description: 'Publish to pub.dev after validation'
         required: true
         default: false
         type: boolean
@@ -158,20 +153,19 @@ jobs:
       - name: Determine publish action
         id: check_publish
         run: |
-          DRY_RUN="${{ github.event.inputs.dry_run }}"
-          FORCE_PUBLISH="${{ github.event.inputs.force_publish }}"
+          PUBLISH_TO_PUBDEV="${{ github.event.inputs.publish_to_pubdev }}"
 
           if [ "${{ github.event_name }}" = "push" ]; then
-            # For automatic tag pushes, always do dry run only
-            echo "should_publish=false" >> $GITHUB_OUTPUT
-            echo "🏃‍♂️ Automatic tag push - will perform dry run only"
+            # For automatic tag pushes (from release workflow), publish to pub.dev
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "🚀 Automatic tag push - will publish to pub.dev (release workflow triggered)"
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            if [ "$FORCE_PUBLISH" = "true" ]; then
+            if [ "$PUBLISH_TO_PUBDEV" = "true" ]; then
               echo "should_publish=true" >> $GITHUB_OUTPUT
-              echo "🚀 Manual trigger with force_publish=true - will publish to pub.dev"
+              echo "🚀 Manual trigger with publish_to_pubdev=true - will publish to pub.dev"
             else
               echo "should_publish=false" >> $GITHUB_OUTPUT
-              echo "🏃‍♂️ Manual trigger - will perform dry run only"
+              echo "🏃‍♂️ Manual trigger - will perform validation and dry run only"
             fi
           else
             echo "should_publish=false" >> $GITHUB_OUTPUT
