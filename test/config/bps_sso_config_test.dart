@@ -1,4 +1,5 @@
 import 'package:bps_sso_sdk/src/config/config.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -14,8 +15,14 @@ void main() {
         expect(config.baseUrl, equals('https://sso.bps.go.id'));
         expect(config.internal.clientId, equals('internal-client'));
         expect(config.external.clientId, equals('external-client'));
-        expect(config.internal.redirectUri, equals('id.go.bps://testapp-sso-internal'));
-        expect(config.external.redirectUri, equals('id.go.bps://testapp-sso-eksternal'));
+        expect(
+          config.internal.redirectUri,
+          equals('id.go.bps://testapp-sso-internal'),
+        );
+        expect(
+          config.external.redirectUri,
+          equals('id.go.bps://testapp-sso-eksternal'),
+        );
         expect(config.internal.realm, equals('pegawai-bps'));
         expect(config.external.realm, equals('eksternal'));
         expect(config.internal.responseTypes, equals(['code']));
@@ -24,6 +31,20 @@ void main() {
         expect(config.external.scopes, equals(['openid', 'profile', 'email']));
         expect(config.internal.codeChallengeMethod, equals('S256'));
         expect(config.external.codeChallengeMethod, equals('S256'));
+        expect(config.interceptors, isEmpty);
+      });
+
+      test('should create config with custom interceptors', () {
+        final logInterceptor = LogInterceptor();
+        final config = BPSSsoConfig.create(
+          appName: 'testapp',
+          internalClientId: 'internal-client',
+          externalClientId: 'external-client',
+          interceptors: [logInterceptor],
+        );
+
+        expect(config.interceptors, hasLength(1));
+        expect(config.interceptors.first, equals(logInterceptor));
       });
 
       test('should create config with custom values', () {
@@ -50,6 +71,34 @@ void main() {
         );
         expect(config.internal.codeChallengeMethod, equals('plain'));
         expect(config.external.codeChallengeMethod, equals('plain'));
+      });
+
+      test('should create config with custom realm names', () {
+        final config = BPSSsoConfig.create(
+          appName: 'testapp',
+          internalClientId: 'internal-client',
+          externalClientId: 'external-client',
+          internalRealmName: 'custom-internal-realm',
+          externalRealmName: 'custom-external-realm',
+        );
+
+        expect(config.internal.realm, equals('custom-internal-realm'));
+        expect(config.external.realm, equals('custom-external-realm'));
+        expect(config.internal.realmName, equals('custom-internal-realm'));
+        expect(config.external.realmName, equals('custom-external-realm'));
+      });
+
+      test('should use default realm names when custom names are null', () {
+        final config = BPSSsoConfig.create(
+          appName: 'testapp',
+          internalClientId: 'internal-client',
+          externalClientId: 'external-client',
+        );
+
+        expect(config.internal.realm, equals('pegawai-bps'));
+        expect(config.external.realm, equals('eksternal'));
+        expect(config.internal.realmName, isNull);
+        expect(config.external.realmName, isNull);
       });
     });
 
@@ -134,11 +183,17 @@ void main() {
 
         expect(uri.scheme, equals('https'));
         expect(uri.host, equals('sso.bps.go.id'));
-        expect(uri.path, equals('/realms/pegawai-bps/protocol/openid-connect/auth'));
+        expect(
+          uri.path,
+          equals('/auth/realms/pegawai-bps/protocol/openid-connect/auth'),
+        );
 
         final queryParams = uri.queryParameters;
         expect(queryParams['client_id'], equals('test-client'));
-        expect(queryParams['redirect_uri'], equals('id.go.bps://testapp-sso-internal'));
+        expect(
+          queryParams['redirect_uri'],
+          equals('id.go.bps://testapp-sso-internal'),
+        );
         expect(queryParams['response_type'], equals('code'));
         expect(queryParams['scope'], equals('openid profile email'));
         expect(queryParams['code_challenge'], equals(codeChallenge));
@@ -152,7 +207,7 @@ void main() {
         expect(
           tokenUrl,
           equals(
-            'https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/token',
+            'https://sso.bps.go.id/auth/realms/pegawai-bps/protocol/openid-connect/token',
           ),
         );
       });
@@ -163,7 +218,7 @@ void main() {
         expect(
           userInfoUrl,
           equals(
-            'https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/userinfo',
+            'https://sso.bps.go.id/auth/realms/pegawai-bps/protocol/openid-connect/userinfo',
           ),
         );
       });
@@ -174,7 +229,7 @@ void main() {
         expect(
           logoutUrl,
           equals(
-            'https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/logout',
+            'https://sso.bps.go.id/auth/realms/pegawai-bps/protocol/openid-connect/logout',
           ),
         );
       });

@@ -12,6 +12,7 @@ A Flutter SDK for seamless integration with BPS (Badan Pusat Statistik) SSO auth
 - [Security Configuration](#-security-configuration)
 - [UI Customization](#-ui-customization)
 - [Configuration Options](#configuration-options)
+- [Enhanced Configuration Screen](#enhanced-configuration-screen)
 - [OAuth2 Parameters](#oauth2-parameters)
 - [Error Handling](#error-handling)
 - [Troubleshooting](#troubleshooting)
@@ -50,6 +51,15 @@ A Flutter SDK for seamless integration with BPS (Badan Pusat Statistik) SSO auth
 - ✅ **Token Management** - Automatic token refresh and validation
 - ✅ **Comprehensive Error Handling** - Production-safe error sanitization
 - ✅ **Deep Link Integration** - Seamless OAuth callback handling
+- ✅ **HTTP Interceptors** - Dio interceptor support for request/response modification
+- ✅ **Authentication Callbacks** - Comprehensive callback system for auth events
+
+### 🔧 Developer Experience
+
+- ✅ **SDK Version Exposure** - Access to SDK version info for client applications
+- ✅ **HTTP Request Debugging** - Built-in Alice integration for network inspection
+- ✅ **Platform-Specific Optimization** - iOS-only Custom Tabs management
+- ✅ **Enhanced Example App** - Comprehensive demo with all SDK features
 
 ## Architecture
 
@@ -427,7 +437,30 @@ if (!isValid) {
 await BPSSsoClient.instance.logout(user);
 ```
 
-### 4. User Information
+### 4. SDK Version Information
+
+Access SDK version and metadata for client applications:
+
+```dart
+import 'package:bps_sso_sdk/bps_sso_sdk.dart';
+
+// Get SDK version
+String version = BPSSsoSdkInfo.version; // e.g., "1.1.0"
+
+// Get SDK name
+String name = BPSSsoSdkInfo.name; // "BPS SSO SDK"
+
+// Get full SDK info
+String fullInfo = BPSSsoSdkInfo.fullInfo; // "BPS SSO SDK v1.1.0"
+
+// Get detailed metadata
+Map<String, String> details = BPSSsoSdkInfo.details;
+print('Version: ${details['version']}');
+print('Description: ${details['description']}');
+print('Homepage: ${details['homepage']}');
+```
+
+### 5. User Information
 
 ```dart
 // Access user information
@@ -525,6 +558,157 @@ final config = BPSSsoConfig.create(
   responseTypes: ['code'],                           // OAuth2 response types
   scopes: ['openid', 'profile', 'email', 'roles'],   // Custom scopes
   codeChallengeMethod: 'S256',                       // PKCE method
+);
+```
+
+### Custom Realm Names
+
+Override the default realm names for internal and external realms:
+
+```dart
+final config = BPSSsoConfig.create(
+  appName: 'myapp',
+  internalClientId: 'your-internal-client-id',
+  externalClientId: 'your-external-client-id',
+  internalRealmName: 'custom-internal-realm',    // Override default 'pegawai-bps'
+  externalRealmName: 'custom-external-realm',    // Override default 'eksternal'
+);
+```
+
+**Default behavior:** If `internalRealmName` and `externalRealmName` are `null` (default), the SDK uses the standard BPS realm names:
+- Internal realm: `pegawai-bps`
+- External realm: `eksternal`
+
+**Use cases for custom realm names:**
+- Testing with different Keycloak realm configurations
+- Integration with custom or development SSO environments
+- Multi-tenant setups with organization-specific realms
+
+### Enhanced Configuration Screen
+
+The example application includes a comprehensive configuration screen that supports all SDK features:
+
+#### Visual Configuration Interface
+
+The configuration screen provides an intuitive UI for setting up the SDK with real-time validation:
+
+```dart
+// Configuration screen features:
+- General settings (Base URL, HTTP inspection)
+- Internal BPS Realm configuration with custom realm names
+- External BPS Realm configuration with custom realm names
+- Advanced OAuth2 parameters (response types, scopes, PKCE methods)
+- Real-time form validation and error handling
+- Live preview of configuration changes
+```
+
+#### Realm Name Configuration
+
+Users can configure custom realm names directly in the UI:
+
+- **Internal Realm Field**: Allows customization of the internal BPS realm name
+  - Default: `pegawai-bps`
+  - Placeholder hint: "pegawai-bps (default)"
+  - Real-time validation and state updates
+
+- **External Realm Field**: Allows customization of the external BPS realm name
+  - Default: `eksternal`
+  - Placeholder hint: "eksternal (default)"
+  - Real-time validation and state updates
+
+#### Configuration Persistence
+
+The configuration screen uses `HydratedBlocCubit` for state persistence:
+
+```dart
+// Configuration automatically saved and restored
+ConfigurationState({
+  baseUrl: 'https://sso.bps.go.id',
+  internalRealm: 'pegawai-bps',        // Configurable via UI
+  externalRealm: 'eksternal',          // Configurable via UI
+  // ... other configuration options
+});
+```
+
+#### Advanced Features
+
+- **HTTP Inspector Integration**: Built-in Alice HTTP debugging
+- **Multi-Select Chips**: For OAuth2 scopes and response types
+- **Dropdown Fields**: For code challenge methods
+- **Form Validation**: Real-time validation with error messages
+- **Loading States**: Visual feedback during SDK initialization
+- **Error Display**: User-friendly error messages with retry options
+
+### HTTP Interceptors
+
+Add Dio interceptors for request/response modification, logging, or debugging:
+
+```dart
+import 'package:alice/alice.dart';
+import 'package:alice_dio/alice_dio_adapter.dart';
+
+// Create Alice for HTTP debugging
+final alice = Alice();
+final aliceAdapter = AliceDioAdapter();
+alice.addAdapter(aliceAdapter);
+
+final config = BPSSsoConfig.create(
+  appName: 'myapp',
+  internalClientId: 'your-internal-client-id',
+  externalClientId: 'your-external-client-id',
+  interceptors: [
+    aliceAdapter,  // HTTP debugging
+    // Add other Dio interceptors here
+  ],
+);
+
+// Show network inspector
+alice.showInspector();
+```
+
+### Authentication Callbacks
+
+Handle authentication events with comprehensive callback system:
+
+```dart
+final config = BPSSsoConfig.create(
+  appName: 'myapp',
+  internalClientId: 'your-internal-client-id',
+  externalClientId: 'your-external-client-id',
+  authCallbacks: BPSSsoAuthCallback(
+    onLoginSuccess: (user, realmType) {
+      print('Login successful for ${user.fullName} in $realmType realm');
+      // Handle successful login
+    },
+    onLoginFailed: (error, realmType) {
+      print('Login failed in $realmType realm: $error');
+      // Handle login failure
+    },
+    onLoginCancelled: (realmType) {
+      print('Login cancelled for $realmType realm');
+      // Handle user cancellation
+    },
+    onLogoutSuccess: (user) {
+      print('Logout successful for ${user.fullName}');
+      // Handle successful logout
+    },
+    onLogoutFailed: (error, user) {
+      print('Logout failed for ${user.fullName}: $error');
+      // Handle logout failure
+    },
+    onTokenRefreshSuccess: (user) {
+      print('Token refreshed for ${user.fullName}');
+      // Handle successful token refresh
+    },
+    onTokenRefreshFailed: (error, user) {
+      print('Token refresh failed for ${user.fullName}: $error');
+      // Handle token refresh failure
+    },
+    onAuthenticationFailure: (error, user) {
+      print('Authentication failure for ${user?.fullName}: $error');
+      // Handle general authentication failures
+    },
+  ),
 );
 ```
 
@@ -989,6 +1173,7 @@ try {
 | `BPSRealmConfig` | Realm-specific configuration             |
 | `BPSUser`        | User model with authentication data      |
 | `BPSRealmType`   | Enum for realm types (internal/external) |
+| `BPSSsoSdkInfo`  | SDK version and metadata information     |
 
 ### Methods
 
@@ -1014,15 +1199,36 @@ try {
 ## Requirements
 
 - Flutter 3.0.0 or higher
-- Android API level 21 or higher (for Chrome Custom Tabs)
-- iOS 12.0 or higher
+
+### Supported Platforms
+
+- ✅ **Android** API level 21 or higher (for Chrome Custom Tabs)
+- ✅ **iOS** 12.0 or higher
+- ❌ **Web** - Not supported (Custom Tabs unavailable)
+- ❌ **Desktop** (macOS, Windows, Linux) - Not supported
 
 ## Dependencies
 
-- `dio` - HTTP client for API calls
-- `flutter_custom_tabs` - Chrome Custom Tabs implementation
-- `crypto` - PKCE cryptographic functions
+### Core Dependencies
+
+- `dio` - HTTP client for API calls and request/response handling
+- `flutter_custom_tabs` - Chrome Custom Tabs implementation (iOS-optimized)
+- `crypto` - PKCE cryptographic functions for OAuth2 security
 - `url_launcher` - URL launching utilities
+- `intl` - Internationalization and date formatting
+- `uuid` - UUID generation for state parameters
+
+### Optional Dependencies for Enhanced Features
+
+- `alice` - HTTP request/response debugging inspector
+- `alice_dio` - Dio adapter for Alice HTTP debugging
+- `app_links` - Deep link handling for OAuth callbacks
+
+### Platform-Specific Optimizations
+
+- **iOS**: Custom Tabs management optimized for SFSafariViewController
+- **Android**: Chrome Custom Tabs with enhanced security configurations
+- **Cross-platform**: Unified API with platform-specific implementations
 
 ## Contributing
 
@@ -1107,11 +1313,14 @@ flutter run
 ### Example Features
 
 - **Home Screen**: Shows SDK initialization status and authentication state
+- **Configuration Screen**: Comprehensive SDK setup with custom realm names support
 - **Operations Screen**: Login/logout functionality with real-time status
 - **User Info Screen**: Detailed user information with privacy controls
 - **Privacy Mode**: Toggle to obscure sensitive information
 - **Status Cards**: Visual feedback for all operations
 - **Error Handling**: User-friendly error messages and recovery
+- **HTTP Inspector**: Built-in Alice integration for network debugging
+- **Real-time Validation**: Form validation with immediate feedback
 
 ## Changelog
 

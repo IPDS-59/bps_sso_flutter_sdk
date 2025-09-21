@@ -127,6 +127,25 @@ class ConfigurationScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    const Gap(12),
+                    IconButton(
+                      onPressed: () {
+                        final configCubit = context.read<ConfigurationCubit>();
+                        configCubit.alice.showInspector();
+                      },
+                      icon: PhosphorIcon(
+                        PhosphorIcons.monitor(PhosphorIconsStyle.duotone),
+                        size: 20,
+                      ),
+                      style: IconButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primaryContainer,
+                        foregroundColor: theme.colorScheme.onPrimaryContainer,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      tooltip: 'HTTP Inspector',
+                    ),
                     const Gap(16),
                     Expanded(
                       child: Column(
@@ -135,7 +154,7 @@ class ConfigurationScreen extends StatelessWidget {
                           Text(
                             'SDK Configuration',
                             style: GoogleFonts.inter(
-                              fontSize: 24,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.onSurface,
                             ),
@@ -144,8 +163,8 @@ class ConfigurationScreen extends StatelessWidget {
                             'Set up authentication parameters',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 
-                                0.7,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.7,
                               ),
                             ),
                           ),
@@ -190,6 +209,8 @@ class ConfigurationScreen extends StatelessWidget {
                                   _InternalClientIdField(state: state),
                                   const Gap(16),
                                   _InternalRedirectUriField(state: state),
+                                  const Gap(16),
+                                  _InternalRealmField(state: state),
                                 ],
                               ),
 
@@ -263,6 +284,8 @@ class ConfigurationScreen extends StatelessWidget {
                                   _ExternalClientIdField(state: state),
                                   const Gap(16),
                                   _ExternalRedirectUriField(state: state),
+                                  const Gap(16),
+                                  _ExternalRealmField(state: state),
                                 ],
                               ),
 
@@ -383,8 +406,9 @@ class ConfigurationScreen extends StatelessWidget {
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
                               elevation: 8,
-                              shadowColor: theme.colorScheme.primary
-                                  .withValues(alpha: 0.3),
+                              shadowColor: theme.colorScheme.primary.withValues(
+                                alpha: 0.3,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -408,7 +432,7 @@ class ConfigurationScreen extends StatelessWidget {
                                       Text(
                                         'Initializing...',
                                         style: GoogleFonts.inter(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -428,7 +452,7 @@ class ConfigurationScreen extends StatelessWidget {
                                       Text(
                                         'Initialize SDK',
                                         style: GoogleFonts.inter(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -677,6 +701,94 @@ class _ExternalRedirectUriFieldState extends State<_ExternalRedirectUriField> {
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter external redirect URI';
+        }
+        return null;
+      },
+    );
+  }
+}
+
+class _InternalRealmField extends StatefulWidget {
+  const _InternalRealmField({required this.state});
+
+  final ConfigurationState state;
+
+  @override
+  State<_InternalRealmField> createState() => _InternalRealmFieldState();
+}
+
+class _InternalRealmFieldState extends State<_InternalRealmField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.state.internalRealm);
+    _controller.addListener(() {
+      context.read<ConfigurationCubit>().updateInternalRealm(_controller.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: _controller,
+      label: 'Realm Name',
+      hint: 'pegawai-bps (default)',
+      icon: PhosphorIcons.crown(PhosphorIconsStyle.duotone),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter internal realm name';
+        }
+        return null;
+      },
+    );
+  }
+}
+
+class _ExternalRealmField extends StatefulWidget {
+  const _ExternalRealmField({required this.state});
+
+  final ConfigurationState state;
+
+  @override
+  State<_ExternalRealmField> createState() => _ExternalRealmFieldState();
+}
+
+class _ExternalRealmFieldState extends State<_ExternalRealmField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.state.externalRealm);
+    _controller.addListener(() {
+      context.read<ConfigurationCubit>().updateExternalRealm(_controller.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: _controller,
+      label: 'Realm Name',
+      hint: 'eksternal (default)',
+      icon: PhosphorIcons.crown(PhosphorIconsStyle.duotone),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter external realm name';
         }
         return null;
       },

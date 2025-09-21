@@ -40,7 +40,9 @@ class StatusCard extends StatelessWidget {
             offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.1),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,7 +101,9 @@ class StatusCard extends StatelessWidget {
                           : 'Not logged in',
                       style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                     ),
                   ],
