@@ -40,8 +40,14 @@ void main() {
         expect(config.baseUrl, equals('https://custom.sso.example.com'));
         expect(config.internal.responseTypes, equals(['code', 'token']));
         expect(config.external.responseTypes, equals(['code', 'token']));
-        expect(config.internal.scopes, equals(['openid', 'profile', 'email', 'roles']));
-        expect(config.external.scopes, equals(['openid', 'profile', 'email', 'roles']));
+        expect(
+          config.internal.scopes,
+          equals(['openid', 'profile', 'email', 'roles']),
+        );
+        expect(
+          config.external.scopes,
+          equals(['openid', 'profile', 'email', 'roles']),
+        );
         expect(config.internal.codeChallengeMethod, equals('plain'));
         expect(config.external.codeChallengeMethod, equals('plain'));
       });
@@ -49,28 +55,21 @@ void main() {
 
     group('Manual Constructor', () {
       test('should create config with manual realm configs', () {
-        final internalConfig = BPSRealmConfig(
+        const internalConfig = BPSRealmConfig(
           clientId: 'internal-123',
           redirectUri: 'id.go.bps://myapp-internal',
           realmType: BPSRealmType.internal,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code'],
-          scopes: ['openid', 'profile-pegawai'],
-          codeChallengeMethod: 'S256',
+          scopes: <String>['openid', 'profile-pegawai'],
         );
 
-        final externalConfig = BPSRealmConfig(
+        const externalConfig = BPSRealmConfig(
           clientId: 'external-456',
           redirectUri: 'id.go.bps://myapp-external',
           realmType: BPSRealmType.external,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code'],
-          scopes: ['openid', 'email', 'profile'],
-          codeChallengeMethod: 'S256',
+          scopes: <String>['openid', 'email', 'profile'],
         );
 
-        final config = BPSSsoConfig(
-          baseUrl: 'https://sso.bps.go.id',
+        const config = BPSSsoConfig(
           internal: internalConfig,
           external: externalConfig,
         );
@@ -115,14 +114,10 @@ void main() {
       late BPSRealmConfig config;
 
       setUp(() {
-        config = BPSRealmConfig(
+        config = const BPSRealmConfig(
           clientId: 'test-client',
           redirectUri: 'id.go.bps://testapp-sso-internal',
           realmType: BPSRealmType.internal,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code'],
-          scopes: ['openid', 'profile', 'email'],
-          codeChallengeMethod: 'S256',
         );
       });
 
@@ -154,46 +149,55 @@ void main() {
       test('should generate correct token URL', () {
         final tokenUrl = config.tokenUrl;
 
-        expect(tokenUrl, equals('https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/token'));
+        expect(
+          tokenUrl,
+          equals(
+            'https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/token',
+          ),
+        );
       });
 
       test('should generate correct user info URL', () {
         final userInfoUrl = config.userInfoUrl;
 
-        expect(userInfoUrl, equals('https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/userinfo'));
+        expect(
+          userInfoUrl,
+          equals(
+            'https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/userinfo',
+          ),
+        );
       });
 
       test('should generate correct logout URL', () {
         final logoutUrl = config.logoutUrl;
 
-        expect(logoutUrl, equals('https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/logout'));
+        expect(
+          logoutUrl,
+          equals(
+            'https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/logout',
+          ),
+        );
       });
     });
 
     group('Realm Property', () {
       test('should return correct realm for internal type', () {
-        final config = BPSRealmConfig(
+        const config = BPSRealmConfig(
           clientId: 'test-client',
           redirectUri: 'id.go.bps://test',
           realmType: BPSRealmType.internal,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code'],
-          scopes: ['openid'],
-          codeChallengeMethod: 'S256',
+          scopes: <String>['openid'],
         );
 
         expect(config.realm, equals('pegawai-bps'));
       });
 
       test('should return correct realm for external type', () {
-        final config = BPSRealmConfig(
+        const config = BPSRealmConfig(
           clientId: 'test-client',
           redirectUri: 'id.go.bps://test',
           realmType: BPSRealmType.external,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code'],
-          scopes: ['openid'],
-          codeChallengeMethod: 'S256',
+          scopes: <String>['openid'],
         );
 
         expect(config.realm, equals('eksternal'));
@@ -202,24 +206,18 @@ void main() {
 
     group('Equality', () {
       test('should be equal when all properties match', () {
-        final config1 = BPSRealmConfig(
+        const config1 = BPSRealmConfig(
           clientId: 'test-client',
           redirectUri: 'id.go.bps://test',
           realmType: BPSRealmType.internal,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code'],
-          scopes: ['openid', 'profile'],
-          codeChallengeMethod: 'S256',
+          scopes: <String>['openid', 'profile'],
         );
 
-        final config2 = BPSRealmConfig(
+        const config2 = BPSRealmConfig(
           clientId: 'test-client',
           redirectUri: 'id.go.bps://test',
           realmType: BPSRealmType.internal,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code'],
-          scopes: ['openid', 'profile'],
-          codeChallengeMethod: 'S256',
+          scopes: <String>['openid', 'profile'],
         );
 
         expect(config1, equals(config2));
@@ -227,24 +225,18 @@ void main() {
       });
 
       test('should not be equal when properties differ', () {
-        final config1 = BPSRealmConfig(
+        const config1 = BPSRealmConfig(
           clientId: 'test-client-1',
           redirectUri: 'id.go.bps://test',
           realmType: BPSRealmType.internal,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code'],
-          scopes: ['openid'],
-          codeChallengeMethod: 'S256',
+          scopes: <String>['openid'],
         );
 
-        final config2 = BPSRealmConfig(
+        const config2 = BPSRealmConfig(
           clientId: 'test-client-2', // Different client ID
           redirectUri: 'id.go.bps://test',
           realmType: BPSRealmType.internal,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code'],
-          scopes: ['openid'],
-          codeChallengeMethod: 'S256',
+          scopes: <String>['openid'],
         );
 
         expect(config1, isNot(equals(config2)));
@@ -253,14 +245,12 @@ void main() {
 
     group('Multiple Response Types and Scopes', () {
       test('should handle multiple response types', () {
-        final config = BPSRealmConfig(
+        const config = BPSRealmConfig(
           clientId: 'test-client',
           redirectUri: 'id.go.bps://test',
           realmType: BPSRealmType.internal,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code', 'token', 'id_token'],
-          scopes: ['openid'],
-          codeChallengeMethod: 'S256',
+          responseTypes: <String>['code', 'token', 'id_token'],
+          scopes: <String>['openid'],
         );
 
         final authUrl = config.buildAuthUrl(
@@ -269,18 +259,18 @@ void main() {
         );
 
         final uri = Uri.parse(authUrl);
-        expect(uri.queryParameters['response_type'], equals('code token id_token'));
+        expect(
+          uri.queryParameters['response_type'],
+          equals('code token id_token'),
+        );
       });
 
       test('should handle multiple scopes', () {
-        final config = BPSRealmConfig(
+        const config = BPSRealmConfig(
           clientId: 'test-client',
           redirectUri: 'id.go.bps://test',
           realmType: BPSRealmType.internal,
-          baseUrl: 'https://sso.bps.go.id',
-          responseTypes: ['code'],
-          scopes: ['openid', 'profile', 'email', 'roles', 'groups'],
-          codeChallengeMethod: 'S256',
+          scopes: <String>['openid', 'profile', 'email', 'roles', 'groups'],
         );
 
         final authUrl = config.buildAuthUrl(
@@ -289,7 +279,10 @@ void main() {
         );
 
         final uri = Uri.parse(authUrl);
-        expect(uri.queryParameters['scope'], equals('openid profile email roles groups'));
+        expect(
+          uri.queryParameters['scope'],
+          equals('openid profile email roles groups'),
+        );
       });
     });
   });

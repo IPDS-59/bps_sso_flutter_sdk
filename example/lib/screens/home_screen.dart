@@ -27,8 +27,8 @@ class HomeScreen extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              theme.colorScheme.primary.withOpacity(0.1),
-              theme.colorScheme.secondary.withOpacity(0.1),
+              theme.colorScheme.primary.withValues(alpha: 0.1),
+              theme.colorScheme.secondary.withValues(alpha: 0.1),
             ],
           ),
         ),
@@ -46,10 +46,10 @@ class HomeScreen extends StatelessWidget {
                       Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withOpacity(0.1),
+                              color: theme.colorScheme.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
-                                color: theme.colorScheme.primary.withOpacity(
+                                color: theme.colorScheme.primary.withValues(alpha: 
                                   0.2,
                                 ),
                                 width: 2,
@@ -97,7 +97,7 @@ class HomeScreen extends StatelessWidget {
                             'Showcase application for BPS (Badan Pusat Statistik)\nSSO authentication integration',
                             style: GoogleFonts.inter(
                               fontSize: 12,
-                              color: theme.colorScheme.onSurface.withOpacity(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 
                                 0.7,
                               ),
                             ),
@@ -130,13 +130,13 @@ class HomeScreen extends StatelessWidget {
                                 boxShadow: [
                                   BoxShadow(
                                     color: theme.colorScheme.primary
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     blurRadius: 20,
                                     offset: const Offset(0, 8),
                                   ),
                                 ],
                                 border: Border.all(
-                                  color: theme.colorScheme.outline.withOpacity(
+                                  color: theme.colorScheme.outline.withValues(alpha: 
                                     0.1,
                                   ),
                                 ),
@@ -215,12 +215,12 @@ class HomeScreen extends StatelessWidget {
                                       Container(
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: Colors.red.withOpacity(0.05),
+                                          color: Colors.red.withValues(alpha: 0.05),
                                           borderRadius: BorderRadius.circular(
                                             8,
                                           ),
                                           border: Border.all(
-                                            color: Colors.red.withOpacity(0.2),
+                                            color: Colors.red.withValues(alpha: 0.2),
                                           ),
                                         ),
                                         child: Row(
@@ -294,7 +294,7 @@ class HomeScreen extends StatelessWidget {
                                             style: GoogleFonts.inter(
                                               fontSize: 12,
                                               color: theme.colorScheme.onSurface
-                                                  .withOpacity(0.6),
+                                                  .withValues(alpha: 0.6),
                                             ),
                                           ),
                                         ],
@@ -422,20 +422,20 @@ class HomeScreen extends StatelessWidget {
                       ? theme.colorScheme.onPrimary
                       : theme.colorScheme.onSurface,
                   elevation: isPrimary ? 8 : 2,
-                  shadowColor: theme.colorScheme.primary.withOpacity(0.3),
+                  shadowColor: theme.colorScheme.primary.withValues(alpha: 0.3),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: isPrimary
                         ? BorderSide.none
                         : BorderSide(
-                            color: theme.colorScheme.outline.withOpacity(0.2),
+                            color: theme.colorScheme.outline.withValues(alpha: 0.2),
                           ),
                   ),
                 ).copyWith(
                   overlayColor: WidgetStateProperty.all(
                     isPrimary
-                        ? theme.colorScheme.onPrimary.withOpacity(0.1)
-                        : theme.colorScheme.primary.withOpacity(0.1),
+                        ? theme.colorScheme.onPrimary.withValues(alpha: 0.1)
+                        : theme.colorScheme.primary.withValues(alpha: 0.1),
                   ),
                 ),
             child: Row(
@@ -444,8 +444,8 @@ class HomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isPrimary
-                        ? theme.colorScheme.onPrimary.withOpacity(0.15)
-                        : theme.colorScheme.primary.withOpacity(0.1),
+                        ? theme.colorScheme.onPrimary.withValues(alpha: 0.15)
+                        : theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: PhosphorIcon(
@@ -474,8 +474,8 @@ class HomeScreen extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 10,
                           color: isPrimary
-                              ? theme.colorScheme.onPrimary.withOpacity(0.8)
-                              : theme.colorScheme.onSurface.withOpacity(0.6),
+                              ? theme.colorScheme.onPrimary.withValues(alpha: 0.8)
+                              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -487,8 +487,8 @@ class HomeScreen extends StatelessWidget {
                   PhosphorIcons.arrowRight(PhosphorIconsStyle.bold),
                   size: 14,
                   color: isPrimary
-                      ? theme.colorScheme.onPrimary.withOpacity(0.8)
-                      : theme.colorScheme.onSurface.withOpacity(0.6),
+                      ? theme.colorScheme.onPrimary.withValues(alpha: 0.8)
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ],
             ),
