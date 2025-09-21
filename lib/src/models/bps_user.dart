@@ -33,7 +33,6 @@ class BPSUser {
     final sub = json['sub'] as String?;
     final username =
         json['preferred_username'] as String? ?? json['username'] as String?;
-    final nip = json['nip'] as String?;
     final accessToken = json['access_token'] as String?;
     final refreshToken = json['refresh_token'] as String?;
 
@@ -44,10 +43,6 @@ class BPSUser {
 
     if (username == null || username.isEmpty) {
       throw const MissingUserDataException('username');
-    }
-
-    if (nip == null || nip.isEmpty) {
-      throw const MissingUserDataException('nip');
     }
 
     if (accessToken == null || accessToken.isEmpty) {
@@ -62,30 +57,56 @@ class BPSUser {
     final expiresIn = json['expires_in'] as int? ?? 3600;
     final tokenExpiry = DateTime.now().add(Duration(seconds: expiresIn));
 
-    return BPSUser(
-      id: sub,
-      username: username,
-      email: json['email'] as String? ?? '',
-      fullName: json['name'] as String? ?? username,
-      nip: nip,
-      organization:
-          json['organisation'] as String? ??
-          json['organization'] as String? ??
-          'BPS',
-      realm: realm,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      tokenExpiry: tokenExpiry,
-      position: json['jabatan'] as String?,
-      rank: json['golongan'] as String?,
-      region: json['kabupaten'] as String?,
-      province: json['provinsi'] as String?,
-      photo: json['foto'] as String?,
-      address: json['alamat-kantor'] as String?,
-      oldNip: json['nip-lama'] as String?,
-      firstName: json['first-name'] as String?,
-      lastName: json['last-name'] as String?,
-    );
+    // Handle different user structures for internal vs external realms
+    if (realm == BPSRealmType.external) {
+      // External user structure
+      return BPSUser(
+        id: sub,
+        username: username,
+        email: json['email'] as String? ?? '',
+        fullName: json['name'] as String? ?? username,
+        nip: 'EXTERNAL', // External users don't have NIP
+        organization: 'External User',
+        realm: realm,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        tokenExpiry: tokenExpiry,
+        firstName:
+            json['given_name'] as String? ?? json['first_name'] as String?,
+        lastName:
+            json['family_name'] as String? ?? json['last_name'] as String?,
+      );
+    } else {
+      // Internal user structure
+      final nip = json['nip'] as String?;
+
+      // NIP is required for internal users
+      if (nip == null || nip.isEmpty) {
+        throw const MissingUserDataException('nip');
+      }
+
+      return BPSUser(
+        id: sub,
+        username: username,
+        email: json['email'] as String? ?? '',
+        fullName: json['name'] as String? ?? username,
+        nip: nip,
+        organization: json['organisasi'] as String? ?? 'BPS',
+        realm: realm,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        tokenExpiry: tokenExpiry,
+        position: json['jabatan'] as String?,
+        rank: json['golongan'] as String?,
+        region: json['kabupaten'] as String?,
+        province: json['provinsi'] as String?,
+        photo: json['foto'] as String?,
+        address: json['alamat-kantor'] as String?,
+        oldNip: json['nip-lama'] as String?,
+        firstName: json['first-name'] as String?,
+        lastName: json['last-name'] as String?,
+      );
+    }
   }
 
   /// Create BPSUser from stored JSON
@@ -177,6 +198,12 @@ class BPSUser {
 
   /// Check if access token is expired
   bool get isTokenExpired => DateTime.now().isAfter(tokenExpiry);
+
+  /// Check if user is from external realm
+  bool get isExternal => realm == BPSRealmType.external;
+
+  /// Check if user is from internal realm
+  bool get isInternal => realm == BPSRealmType.internal;
 
   /// Convert to JSON for storage
   Map<String, dynamic> toJson() {
