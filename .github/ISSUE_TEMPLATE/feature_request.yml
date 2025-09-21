@@ -1,0 +1,186 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for the BPS SSO SDK
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please fill out the form below to help us understand your request.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please check the following before submitting your feature request
+      options:
+        - label: I have searched existing issues to make sure this feature hasn't been requested already
+          required: true
+        - label: I have read the [documentation](../../README.md) to make sure this feature doesn't already exist
+          required: true
+        - label: This feature request is related to the BPS SSO SDK functionality
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Describe the problem or limitation you're experiencing
+      placeholder: |
+        What problem are you trying to solve? What's missing or difficult with the current SDK?
+        Example: "As a developer, I need to customize the login UI because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the feature or enhancement you'd like to see
+      placeholder: |
+        What would you like to happen? How should this feature work?
+        Be as specific as possible about the desired behavior.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: Which area does this feature request relate to?
+      options:
+        - Authentication Flow
+        - User Interface/UX
+        - Configuration Options
+        - Error Handling
+        - Security Features
+        - Performance
+        - Developer Experience
+        - Documentation
+        - Testing
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would be helpful
+        - High - Important for my use case
+        - Critical - Blocking my project
+    validations:
+      required: true
+
+  - type: dropdown
+    id: realm
+    attributes:
+      label: Realm Scope
+      description: Which BPS realm(s) should this feature support?
+      multiple: true
+      options:
+        - Internal (BPS Employee)
+        - External (Third-party)
+        - Both
+        - Not realm-specific
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case / User Story
+      description: Describe the use case or user story for this feature
+      placeholder: |
+        As a [type of user], I want [goal] so that [benefit].
+
+        Example scenarios where this feature would be useful:
+        - Scenario 1: ...
+        - Scenario 2: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: api-design
+    attributes:
+      label: Proposed API Design (Optional)
+      description: If you have ideas about how the API should look, share them here
+      render: dart
+      placeholder: |
+        // Example of how you envision using this feature
+        final result = await BPSSsoClient.instance.newFeature(
+          parameter1: 'value',
+          parameter2: true,
+        );
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe alternative solutions or workarounds you've considered
+      placeholder: |
+        What other approaches have you tried or considered?
+        Why didn't those alternatives work for your use case?
+
+  - type: checkboxes
+    id: implementation
+    attributes:
+      label: Implementation Willingness
+      description: Are you willing to help implement this feature?
+      options:
+        - label: I would like to implement this feature myself and submit a PR
+        - label: I can help with testing and feedback during development
+        - label: I can provide detailed requirements and use cases
+        - label: I prefer to let the maintainers implement this
+
+  - type: dropdown
+    id: breaking-change
+    attributes:
+      label: Breaking Change
+      description: Would implementing this feature require breaking changes to the current API?
+      options:
+        - "No - This can be added without breaking existing code"
+        - "Yes - This would require breaking changes"
+        - "Unknown - Not sure about the impact"
+    validations:
+      required: true
+
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility Considerations
+      description: Are there any compatibility requirements or constraints?
+      placeholder: |
+        - Minimum Flutter/Dart version requirements
+        - Platform-specific considerations
+        - Integration with existing BPS systems
+        - Security or compliance requirements
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockups, or examples about the feature request
+      placeholder: |
+        - Links to similar features in other libraries
+        - Screenshots or mockups of desired UI changes
+        - References to relevant standards or documentation
+        - Any other helpful information
+
+  - type: checkboxes
+    id: community
+    attributes:
+      label: Community Impact
+      description: How do you think this feature would benefit the community?
+      options:
+        - label: This would benefit many BPS SSO SDK users
+        - label: This addresses a common pain point in OAuth2/SSO integration
+        - label: This improves developer experience significantly
+        - label: This adds important security or compliance features
+        - label: This is mainly for my specific use case
+          

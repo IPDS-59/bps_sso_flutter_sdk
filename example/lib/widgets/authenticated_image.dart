@@ -34,9 +34,7 @@ class AuthenticatedImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-      },
+      headers: {'Authorization': 'Bearer $accessToken'},
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return loadingWidget ??
@@ -51,7 +49,7 @@ class AuthenticatedImage extends StatelessWidget {
                 child: CircularProgressIndicator(
                   value: loadingProgress.expectedTotalBytes != null
                       ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
+                            loadingProgress.expectedTotalBytes!
                       : null,
                   strokeWidth: 2,
                 ),

@@ -197,8 +197,8 @@ class OperationsScreen extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              theme.colorScheme.primary.withOpacity(0.05),
-              theme.colorScheme.secondary.withOpacity(0.05),
+              theme.colorScheme.primary.withValues(alpha: 0.05),
+              theme.colorScheme.secondary.withValues(alpha: 0.05),
             ],
           ),
         ),
@@ -241,7 +241,7 @@ class OperationsScreen extends StatelessWidget {
                             'Manage authentication and user sessions',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withOpacity(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 
                                 0.7,
                               ),
                             ),
@@ -258,7 +258,9 @@ class OperationsScreen extends StatelessWidget {
                               .togglePrivacyMode(),
                           icon: PhosphorIcon(
                             configState.privacyMode
-                                ? PhosphorIcons.eyeSlash(PhosphorIconsStyle.duotone)
+                                ? PhosphorIcons.eyeSlash(
+                                    PhosphorIconsStyle.duotone,
+                                  )
                                 : PhosphorIcons.eye(PhosphorIconsStyle.duotone),
                             size: 24,
                           ),
@@ -329,13 +331,13 @@ class OperationsScreen extends StatelessWidget {
                                 boxShadow: [
                                   BoxShadow(
                                     color: theme.colorScheme.primary
-                                        .withOpacity(0.05),
+                                        .withValues(alpha: 0.05),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
                                 ],
                                 border: Border.all(
-                                  color: theme.colorScheme.outline.withOpacity(
+                                  color: theme.colorScheme.outline.withValues(alpha: 
                                     0.1,
                                   ),
                                 ),
@@ -429,7 +431,7 @@ class OperationsScreen extends StatelessWidget {
                                           theme.colorScheme.onPrimary,
                                       side: BorderSide(
                                         color: theme.colorScheme.outline
-                                            .withOpacity(0.2),
+                                            .withValues(alpha: 0.2),
                                       ),
                                     ),
                                   ),

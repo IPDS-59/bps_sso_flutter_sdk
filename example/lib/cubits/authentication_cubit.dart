@@ -77,18 +77,19 @@ class AuthenticationCubit extends HydratedCubit<AuthenticationState>
     try {
       // SDK is now properly initialized with callback configuration
       // The login method should complete when the deep link callback is processed
-      final user = await BPSSsoClient.instance.login(
-        context: context,
-        realmType: state.selectedRealm,
-      ).timeout(
-        const Duration(minutes: 2), // Give enough time for user to complete OAuth
-        onTimeout: () {
-          throw TimeoutException(
-            'OAuth flow timed out. The deep link callback may not have been processed correctly.',
-            const Duration(minutes: 2),
+      final user = await BPSSsoClient.instance
+          .login(context: context, realmType: state.selectedRealm)
+          .timeout(
+            const Duration(
+              minutes: 2,
+            ), // Give enough time for user to complete OAuth
+            onTimeout: () {
+              throw TimeoutException(
+                'OAuth flow timed out. The deep link callback may not have been processed correctly.',
+                const Duration(minutes: 2),
+              );
+            },
           );
-        },
-      );
 
       _cancelTimer?.cancel();
       emit(
@@ -221,10 +222,10 @@ class AuthenticationCubit extends HydratedCubit<AuthenticationState>
       emit(
         state.copyWith(
           lastResult: 'Logout successful', // Set success message
-          isLoading: false,           // Stop loading
-          clearCurrentUser: true,     // Clear user data
-          clearLastOperation: true,   // Clear last operation
-          clearAuthStartTime: true,   // Clear auth timing
+          isLoading: false, // Stop loading
+          clearCurrentUser: true, // Clear user data
+          clearLastOperation: true, // Clear last operation
+          clearAuthStartTime: true, // Clear auth timing
         ),
       );
     } catch (e) {
@@ -232,10 +233,10 @@ class AuthenticationCubit extends HydratedCubit<AuthenticationState>
       emit(
         state.copyWith(
           lastResult: 'Logout failed: $e', // Show error message
-          isLoading: false,           // Stop loading
-          clearCurrentUser: true,     // Clear user data anyway
-          clearLastOperation: true,   // Clear last operation
-          clearAuthStartTime: true,   // Clear auth timing
+          isLoading: false, // Stop loading
+          clearCurrentUser: true, // Clear user data anyway
+          clearLastOperation: true, // Clear last operation
+          clearAuthStartTime: true, // Clear auth timing
         ),
       );
       rethrow;
@@ -246,9 +247,9 @@ class AuthenticationCubit extends HydratedCubit<AuthenticationState>
     emit(
       state.copyWith(
         lastResult: 'User data cleared', // Set clear message
-        clearCurrentUser: true,     // Clear user data
-        clearLastOperation: true,   // Clear last operation
-        clearAuthStartTime: true,   // Clear auth timing
+        clearCurrentUser: true, // Clear user data
+        clearLastOperation: true, // Clear last operation
+        clearAuthStartTime: true, // Clear auth timing
       ),
     );
   }

@@ -100,8 +100,8 @@ class ConfigurationScreen extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              theme.colorScheme.primary.withOpacity(0.05),
-              theme.colorScheme.secondary.withOpacity(0.05),
+              theme.colorScheme.primary.withValues(alpha: 0.05),
+              theme.colorScheme.secondary.withValues(alpha: 0.05),
             ],
           ),
         ),
@@ -144,7 +144,7 @@ class ConfigurationScreen extends StatelessWidget {
                             'Set up authentication parameters',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withOpacity(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 
                                 0.7,
                               ),
                             ),
@@ -384,7 +384,7 @@ class ConfigurationScreen extends StatelessWidget {
                               foregroundColor: theme.colorScheme.onPrimary,
                               elevation: 8,
                               shadowColor: theme.colorScheme.primary
-                                  .withOpacity(0.3),
+                                  .withValues(alpha: 0.3),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
