@@ -83,28 +83,39 @@ class BPSSsoService {
         ...tokenData,
       };
 
-      return BPSUser.fromJson(userData, realmType);
-    } catch (e) {
+      final user = BPSUser.fromJson(userData, realmType);
+
+      // Call success callback
+      config.authCallbacks.onLoginSuccess?.call(user, realmType);
+
+      return user;
+    } on Exception catch (e) {
       // Handle errors with security manager
       final errorConfig = config.errorConfig;
-      if (errorConfig.onError != null && e is Exception) {
-        errorConfig.onError!(e, StackTrace.current);
-      }
+      errorConfig.onError?.call(e, StackTrace.current);
 
+      Exception sanitized;
       if (e is BPSSsoException) {
         // Re-throw SDK exceptions, but sanitize them
-        final sanitized = _securityManager.sanitizeError(
+        sanitized = _securityManager.sanitizeError(
           e,
           isProduction: !errorConfig.enableDetailedErrorMessages,
         );
-        throw sanitized;
+      } else {
+        // Sanitize unknown errors
+        sanitized = _securityManager.sanitizeError(
+          NetworkException('Authentication failed: $e'),
+          isProduction: !errorConfig.enableDetailedErrorMessages,
+        );
       }
 
-      // Sanitize unknown errors
-      final sanitized = _securityManager.sanitizeError(
-        NetworkException('Authentication failed: $e'),
-        isProduction: !errorConfig.enableDetailedErrorMessages,
-      );
+      // Call appropriate callback based on error type
+      if (e is AuthenticationCancelledException) {
+        config.authCallbacks.onLoginCancelled?.call(realmType);
+      } else {
+        config.authCallbacks.onLoginFailed?.call(sanitized, realmType);
+      }
+
       throw sanitized;
     }
   }
@@ -157,13 +168,38 @@ class BPSSsoService {
           _securityManager.secureClearSensitiveData(user.refreshToken);
         }
 
-        return BPSUser.fromJson(userData, user.realm);
+        final updatedUser = BPSUser.fromJson(userData, user.realm);
+
+        // Call success callback
+        config.authCallbacks.onTokenRefreshSuccess?.call(updatedUser);
+
+        return updatedUser;
       } else {
         throw TokenExchangeException.fromStatusCode(response.statusCode!);
       }
-    } catch (e) {
-      if (e is BPSSsoException) rethrow;
-      throw NetworkException('Token refresh failed: $e');
+    } on Exception catch (e) {
+      // Handle token refresh failure
+      Exception error;
+      if (e is BPSSsoException) {
+        error = e;
+      } else {
+        error = NetworkException('Token refresh failed: $e');
+      }
+
+      // Call token refresh failed callback
+      config.authCallbacks.onTokenRefreshFailed?.call(error, user);
+
+      // Check if this is an authentication failure (expired refresh token,
+      // etc.)
+      if (e is TokenExchangeException ||
+          (e is DioException &&
+              (e.response?.statusCode == 401 ||
+                  e.response?.statusCode == 403))) {
+        // This indicates the user's session is completely invalid
+        config.authCallbacks.onAuthenticationFailure?.call(error, user);
+      }
+
+      throw error;
     }
   }
 
@@ -187,6 +223,9 @@ class BPSSsoService {
       _securityManager
         ..secureClearSensitiveData(user.accessToken)
         ..secureClearSensitiveData(user.refreshToken);
+
+      // Call success callback
+      config.authCallbacks.onLogoutSuccess?.call(user);
     } on Exception catch (e) {
       // Always clean up sensitive data even if logout fails
       _securityManager
@@ -195,10 +234,12 @@ class BPSSsoService {
 
       // Handle error with security manager
       final errorConfig = config.errorConfig;
-      errorConfig.onError?.call(
-        LogoutException('Logout failed: $e'),
-        StackTrace.current,
-      );
+      final logoutError = LogoutException('Logout failed: $e');
+
+      errorConfig.onError?.call(logoutError, StackTrace.current);
+
+      // Call failure callback
+      config.authCallbacks.onLogoutFailed?.call(logoutError, user);
 
       // Don't throw on logout failure in production
       if (errorConfig.enableDetailedErrorMessages) {
@@ -219,8 +260,29 @@ class BPSSsoService {
         ),
       );
 
-      return response.statusCode == 200;
-    } on Exception {
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        // Token is invalid, trigger authentication failure
+        config.authCallbacks.onAuthenticationFailure?.call(
+          SecurityException('Token validation failed: ${response.statusCode}'),
+          user,
+        );
+        return false;
+      } else {
+        return false;
+      }
+    } on Exception catch (e) {
+      // Check if this is an authentication error
+      if (e is DioException &&
+          (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
+        config.authCallbacks.onAuthenticationFailure?.call(
+          SecurityException(
+            'Token validation failed: ${e.response?.statusCode}',
+          ),
+          user,
+        );
+      }
       return false;
     }
   }
@@ -325,7 +387,7 @@ class BPSSsoService {
   ) async {
     try {
       final completer = Completer<String?>();
-      StreamSubscription<String>? linkSubscription;
+      StreamSubscription<dynamic>? linkSubscription;
 
       // Listen for incoming deep links
       linkSubscription = linkStream?.listen((String link) async {
@@ -350,7 +412,7 @@ class BPSSsoService {
           final state = uri.queryParameters['state'];
           final error = uri.queryParameters['error'];
 
-          linkSubscription?.cancel();
+          await linkSubscription?.cancel();
 
           if (error != null) {
             completer.complete(null);
@@ -387,12 +449,12 @@ class BPSSsoService {
       // Wait for the auth code or timeout
       return await completer.future.timeout(
         const Duration(minutes: 5),
-        onTimeout: () {
-          linkSubscription?.cancel();
+        onTimeout: () async {
+          await linkSubscription?.cancel();
           return null;
         },
       );
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Custom Tabs auth failed: $e');
       return null;
     }
