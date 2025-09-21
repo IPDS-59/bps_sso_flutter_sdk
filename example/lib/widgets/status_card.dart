@@ -52,10 +52,7 @@ class StatusCard extends StatelessWidget {
                 Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.green.shade600,
-                      width: 2,
-                    ),
+                    border: Border.all(color: Colors.green.shade600, width: 2),
                   ),
                   child: AuthenticatedImage(
                     imageUrl: user!.photo,
@@ -247,7 +244,9 @@ class StatusCard extends StatelessWidget {
             const Gap(12),
             if (user!.oldNip != null && user!.oldNip!.isNotEmpty) ...[
               _buildInfoRow(
-                icon: PhosphorIcons.clockCounterClockwise(PhosphorIconsStyle.duotone),
+                icon: PhosphorIcons.clockCounterClockwise(
+                  PhosphorIconsStyle.duotone,
+                ),
                 label: 'Old NIP',
                 value: user!.oldNip!,
                 theme: theme,
