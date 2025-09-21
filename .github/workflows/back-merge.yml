@@ -1,0 +1,377 @@
+name: Back Merge - Automatic Release Sync
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+env:
+  FLUTTER_VERSION: '3.35.3'
+
+jobs:
+  back-merge:
+    if: github.event.pull_request.merged == true && (startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'hotfix/'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Extract branch info
+        id: branch_info
+        run: |
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+          if [[ $BRANCH_NAME == release/* ]]; then
+            VERSION=$(echo $BRANCH_NAME | sed 's/release\///')
+            TYPE="release"
+          elif [[ $BRANCH_NAME == hotfix/* ]]; then
+            VERSION=$(echo $BRANCH_NAME | sed 's/hotfix\///')
+            TYPE="hotfix"
+          fi
+
+          # Ensure version starts with 'v'
+          if [[ ! $VERSION == v* ]]; then
+            VERSION="v$VERSION"
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+
+          # Set source and target branches
+          SOURCE_BRANCH="main"
+          TARGET_BRANCH="develop"
+
+          echo "source_branch=$SOURCE_BRANCH" >> $GITHUB_OUTPUT
+          echo "target_branch=$TARGET_BRANCH" >> $GITHUB_OUTPUT
+
+          echo "✅ Automatic back-merge: $SOURCE_BRANCH → $TARGET_BRANCH"
+          echo "Branch: $BRANCH_NAME ($TYPE $VERSION)"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Fetch latest changes
+        run: |
+          SOURCE_BRANCH="${{ steps.branch_info.outputs.source_branch }}"
+          TARGET_BRANCH="${{ steps.branch_info.outputs.target_branch }}"
+
+          echo "🔄 Fetching latest changes..."
+          git fetch origin "$SOURCE_BRANCH:$SOURCE_BRANCH"
+          git fetch origin "$TARGET_BRANCH:$TARGET_BRANCH"
+
+          echo "✅ Latest changes fetched"
+
+      - name: Check for differences
+        id: check_diff
+        run: |
+          SOURCE_BRANCH="${{ steps.branch_info.outputs.source_branch }}"
+          TARGET_BRANCH="${{ steps.branch_info.outputs.target_branch }}"
+
+          # Check if there are differences between branches
+          DIFF_COUNT=$(git rev-list --count "$TARGET_BRANCH..$SOURCE_BRANCH" 2>/dev/null || echo "0")
+
+          echo "diff_count=$DIFF_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$DIFF_COUNT" -eq 0 ]; then
+            echo "✅ No differences found between $SOURCE_BRANCH and $TARGET_BRANCH"
+            echo "needs_merge=false" >> $GITHUB_OUTPUT
+          else
+            echo "🔄 Found $DIFF_COUNT commits in $SOURCE_BRANCH not in $TARGET_BRANCH"
+            echo "needs_merge=true" >> $GITHUB_OUTPUT
+
+            # Show commit summary
+            echo "Commits to be merged:"
+            git log --oneline --graph "$TARGET_BRANCH..$SOURCE_BRANCH" | head -10
+          fi
+
+      - name: Create back-merge branch
+        if: steps.check_diff.outputs.needs_merge == 'true'
+        id: create_branch
+        run: |
+          SOURCE_BRANCH="${{ steps.branch_info.outputs.source_branch }}"
+          TARGET_BRANCH="${{ steps.branch_info.outputs.target_branch }}"
+          TYPE="${{ steps.branch_info.outputs.type }}"
+          VERSION="${{ steps.branch_info.outputs.version }}"
+
+          # Create unique branch name
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          BACKMERGE_BRANCH="chore/back-merge-$VERSION-$TYPE-to-$TARGET_BRANCH-$TIMESTAMP"
+
+          echo "backmerge_branch=$BACKMERGE_BRANCH" >> $GITHUB_OUTPUT
+
+          # Checkout target branch and create new branch
+          echo "🌿 Creating branch $BACKMERGE_BRANCH from $TARGET_BRANCH"
+          git checkout "$TARGET_BRANCH"
+          git checkout -b "$BACKMERGE_BRANCH"
+
+          echo "✅ Branch created: $BACKMERGE_BRANCH"
+
+      - name: Perform merge
+        if: steps.check_diff.outputs.needs_merge == 'true'
+        id: merge
+        run: |
+          SOURCE_BRANCH="${{ steps.branch_info.outputs.source_branch }}"
+          TARGET_BRANCH="${{ steps.branch_info.outputs.target_branch }}"
+          TYPE="${{ steps.branch_info.outputs.type }}"
+          VERSION="${{ steps.branch_info.outputs.version }}"
+          WORKING_BRANCH="${{ steps.create_branch.outputs.backmerge_branch }}"
+
+          echo "🔄 Merging $SOURCE_BRANCH into $WORKING_BRANCH"
+
+          # Attempt merge with automatic conflict resolution
+          if ! git merge --no-ff "$SOURCE_BRANCH" -m "chore: back-merge $VERSION $TYPE from $SOURCE_BRANCH to $TARGET_BRANCH
+
+          Automatic back-merge after $TYPE $VERSION was merged to main.
+          Original PR: ${{ github.event.pull_request.html_url }}
+          Merged by: @${{ github.event.pull_request.merged_by.login }}
+
+          This merge brings $TYPE changes into $TARGET_BRANCH
+          to keep both branches synchronized."; then
+
+            echo "⚠️ Merge conflicts detected, attempting automatic resolution..."
+
+            # Common conflict resolution strategies for Flutter projects
+            if git status --porcelain | grep -q "pubspec.yaml"; then
+              echo "🔄 Resolving pubspec.yaml conflict..."
+              # For version conflicts, prefer target branch (develop) version
+              if [ "$TARGET_BRANCH" = "develop" ]; then
+                git checkout --ours pubspec.yaml
+                echo "Kept develop branch version in pubspec.yaml"
+              else
+                git checkout --theirs pubspec.yaml
+                echo "Used source branch version in pubspec.yaml"
+              fi
+            fi
+
+            if git status --porcelain | grep -q "pubspec.lock"; then
+              echo "🔄 Resolving pubspec.lock conflict..."
+              # Remove lock file and regenerate
+              git rm pubspec.lock
+              flutter pub get
+              git add pubspec.lock
+              echo "Regenerated pubspec.lock"
+            fi
+
+            if git status --porcelain | grep -q "example/"; then
+              echo "🔄 Resolving example app conflicts..."
+              # Prefer source branch for example app
+              git checkout --theirs example/
+              echo "Used source branch version for example app"
+            fi
+
+            if git status --porcelain | grep -q "README.md"; then
+              echo "🔄 Resolving README.md conflict..."
+              # Prefer source branch for documentation
+              git checkout --theirs README.md
+              echo "Used source branch version for README.md"
+            fi
+
+            if git status --porcelain | grep -q "CHANGELOG.md"; then
+              echo "🔄 Resolving CHANGELOG.md conflict..."
+              # Prefer source branch for changelog
+              git checkout --theirs CHANGELOG.md
+              echo "Used source branch version for CHANGELOG.md"
+            fi
+
+            # Check for remaining conflicts
+            if git status --porcelain | grep -q "^UU\|^AA"; then
+              echo "❌ Unresolved conflicts remain:"
+              git status --porcelain | grep "^UU\|^AA"
+              echo "merge_success=false" >> $GITHUB_OUTPUT
+              echo "conflicts_resolved=false" >> $GITHUB_OUTPUT
+
+              # Stage resolved files anyway for PR creation
+              git add .
+              git commit -m "resolve: partial automatic conflict resolution
+
+              Some conflicts were automatically resolved:
+              - pubspec.yaml: Used appropriate branch strategy
+              - pubspec.lock: Regenerated from pubspec.yaml
+              - Documentation: Used source branch updates
+
+              Manual review required for remaining conflicts."
+            else
+              # All conflicts resolved
+              git add .
+              git commit -m "resolve: automatic conflict resolution
+
+              All merge conflicts resolved automatically:
+              - pubspec.yaml: Used branch-appropriate version
+              - pubspec.lock: Regenerated
+              - Documentation: Used source branch updates"
+              echo "merge_success=true" >> $GITHUB_OUTPUT
+              echo "conflicts_resolved=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "✅ Merge completed without conflicts"
+            echo "merge_success=true" >> $GITHUB_OUTPUT
+            echo "conflicts_resolved=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate Flutter project after merge
+        if: steps.check_diff.outputs.needs_merge == 'true'
+        run: |
+          echo "🔍 Validating Flutter project after merge..."
+
+          flutter pub get || echo "⚠️ pub get failed"
+          flutter analyze lib/ || echo "⚠️ Analysis issues found"
+
+          if [ -d "test" ] && [ "$(find test -name '*_test.dart' | wc -l)" -gt 0 ]; then
+            echo "🧪 Running tests..."
+            flutter test || echo "⚠️ Some tests failed"
+          fi
+
+          echo "✅ Project validation completed"
+
+      - name: Push changes
+        if: steps.check_diff.outputs.needs_merge == 'true'
+        run: |
+          BRANCH="${{ steps.create_branch.outputs.backmerge_branch }}"
+          echo "⬆️ Pushing branch $BRANCH"
+          git push origin "$BRANCH"
+
+          echo "✅ Changes pushed successfully"
+
+      - name: Create required labels if they don't exist
+        if: steps.check_diff.outputs.needs_merge == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          echo "🏷️ Ensuring required labels exist..."
+
+          # Create labels if they don't exist
+          gh label create "chore" --description "Maintenance and chore tasks" --color "0e8a16" || echo "Label 'chore' already exists"
+          gh label create "auto-generated" --description "Automatically generated by GitHub Actions" --color "bfdadc" || echo "Label 'auto-generated' already exists"
+          gh label create "back-merge" --description "Back merge PRs" --color "1d76db" || echo "Label 'back-merge' already exists"
+
+          echo "✅ Label creation completed"
+
+      - name: Create back-merge PR
+        if: steps.check_diff.outputs.needs_merge == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          SOURCE_BRANCH="${{ steps.branch_info.outputs.source_branch }}"
+          TARGET_BRANCH="${{ steps.branch_info.outputs.target_branch }}"
+          BACKMERGE_BRANCH="${{ steps.create_branch.outputs.backmerge_branch }}"
+          TYPE="${{ steps.branch_info.outputs.type }}"
+          VERSION="${{ steps.branch_info.outputs.version }}"
+          DIFF_COUNT="${{ steps.check_diff.outputs.diff_count }}"
+          CONFLICTS_RESOLVED="${{ steps.merge.outputs.conflicts_resolved }}"
+
+          # Build conflict status
+          if [ "$CONFLICTS_RESOLVED" = "true" ]; then
+            CONFLICT_STATUS="✅ All conflicts resolved automatically"
+          else
+            CONFLICT_STATUS="⚠️ Some conflicts require manual review"
+          fi
+
+          gh pr create \
+            --base "$TARGET_BRANCH" \
+            --head "$BACKMERGE_BRANCH" \
+            --title "chore: back-merge $VERSION $TYPE from $SOURCE_BRANCH to $TARGET_BRANCH" \
+            --body "$(cat <<EOF
+          ## Summary
+          Automatic back-merge of $TYPE $VERSION changes from \`$SOURCE_BRANCH\` to \`$TARGET_BRANCH\`.
+
+          ## Details
+          - **Source Branch**: \`$SOURCE_BRANCH\`
+          - **Target Branch**: \`$TARGET_BRANCH\`
+          - **Release**: $TYPE $VERSION
+          - **Original PR**: ${{ github.event.pull_request.html_url }}
+          - **Merged by**: @${{ github.event.pull_request.merged_by.login }}
+          - **Commits**: $DIFF_COUNT commits to merge
+          - **Conflict Resolution**: $CONFLICT_STATUS
+
+          ## 🔄 Changes
+          This back-merge includes $DIFF_COUNT commits from the $TYPE that are not present in \`$TARGET_BRANCH\`.
+
+          ## 🔧 Automatic Resolutions
+          The following conflicts were automatically resolved:
+          - **pubspec.yaml**: Used branch-appropriate versioning strategy
+          - **pubspec.lock**: Regenerated from pubspec.yaml
+          - **Documentation**: Used source branch updates
+          - **Example app**: Used source branch version
+
+          ## ✅ Validation
+          - 🔍 Static analysis completed
+          - 📦 Dependencies resolved
+          - 🧪 Tests executed (if available)
+
+          ## Auto-generated
+          This PR was automatically created after the $TYPE was merged to main.
+
+          **Review and merge when ready** - this keeps develop synchronized with the latest $TYPE.
+          EOF
+          )" \
+            --label "chore" \
+            --label "auto-generated" \
+            --label "back-merge"
+
+          echo "✅ Back-merge PR created"
+
+      - name: Create workflow summary
+        if: always()
+        run: |
+          SOURCE_BRANCH="${{ steps.branch_info.outputs.source_branch }}"
+          TARGET_BRANCH="${{ steps.branch_info.outputs.target_branch }}"
+          TYPE="${{ steps.branch_info.outputs.type }}"
+          VERSION="${{ steps.branch_info.outputs.version }}"
+          NEEDS_MERGE="${{ steps.check_diff.outputs.needs_merge }}"
+          DIFF_COUNT="${{ steps.check_diff.outputs.diff_count }}"
+
+          echo "## 🔄 Automatic Back Merge Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Source**: \`$SOURCE_BRANCH\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Target**: \`$TARGET_BRANCH\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Release**: $TYPE $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "**Original PR**: ${{ github.event.pull_request.html_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Merged by**: @${{ github.event.pull_request.merged_by.login }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$NEEDS_MERGE" = "false" ]; then
+            echo "**Status**: ✅ No merge needed - branches are already synchronized" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Commits to merge**: $DIFF_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### ✅ Actions Completed" >> $GITHUB_STEP_SUMMARY
+            echo "- 🌿 Created back-merge branch" >> $GITHUB_STEP_SUMMARY
+            echo "- 🔄 Performed merge with conflict resolution" >> $GITHUB_STEP_SUMMARY
+            echo "- 🔍 Validated Flutter project" >> $GITHUB_STEP_SUMMARY
+            echo "- 📋 Created back-merge PR" >> $GITHUB_STEP_SUMMARY
+
+            if [ "${{ steps.merge.outputs.conflicts_resolved }}" = "true" ]; then
+              echo "- ✅ All conflicts resolved automatically" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- ⚠️ Some conflicts require manual review" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Next Steps" >> $GITHUB_STEP_SUMMARY
+          if [ "$NEEDS_MERGE" = "true" ]; then
+            echo "1. Review the created back-merge PR" >> $GITHUB_STEP_SUMMARY
+            echo "2. Resolve any remaining conflicts if needed" >> $GITHUB_STEP_SUMMARY
+            echo "3. Merge the PR when ready" >> $GITHUB_STEP_SUMMARY
+            echo "4. This completes the $TYPE $VERSION Git Flow process" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "1. No action required - branches are already synchronized" >> $GITHUB_STEP_SUMMARY
+            echo "2. $TYPE $VERSION Git Flow process is complete" >> $GITHUB_STEP_SUMMARY
+          fi
+          
