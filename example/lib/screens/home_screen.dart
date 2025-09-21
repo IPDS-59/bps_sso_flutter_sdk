@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:bps_sso_sdk/bps_sso_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -33,16 +34,14 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               children: [
                 // Header
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
                       Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
@@ -70,7 +69,7 @@ class HomeScreen extends StatelessWidget {
                       Text(
                             'BPS SSO SDK',
                             style: GoogleFonts.inter(
-                              fontSize: 28,
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.onSurface,
                             ),
@@ -83,7 +82,7 @@ class HomeScreen extends StatelessWidget {
                       Text(
                             'Example Application',
                             style: GoogleFonts.inter(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w500,
                               color: theme.colorScheme.primary,
                             ),
@@ -97,7 +96,7 @@ class HomeScreen extends StatelessWidget {
                             'Showcase application for BPS (Badan Pusat Statistik)\nSSO authentication integration',
                             style: GoogleFonts.inter(
                               fontSize: 12,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 
+                              color: theme.colorScheme.onSurface.withValues(alpha:
                                 0.7,
                               ),
                             ),
@@ -106,14 +105,35 @@ class HomeScreen extends StatelessWidget {
                           .animate()
                           .fadeIn(delay: 600.ms, duration: 600.ms)
                           .slideY(begin: 0.3, end: 0),
+                      const Gap(8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'SDK v${BPSSsoSdkInfo.version}',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onPrimaryContainer,
+                          ),
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(delay: 800.ms, duration: 600.ms)
+                      .slideY(begin: 0.3, end: 0),
                     ],
                   ),
-                ),
+
+                const Gap(32),
 
                 // Status Card
-                Expanded(
-                  flex: 1,
-                  child: Center(
+                Center(
                     child: BlocBuilder<ConfigurationCubit, ConfigurationState>(
                       builder: (context, configState) {
                         return BlocBuilder<
@@ -309,21 +329,19 @@ class HomeScreen extends StatelessWidget {
                       },
                     ).animate().fadeIn(delay: 800.ms, duration: 600.ms).slideY(begin: 0.3, end: 0),
                   ),
-                ),
+
+                const Gap(32),
 
                 // Action Buttons
-                Expanded(
-                  flex: 1,
-                  child: BlocBuilder<ConfigurationCubit, ConfigurationState>(
-                    builder: (context, configState) {
-                      return BlocBuilder<
-                        AuthenticationCubit,
-                        AuthenticationState
-                      >(
-                        builder: (context, authState) {
-                          return Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
+                BlocBuilder<ConfigurationCubit, ConfigurationState>(
+                  builder: (context, configState) {
+                    return BlocBuilder<
+                      AuthenticationCubit,
+                      AuthenticationState
+                    >(
+                      builder: (context, authState) {
+                        return Column(
+                          children: [
                               _buildActionButton(
                                 context: context,
                                 onPressed: () {
@@ -382,13 +400,28 @@ class HomeScreen extends StatelessWidget {
                                     authState.currentUser == null,
                                 delay: 1200.ms,
                               ),
+                              const Gap(16),
+                              _buildActionButton(
+                                context: context,
+                                onPressed: () {
+                                  final configCubit = context.read<ConfigurationCubit>();
+                                  configCubit.alice.showInspector();
+                                },
+                                icon: PhosphorIcons.monitor(
+                                  PhosphorIconsStyle.duotone,
+                                ),
+                                label: 'HTTP Inspector',
+                                subtitle: 'View network requests and responses',
+                                isPrimary: false,
+                                delay: 1400.ms,
+                              ),
                             ],
                           );
                         },
                       );
                     },
                   ),
-                ),
+                const Gap(24), // Bottom spacing
               ],
             ),
           ),
