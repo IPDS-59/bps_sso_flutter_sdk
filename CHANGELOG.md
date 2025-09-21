@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.1] - 2025-09-21
+
+### ✨ Features
+
+### 🐛 Bug Fixes
+- fix: resolve back-merge workflow fetch issue (a450929)
+
+### 📱 Platform Updates
+
+### 📚 Documentation
+
+### 🔧 Maintenance
+- refactor: eliminate duplicate analysis step in prepare-release workflow (8dd46b3)
+
+### 📦 Dependencies
+- Flutter SDK: 3.35.3+
+- Dart SDK: Compatible with Flutter 3.35.3
+
+
+
 ## [1.0.0] - 2025-09-21
 
 ### ✨ Features
