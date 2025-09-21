@@ -74,22 +74,23 @@ class BPSRealmConfig {
         )
         .join('&');
 
-    return '$baseUrl/realms/$realm/protocol/openid-connect/auth?$query';
+    return '$baseUrl/auth/realms/$realm/protocol/openid-connect/auth?$query';
   }
 
   /// Keycloak realm name
   String get realm => realmType.value;
 
   /// Get token endpoint URL
-  String get tokenUrl => '$baseUrl/realms/$realm/protocol/openid-connect/token';
+  String get tokenUrl =>
+      '$baseUrl/auth/realms/$realm/protocol/openid-connect/token';
 
   /// Get user info endpoint URL
   String get userInfoUrl =>
-      '$baseUrl/realms/$realm/protocol/openid-connect/userinfo';
+      '$baseUrl/auth/realms/$realm/protocol/openid-connect/userinfo';
 
   /// Get logout endpoint URL
   String get logoutUrl =>
-      '$baseUrl/realms/$realm/protocol/openid-connect/logout';
+      '$baseUrl/auth/realms/$realm/protocol/openid-connect/logout';
 
   @override
   bool operator ==(Object other) {
