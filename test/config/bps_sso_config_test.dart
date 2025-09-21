@@ -15,8 +15,14 @@ void main() {
         expect(config.baseUrl, equals('https://sso.bps.go.id'));
         expect(config.internal.clientId, equals('internal-client'));
         expect(config.external.clientId, equals('external-client'));
-        expect(config.internal.redirectUri, equals('id.go.bps://testapp-sso-internal'));
-        expect(config.external.redirectUri, equals('id.go.bps://testapp-sso-eksternal'));
+        expect(
+          config.internal.redirectUri,
+          equals('id.go.bps://testapp-sso-internal'),
+        );
+        expect(
+          config.external.redirectUri,
+          equals('id.go.bps://testapp-sso-eksternal'),
+        );
         expect(config.internal.realm, equals('pegawai-bps'));
         expect(config.external.realm, equals('eksternal'));
         expect(config.internal.responseTypes, equals(['code']));
@@ -179,11 +185,17 @@ void main() {
 
         expect(uri.scheme, equals('https'));
         expect(uri.host, equals('sso.bps.go.id'));
-        expect(uri.path, equals('/realms/pegawai-bps/protocol/openid-connect/auth'));
+        expect(
+          uri.path,
+          equals('/auth/realms/pegawai-bps/protocol/openid-connect/auth'),
+        );
 
         final queryParams = uri.queryParameters;
         expect(queryParams['client_id'], equals('test-client'));
-        expect(queryParams['redirect_uri'], equals('id.go.bps://testapp-sso-internal'));
+        expect(
+          queryParams['redirect_uri'],
+          equals('id.go.bps://testapp-sso-internal'),
+        );
         expect(queryParams['response_type'], equals('code'));
         expect(queryParams['scope'], equals('openid profile email'));
         expect(queryParams['code_challenge'], equals(codeChallenge));
@@ -197,7 +209,7 @@ void main() {
         expect(
           tokenUrl,
           equals(
-            'https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/token',
+            'https://sso.bps.go.id/auth/realms/pegawai-bps/protocol/openid-connect/token',
           ),
         );
       });
@@ -208,7 +220,7 @@ void main() {
         expect(
           userInfoUrl,
           equals(
-            'https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/userinfo',
+            'https://sso.bps.go.id/auth/realms/pegawai-bps/protocol/openid-connect/userinfo',
           ),
         );
       });
@@ -219,7 +231,7 @@ void main() {
         expect(
           logoutUrl,
           equals(
-            'https://sso.bps.go.id/realms/pegawai-bps/protocol/openid-connect/logout',
+            'https://sso.bps.go.id/auth/realms/pegawai-bps/protocol/openid-connect/logout',
           ),
         );
       });
