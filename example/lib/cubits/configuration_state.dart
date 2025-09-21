@@ -109,7 +109,8 @@ class ConfigurationState extends Equatable {
   factory ConfigurationState.fromJson(Map<String, dynamic> json) {
     return ConfigurationState(
       baseUrl: json['baseUrl'] as String? ?? 'https://sso.bps.go.id',
-      internalClientId: json['internalClientId'] as String? ?? 'your-internal-client-id',
+      internalClientId:
+          json['internalClientId'] as String? ?? 'your-internal-client-id',
       internalRedirectUri:
           json['internalRedirectUri'] as String? ??
           'id.go.bps://your-app-sso-internal',
@@ -122,7 +123,8 @@ class ConfigurationState extends Equatable {
           const ['openid', 'profile', 'email'],
       internalCodeChallengeMethod:
           json['internalCodeChallengeMethod'] as String? ?? 'S256',
-      externalClientId: json['externalClientId'] as String? ?? 'your-external-client-id',
+      externalClientId:
+          json['externalClientId'] as String? ?? 'your-external-client-id',
       externalRedirectUri:
           json['externalRedirectUri'] as String? ??
           'id.go.bps://your-app-sso-eksternal',

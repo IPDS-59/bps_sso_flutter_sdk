@@ -258,7 +258,9 @@ class OperationsScreen extends StatelessWidget {
                               .togglePrivacyMode(),
                           icon: PhosphorIcon(
                             configState.privacyMode
-                                ? PhosphorIcons.eyeSlash(PhosphorIconsStyle.duotone)
+                                ? PhosphorIcons.eyeSlash(
+                                    PhosphorIconsStyle.duotone,
+                                  )
                                 : PhosphorIcons.eye(PhosphorIconsStyle.duotone),
                             size: 24,
                           ),

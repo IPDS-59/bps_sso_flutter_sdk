@@ -27,16 +27,15 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
 
     if (state.isInitialized && !actuallyInitialized) {
       // State says initialized but SDK is not - reset the state
-      emit(state.copyWith(
-        isInitialized: false,
-        initializationError: 'SDK was not initialized - please reinitialize',
-      ));
+      emit(
+        state.copyWith(
+          isInitialized: false,
+          initializationError: 'SDK was not initialized - please reinitialize',
+        ),
+      );
     } else if (!state.isInitialized && actuallyInitialized) {
       // SDK is initialized but state doesn't reflect it - update state
-      emit(state.copyWith(
-        isInitialized: true,
-        initializationError: null,
-      ));
+      emit(state.copyWith(isInitialized: true, initializationError: null));
     }
   }
 
@@ -107,11 +106,13 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
     String? error,
     bool? isInitialized,
   }) {
-    emit(state.copyWith(
-      isLoading: isLoading ?? state.isLoading,
-      initializationError: error,
-      isInitialized: isInitialized ?? state.isInitialized,
-    ));
+    emit(
+      state.copyWith(
+        isLoading: isLoading ?? state.isLoading,
+        initializationError: error,
+        isInitialized: isInitialized ?? state.isInitialized,
+      ),
+    );
   }
 
   BPSSsoConfig toBPSConfig() {
@@ -203,10 +204,7 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
         linkStream: _appLinks.stringLinkStream,
       );
 
-      updateInitializationStatus(
-        isLoading: false,
-        isInitialized: true,
-      );
+      updateInitializationStatus(isLoading: false, isInitialized: true);
     } catch (e) {
       updateInitializationStatus(
         isLoading: false,

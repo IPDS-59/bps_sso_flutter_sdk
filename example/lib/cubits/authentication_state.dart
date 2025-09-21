@@ -32,20 +32,21 @@ class AuthenticationState extends Equatable {
     return AuthenticationState(
       currentUser: clearCurrentUser ? null : (currentUser ?? this.currentUser),
       isLoading: isLoading ?? this.isLoading,
-      lastOperation: clearLastOperation ? null : (lastOperation ?? this.lastOperation),
+      lastOperation: clearLastOperation
+          ? null
+          : (lastOperation ?? this.lastOperation),
       lastResult: clearLastResult ? null : (lastResult ?? this.lastResult),
       selectedRealm: selectedRealm ?? this.selectedRealm,
-      authStartTime: clearAuthStartTime ? null : (authStartTime ?? this.authStartTime),
+      authStartTime: clearAuthStartTime
+          ? null
+          : (authStartTime ?? this.authStartTime),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'currentUser': currentUser != null
-          ? {
-              'userData': currentUser!.toJson(),
-              'realm': selectedRealm.name,
-            }
+          ? {'userData': currentUser!.toJson(), 'realm': selectedRealm.name}
           : null,
       'isLoading': false, // Don't persist loading state
       'lastOperation': lastOperation,
@@ -90,11 +91,11 @@ class AuthenticationState extends Equatable {
 
   @override
   List<Object?> get props => [
-        currentUser,
-        isLoading,
-        lastOperation,
-        lastResult,
-        selectedRealm,
-        authStartTime,
-      ];
+    currentUser,
+    isLoading,
+    lastOperation,
+    lastResult,
+    selectedRealm,
+    authStartTime,
+  ];
 }
