@@ -49,7 +49,11 @@
     <array>
       <dict>
         <key>CFBundleURLName</key>
-        <string>id.go.bps</string>
+        <string>BPS SSO</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>id.go.bps</string>
+        </array>
       </dict>
     </array>
   </dict>
