@@ -43,7 +43,7 @@ class OperationCard extends StatelessWidget {
     } else {
       backgroundColor = theme.colorScheme.surface;
       foregroundColor = theme.colorScheme.onSurface;
-      borderColor = theme.colorScheme.outline.withOpacity(0.2);
+      borderColor = theme.colorScheme.outline.withValues(alpha: 0.2);
     }
 
     return SizedBox(
@@ -57,8 +57,8 @@ class OperationCard extends StatelessWidget {
                   foregroundColor: foregroundColor,
                   elevation: isPrimary ? 8 : 2,
                   shadowColor: isPrimary
-                      ? theme.colorScheme.primary.withOpacity(0.3)
-                      : theme.colorScheme.shadow.withOpacity(0.1),
+                      ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                      : theme.colorScheme.shadow.withValues(alpha: 0.1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                     side: isPrimary
@@ -68,10 +68,10 @@ class OperationCard extends StatelessWidget {
                 ).copyWith(
                   overlayColor: WidgetStateProperty.all(
                     isPrimary
-                        ? theme.colorScheme.onPrimary.withOpacity(0.1)
+                        ? theme.colorScheme.onPrimary.withValues(alpha: 0.1)
                         : isDestructive
-                        ? Colors.red.withOpacity(0.1)
-                        : theme.colorScheme.primary.withOpacity(0.1),
+                        ? Colors.red.withValues(alpha: 0.1)
+                        : theme.colorScheme.primary.withValues(alpha: 0.1),
                   ),
                 ),
             child: Row(
@@ -80,10 +80,10 @@ class OperationCard extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isPrimary
-                        ? theme.colorScheme.onPrimary.withOpacity(0.15)
+                        ? theme.colorScheme.onPrimary.withValues(alpha: 0.15)
                         : isDestructive
-                        ? Colors.red.withOpacity(0.1)
-                        : theme.colorScheme.primary.withOpacity(0.1),
+                        ? Colors.red.withValues(alpha: 0.1)
+                        : theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: PhosphorIcon(
@@ -115,10 +115,10 @@ class OperationCard extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           color: isPrimary
-                              ? theme.colorScheme.onPrimary.withOpacity(0.8)
+                              ? theme.colorScheme.onPrimary.withValues(alpha: 0.8)
                               : isDestructive
-                              ? Colors.red.shade600.withOpacity(0.8)
-                              : theme.colorScheme.onSurface.withOpacity(0.6),
+                              ? Colors.red.shade600.withValues(alpha: 0.8)
+                              : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -128,10 +128,10 @@ class OperationCard extends StatelessWidget {
                   PhosphorIcons.arrowRight(PhosphorIconsStyle.bold),
                   size: 20,
                   color: isPrimary
-                      ? theme.colorScheme.onPrimary.withOpacity(0.8)
+                      ? theme.colorScheme.onPrimary.withValues(alpha: 0.8)
                       : isDestructive
-                      ? Colors.red.shade600.withOpacity(0.8)
-                      : theme.colorScheme.onSurface.withOpacity(0.6),
+                      ? Colors.red.shade600.withValues(alpha: 0.8)
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ],
             ),

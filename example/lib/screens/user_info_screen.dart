@@ -59,8 +59,8 @@ class UserInfoScreen extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              theme.colorScheme.primary.withOpacity(0.05),
-              theme.colorScheme.secondary.withOpacity(0.05),
+              theme.colorScheme.primary.withValues(alpha: 0.05),
+              theme.colorScheme.secondary.withValues(alpha: 0.05),
             ],
           ),
         ),
@@ -103,7 +103,7 @@ class UserInfoScreen extends StatelessWidget {
                             'Detailed account information',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withOpacity(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 
                                 0.7,
                               ),
                             ),
@@ -375,13 +375,13 @@ class UserInfoScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.05),
+                color: theme.colorScheme.primary.withValues(alpha: 0.05),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
             ],
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.1),
+              color: theme.colorScheme.outline.withValues(alpha: 0.1),
             ),
           ),
           child: Column(
@@ -392,7 +392,7 @@ class UserInfoScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.1),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: PhosphorIcon(
@@ -444,7 +444,7 @@ class UserInfoScreen extends StatelessWidget {
         PhosphorIcon(
           icon,
           size: 16,
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         const Gap(12),
         SizedBox(
@@ -453,7 +453,7 @@ class UserInfoScreen extends StatelessWidget {
             label,
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ),

@@ -27,8 +27,8 @@ class StatusRow extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: isSuccess
-                ? Colors.green.withOpacity(0.1)
-                : Colors.orange.withOpacity(0.1),
+                ? Colors.green.withValues(alpha: 0.1)
+                : Colors.orange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: PhosphorIcon(
@@ -54,7 +54,7 @@ class StatusRow extends StatelessWidget {
                 subtitle,
                 style: GoogleFonts.inter(
                   fontSize: 8,
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

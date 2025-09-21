@@ -31,7 +31,7 @@ class DropdownField extends StatelessWidget {
             PhosphorIcon(
               icon,
               size: 20,
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
             const Gap(8),
             Text(
@@ -58,13 +58,13 @@ class DropdownField extends StatelessWidget {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: theme.colorScheme.outline.withOpacity(0.3),
+                color: theme.colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: theme.colorScheme.outline.withOpacity(0.3),
+                color: theme.colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
             focusedBorder: OutlineInputBorder(

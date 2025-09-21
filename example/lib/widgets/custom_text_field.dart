@@ -34,19 +34,19 @@ class CustomTextField extends StatelessWidget {
           child: PhosphorIcon(
             icon,
             size: 20,
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.3),
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.3),
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -60,10 +60,10 @@ class CustomTextField extends StatelessWidget {
         filled: true,
         fillColor: theme.colorScheme.surface,
         labelStyle: GoogleFonts.inter(
-          color: theme.colorScheme.onSurface.withOpacity(0.7),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
         ),
         hintStyle: GoogleFonts.inter(
-          color: theme.colorScheme.onSurface.withOpacity(0.5),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
         ),
       ),
     );

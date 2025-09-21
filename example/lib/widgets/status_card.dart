@@ -35,12 +35,12 @@ class StatusCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.08),
+            color: theme.colorScheme.primary.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.1)),
+        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,8 +66,8 @@ class StatusCard extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: user != null
-                        ? Colors.green.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.1),
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: PhosphorIcon(
@@ -99,7 +99,7 @@ class StatusCard extends StatelessWidget {
                           : 'Not logged in',
                       style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -367,14 +367,14 @@ class StatusCard extends StatelessWidget {
         PhosphorIcon(
           icon,
           size: 16,
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         const Gap(8),
         Text(
           '$label:',
           style: GoogleFonts.inter(
             fontSize: 13,
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const Gap(8),

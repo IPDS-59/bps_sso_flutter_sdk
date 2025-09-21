@@ -31,7 +31,7 @@ class MultiSelectChips extends StatelessWidget {
             PhosphorIcon(
               icon,
               size: 20,
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
             const Gap(8),
             Text(
@@ -76,7 +76,7 @@ class MultiSelectChips extends StatelessWidget {
               side: BorderSide(
                 color: isSelected
                     ? theme.colorScheme.primary
-                    : theme.colorScheme.outline.withOpacity(0.3),
+                    : theme.colorScheme.outline.withValues(alpha: 0.3),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
