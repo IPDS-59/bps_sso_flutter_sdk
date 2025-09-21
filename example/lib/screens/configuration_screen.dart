@@ -127,6 +127,25 @@ class ConfigurationScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    const Gap(12),
+                    IconButton(
+                      onPressed: () {
+                        final configCubit = context.read<ConfigurationCubit>();
+                        configCubit.alice.showInspector();
+                      },
+                      icon: PhosphorIcon(
+                        PhosphorIcons.monitor(PhosphorIconsStyle.duotone),
+                        size: 20,
+                      ),
+                      style: IconButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primaryContainer,
+                        foregroundColor: theme.colorScheme.onPrimaryContainer,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      tooltip: 'HTTP Inspector',
+                    ),
                     const Gap(16),
                     Expanded(
                       child: Column(
@@ -135,7 +154,7 @@ class ConfigurationScreen extends StatelessWidget {
                           Text(
                             'SDK Configuration',
                             style: GoogleFonts.inter(
-                              fontSize: 24,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.onSurface,
                             ),
@@ -408,7 +427,7 @@ class ConfigurationScreen extends StatelessWidget {
                                       Text(
                                         'Initializing...',
                                         style: GoogleFonts.inter(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -428,7 +447,7 @@ class ConfigurationScreen extends StatelessWidget {
                                       Text(
                                         'Initialize SDK',
                                         style: GoogleFonts.inter(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
