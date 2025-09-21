@@ -1,23 +1,48 @@
+import 'package:alice/alice.dart';
+import 'package:alice_dio/alice_dio_adapter.dart';
 import 'package:app_links/app_links.dart';
 import 'package:bps_sso_sdk/bps_sso_sdk.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+
+import '../core/di/injection.dart';
+import '../routes/app_router.dart';
 
 part 'configuration_state.dart';
 
 class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
   ConfigurationCubit() : super(const ConfigurationState()) {
     _appLinks = AppLinks();
+    _alice = getIt<Alice>();
+    _aliceDioAdapter = getIt<AliceDioAdapter>();
     _setupDeepLinkListener();
     _checkSDKInitializationStatus();
+    _setupAliceNavigatorKey();
   }
 
   late final AppLinks _appLinks;
+  late final Alice _alice;
+  late final AliceDioAdapter _aliceDioAdapter;
+
+  /// Get Alice instance for HTTP inspection
+  Alice get alice => _alice;
+
+  void _setupAliceNavigatorKey() {
+    // Set navigator key for Alice after AppRouter is available
+    final appRouter = getIt<AppRouter>();
+    _alice.addAdapter(_aliceDioAdapter);
+    _alice.setNavigatorKey(appRouter.navigatorKey);
+  }
 
   void _setupDeepLinkListener() {
     // Set up persistent deep link listener
     _appLinks.stringLinkStream.listen((String link) {
-      // Deep link received - SDK will handle it
+      // Deep link received - navigate to operations to handle the callback
+      final appRouter = getIt<AppRouter>();
+      if (appRouter.navigatorKey.currentContext != null) {
+        // Navigate to operations screen when deep link is received
+        appRouter.navigate(const OperationsRoute());
+      }
     });
   }
 
@@ -126,6 +151,9 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
         responseTypes: state.internalResponseTypes,
         scopes: state.internalScopes,
         codeChallengeMethod: state.internalCodeChallengeMethod,
+        realmName: state.internalRealm == 'pegawai-bps'
+            ? null
+            : state.internalRealm,
       ),
       external: BPSRealmConfig(
         clientId: state.externalClientId,
@@ -135,8 +163,12 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
         responseTypes: state.externalResponseTypes,
         scopes: state.externalScopes,
         codeChallengeMethod: state.externalCodeChallengeMethod,
+        realmName: state.externalRealm == 'eksternal'
+            ? null
+            : state.externalRealm,
       ),
       securityConfig: BPSSsoSecurityConfig.development,
+      interceptors: [_aliceDioAdapter],
     );
   }
 
@@ -151,6 +183,9 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
         responseTypes: state.internalResponseTypes,
         scopes: state.internalScopes,
         codeChallengeMethod: state.internalCodeChallengeMethod,
+        realmName: state.internalRealm == 'pegawai-bps'
+            ? null
+            : state.internalRealm,
       ),
       external: BPSRealmConfig(
         clientId: state.externalClientId,
@@ -160,8 +195,12 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
         responseTypes: state.externalResponseTypes,
         scopes: state.externalScopes,
         codeChallengeMethod: state.externalCodeChallengeMethod,
+        realmName: state.externalRealm == 'eksternal'
+            ? null
+            : state.externalRealm,
       ),
       securityConfig: BPSSsoSecurityConfig.development,
+      interceptors: [_aliceDioAdapter],
       authCallbacks: BPSSsoAuthCallback(
         onLoginSuccess: (user, realmType) {
           // Login successful callback
