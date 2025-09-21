@@ -1,0 +1,192 @@
+name: 📚 Documentation Issue
+description: Report issues with documentation or suggest improvements
+title: "[Docs]: "
+labels: ["documentation", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve the BPS SSO SDK documentation! Whether you found an error, something unclear, or have suggestions for improvement, we want to hear from you.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please check the following before submitting
+      options:
+        - label: I have searched existing issues for similar documentation problems
+          required: true
+        - label: I have identified the specific documentation that needs improvement
+          required: true
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: Which type of documentation is this about?
+      options:
+        - README.md
+        - API Reference
+        - Contributing Guidelines
+        - Workflow Documentation
+        - Code Comments
+        - Example Application
+        - Setup Instructions
+        - Troubleshooting Guide
+        - Configuration Examples
+        - Security Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Incorrect Information
+        - Missing Information
+        - Outdated Information
+        - Unclear Explanation
+        - Broken Link
+        - Typo/Grammar
+        - Code Example Error
+        - Missing Code Example
+        - Formatting Issue
+        - Accessibility Issue
+        - Translation Issue
+        - Suggestion for Improvement
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Documentation Location
+      description: Where is this documentation located?
+      placeholder: "e.g., README.md line 123, or https://github.com/repo/blob/main/docs/api.md"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content (if applicable)
+      description: Copy the current documentation content that has issues
+      render: markdown
+      placeholder: Paste the current documentation content here
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: Describe what's wrong or what could be improved
+      placeholder: |
+        Be specific about:
+        - What is incorrect, missing, or unclear
+        - Why it's problematic for users
+        - What confusion it might cause
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-improvement
+    attributes:
+      label: Suggested Improvement
+      description: How should this be fixed or improved?
+      render: markdown
+      placeholder: |
+        Provide your suggestion for:
+        - Corrected content
+        - Additional information to include
+        - Better way to explain the concept
+        - Code examples that should be added
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target Audience
+      description: Who would benefit most from this improvement?
+      multiple: true
+      options:
+        - New Users/Beginners
+        - Experienced Developers
+        - Contributors
+        - BPS Employees
+        - External Developers
+        - System Administrators
+        - Security Teams
+        - All Users
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this documentation issue?
+      options:
+        - Low - Minor improvement
+        - Medium - Notable issue affecting some users
+        - High - Significant problem affecting many users
+        - Critical - Blocking users from using the SDK
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-impact
+    attributes:
+      label: User Impact
+      description: How does this documentation issue affect users?
+      placeholder: |
+        - What problems does this cause for users?
+        - How might users get confused or stuck?
+        - What workarounds are users currently using?
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other helpful information
+      placeholder: |
+        - Your experience level with the SDK
+        - How you discovered this issue
+        - Related documentation that might need similar updates
+        - Screenshots of confusing UI or error messages
+
+  - type: checkboxes
+    id: related-areas
+    attributes:
+      label: Related Areas
+      description: Are there other areas that might need similar updates?
+      options:
+        - label: Similar issues might exist in other documentation sections
+        - label: Code examples throughout the docs might need updates
+        - label: This affects multiple languages/platforms
+        - label: API reference needs corresponding updates
+        - label: Example application needs updates
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution Offer
+      description: Would you like to help fix this documentation issue?
+      options:
+        - label: I would like to submit a PR to fix this issue
+        - label: I can provide more detailed examples or explanations
+        - label: I can help review proposed changes
+        - label: I can test documentation changes with real use cases
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Code Examples or Screenshots
+      description: Include any helpful examples, screenshots, or code snippets
+      placeholder: |
+        - Before/after examples
+        - Screenshots of confusing interfaces
+        - Working code examples
+        - Error messages users encounter

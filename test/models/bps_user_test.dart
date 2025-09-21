@@ -55,7 +55,10 @@ void main() {
         expect(user.isExternal, isFalse);
       });
 
-      test('should throw exception when required fields are missing for internal user', () {
+      test(
+        'should throw exception when required fields are missing '
+        'for internal user',
+        () {
         final json = {
           'sub': 'user123',
           'preferred_username': 'john.doe',
@@ -436,7 +439,9 @@ void main() {
         );
       });
 
-      test('should throw MissingUserDataException for missing access_token', () {
+      test(
+        'should throw MissingUserDataException for missing access_token',
+        () {
         final json = {
           'sub': 'user123',
           'preferred_username': 'john.doe',

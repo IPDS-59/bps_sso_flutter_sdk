@@ -18,6 +18,8 @@ A Flutter SDK for seamless integration with BPS (Badan Pusat Statistik) SSO auth
 - [Best Practices](#best-practices)
 - [API Reference](#api-reference)
 - [Requirements](#requirements)
+- [Contributing](#contributing)
+- [Workflows](#workflows)
 
 ## Features
 
@@ -1022,13 +1024,65 @@ try {
 - `crypto` - PKCE cryptographic functions
 - `url_launcher` - URL launching utilities
 
+## Contributing
+
+We welcome contributions to the BPS SSO SDK! Please see our [Contributing Guidelines](CONTRIBUTING.md) for detailed information on:
+
+- Development setup and environment
+- Git Flow workflow and branching strategy
+- Coding standards and style guidelines
+- Testing requirements and coverage
+- Pull request process and templates
+- Issue reporting guidelines
+
+### Quick Start for Contributors
+
+1. **Fork and clone** the repository
+2. **Create a feature branch** from `develop`
+3. **Make your changes** following our coding standards
+4. **Run tests** and ensure they pass
+5. **Submit a pull request** to the `develop` branch
+
+For detailed instructions, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Workflows
+
+This repository uses automated GitHub Actions workflows for CI/CD. See our [Workflows Documentation](WORKFLOWS.md) for detailed information on:
+
+- **CI Pipeline**: Automated testing, analysis, and quality checks
+- **Release Process**: Automated versioning, tagging, and publishing
+- **Git Flow Integration**: Branch-based workflow automation
+- **Manual Triggers**: How to manually run workflows
+- **Troubleshooting**: Common issues and solutions
+
+### Workflow Overview
+
+```mermaid
+graph TD
+    A[Push/PR] --> B[CI Workflow]
+    C[Create Release Branch] --> D[Version Bump]
+    E[Merge to Main] --> F[Release & Publish]
+    F --> G[Back Merge to Develop]
+
+    B --> H[Static Analysis]
+    B --> I[Tests & Coverage]
+    B --> J[Build Validation]
+```
+
+For complete workflow documentation, see [WORKFLOWS.md](WORKFLOWS.md).
+
 ## License
 
-This SDK is proprietary software for BPS applications.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-For issues or questions, please contact the BPS development team or create an issue in the repository.
+For issues or questions:
+
+- **Bug Reports**: Create an issue using our [bug report template](.github/ISSUE_TEMPLATE/bug_report.md)
+- **Feature Requests**: Create an issue using our [feature request template](.github/ISSUE_TEMPLATE/feature_request.md)
+- **Questions**: Start a discussion in our [GitHub Discussions](../../discussions)
+- **Security Issues**: Email the maintainers directly (see [SECURITY.md](SECURITY.md))
 
 ## Example Application
 

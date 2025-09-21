@@ -1,0 +1,25 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: ../../README.md
+    about: Read the comprehensive documentation and API reference
+
+  - name: 💬 GitHub Discussions
+    url: ../../discussions
+    about: Ask questions, share ideas, and discuss with the community
+
+  - name: 🚀 Contributing Guide
+    url: ../../blob/main/CONTRIBUTING.md
+    about: Learn how to contribute to the BPS SSO SDK
+
+  - name: 🔄 Workflow Documentation
+    url: ../../blob/main/WORKFLOWS.md
+    about: Understand our CI/CD workflows and development process
+
+  - name: 🔒 Security Policy
+    url: mailto:security@example.com
+    about: Report critical security vulnerabilities privately
+
+  - name: 📞 BPS Support
+    url: https://www.bps.go.id/
+    about: Official BPS (Badan Pusat Statistik) support and information

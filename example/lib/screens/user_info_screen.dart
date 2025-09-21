@@ -59,8 +59,8 @@ class UserInfoScreen extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              theme.colorScheme.primary.withOpacity(0.05),
-              theme.colorScheme.secondary.withOpacity(0.05),
+              theme.colorScheme.primary.withValues(alpha: 0.05),
+              theme.colorScheme.secondary.withValues(alpha: 0.05),
             ],
           ),
         ),
@@ -103,7 +103,7 @@ class UserInfoScreen extends StatelessWidget {
                             'Detailed account information',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withOpacity(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 
                                 0.7,
                               ),
                             ),
@@ -136,66 +136,69 @@ class UserInfoScreen extends StatelessWidget {
                   children: [
                     // User Avatar
                     Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              theme.colorScheme.primary,
-                              theme.colorScheme.secondary,
-                            ],
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  theme.colorScheme.primary,
+                                  theme.colorScheme.secondary,
+                                ],
+                              ),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: theme.colorScheme.surface,
+                              ),
+                              child: AuthenticatedImage(
+                                imageUrl: user.photo,
+                                accessToken: user.accessToken,
+                                width: 100,
+                                height: 100,
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: theme.colorScheme.surface,
-                          ),
-                          child: AuthenticatedImage(
-                            imageUrl: user.photo,
-                            accessToken: user.accessToken,
-                            width: 100,
-                            height: 100,
-                          ),
-                        ),
-                      ),
-                    )
+                        )
                         .animate()
                         .fadeIn(delay: 100.ms, duration: 600.ms)
-                        .scale(begin: const Offset(0.8, 0.8), end: const Offset(1, 1)),
+                        .scale(
+                          begin: const Offset(0.8, 0.8),
+                          end: const Offset(1, 1),
+                        ),
 
                     const Gap(16),
 
                     // User Name and Email
                     Center(
-                      child: Column(
-                        children: [
-                          Text(
-                            user.fullName,
-                            style: GoogleFonts.inter(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                            textAlign: TextAlign.center,
+                          child: Column(
+                            children: [
+                              Text(
+                                user.fullName,
+                                style: GoogleFonts.inter(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const Gap(4),
+                              ObscuredText(
+                                text: user.email,
+                                isObscured: privacyMode,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                          const Gap(4),
-                          ObscuredText(
-                            text: user.email,
-                            isObscured: privacyMode,
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    )
+                        )
                         .animate()
                         .fadeIn(delay: 200.ms, duration: 600.ms)
                         .slideY(begin: 0.3, end: 0),
@@ -250,7 +253,9 @@ class UserInfoScreen extends StatelessWidget {
                       const Gap(24),
                       _buildSection(
                         context: context,
-                        icon: PhosphorIcons.briefcase(PhosphorIconsStyle.duotone),
+                        icon: PhosphorIcons.briefcase(
+                          PhosphorIconsStyle.duotone,
+                        ),
                         title: 'Work Information',
                         delay: 600.ms,
                         children: [
@@ -326,11 +331,17 @@ class UserInfoScreen extends StatelessWidget {
                         _buildInfoTile(
                           context: context,
                           icon: user.isTokenExpired
-                              ? PhosphorIcons.warning(PhosphorIconsStyle.duotone)
-                              : PhosphorIcons.checkCircle(PhosphorIconsStyle.duotone),
+                              ? PhosphorIcons.warning(
+                                  PhosphorIconsStyle.duotone,
+                                )
+                              : PhosphorIcons.checkCircle(
+                                  PhosphorIconsStyle.duotone,
+                                ),
                           label: 'Token Status',
                           value: user.isTokenExpired ? 'Expired' : 'Valid',
-                          valueColor: user.isTokenExpired ? Colors.red : Colors.green,
+                          valueColor: user.isTokenExpired
+                              ? Colors.red
+                              : Colors.green,
                           shouldObscure: false,
                           isPrivacyMode: privacyMode,
                         ),
@@ -358,59 +369,62 @@ class UserInfoScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.1),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: PhosphorIcon(
-                  icon,
-                  size: 20,
-                  color: theme.colorScheme.primary,
-                ),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
               ),
-              const Gap(12),
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface,
+            ],
+            border: Border.all(
+              color: theme.colorScheme.outline.withValues(alpha: 0.1),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: PhosphorIcon(
+                      icon,
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const Gap(12),
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+              const Gap(20),
+              ...children.map(
+                (child) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: child,
                 ),
               ),
             ],
           ),
-          const Gap(20),
-          ...children.map(
-            (child) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: child,
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(delay: delay, duration: 600.ms).slideY(begin: 0.3, end: 0);
+        )
+        .animate()
+        .fadeIn(delay: delay, duration: 600.ms)
+        .slideY(begin: 0.3, end: 0);
   }
 
   Widget _buildInfoTile({
@@ -430,7 +444,7 @@ class UserInfoScreen extends StatelessWidget {
         PhosphorIcon(
           icon,
           size: 16,
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         const Gap(12),
         SizedBox(
@@ -439,7 +453,7 @@ class UserInfoScreen extends StatelessWidget {
             label,
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ),
