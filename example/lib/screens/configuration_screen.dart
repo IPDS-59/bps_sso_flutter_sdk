@@ -209,6 +209,8 @@ class ConfigurationScreen extends StatelessWidget {
                                   _InternalClientIdField(state: state),
                                   const Gap(16),
                                   _InternalRedirectUriField(state: state),
+                                  const Gap(16),
+                                  _InternalRealmField(state: state),
                                 ],
                               ),
 
@@ -282,6 +284,8 @@ class ConfigurationScreen extends StatelessWidget {
                                   _ExternalClientIdField(state: state),
                                   const Gap(16),
                                   _ExternalRedirectUriField(state: state),
+                                  const Gap(16),
+                                  _ExternalRealmField(state: state),
                                 ],
                               ),
 
@@ -696,6 +700,98 @@ class _ExternalRedirectUriFieldState extends State<_ExternalRedirectUriField> {
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter external redirect URI';
+        }
+        return null;
+      },
+    );
+  }
+}
+
+class _InternalRealmField extends StatefulWidget {
+  const _InternalRealmField({required this.state});
+
+  final ConfigurationState state;
+
+  @override
+  State<_InternalRealmField> createState() => _InternalRealmFieldState();
+}
+
+class _InternalRealmFieldState extends State<_InternalRealmField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.state.internalRealm);
+    _controller.addListener(() {
+      context.read<ConfigurationCubit>().updateInternalRealm(
+        _controller.text,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: _controller,
+      label: 'Realm Name',
+      hint: 'pegawai-bps (default)',
+      icon: PhosphorIcons.crown(PhosphorIconsStyle.duotone),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter internal realm name';
+        }
+        return null;
+      },
+    );
+  }
+}
+
+class _ExternalRealmField extends StatefulWidget {
+  const _ExternalRealmField({required this.state});
+
+  final ConfigurationState state;
+
+  @override
+  State<_ExternalRealmField> createState() => _ExternalRealmFieldState();
+}
+
+class _ExternalRealmFieldState extends State<_ExternalRealmField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.state.externalRealm);
+    _controller.addListener(() {
+      context.read<ConfigurationCubit>().updateExternalRealm(
+        _controller.text,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: _controller,
+      label: 'Realm Name',
+      hint: 'eksternal (default)',
+      icon: PhosphorIcons.crown(PhosphorIconsStyle.duotone),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter external realm name';
         }
         return null;
       },
