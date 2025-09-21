@@ -13,6 +13,47 @@ class BPSSsoConfig {
     this.authCallbacks = BPSSsoAuthCallback.none,
   });
 
+  /// Factory constructor to create BPS SSO config with sensible defaults
+  factory BPSSsoConfig.create({
+    required String appName,
+    required String internalClientId,
+    required String externalClientId,
+    String baseUrl = 'https://sso.bps.go.id',
+    List<String> responseTypes = const ['code'],
+    List<String> scopes = const ['openid', 'profile', 'email'],
+    String codeChallengeMethod = 'S256',
+    BPSSsoCustomTabsConfig? customTabsConfig,
+    BPSSsoErrorConfig? errorConfig,
+    BPSSsoSecurityConfig? securityConfig,
+    BPSSsoAuthCallback? authCallbacks,
+  }) {
+    return BPSSsoConfig(
+      baseUrl: baseUrl,
+      internal: BPSRealmConfig(
+        clientId: internalClientId,
+        redirectUri: 'id.go.bps://$appName-sso-internal',
+        realmType: BPSRealmType.internal,
+        baseUrl: baseUrl,
+        responseTypes: responseTypes,
+        scopes: scopes,
+        codeChallengeMethod: codeChallengeMethod,
+      ),
+      external: BPSRealmConfig(
+        clientId: externalClientId,
+        redirectUri: 'id.go.bps://$appName-sso-eksternal',
+        realmType: BPSRealmType.external,
+        baseUrl: baseUrl,
+        responseTypes: responseTypes,
+        scopes: scopes,
+        codeChallengeMethod: codeChallengeMethod,
+      ),
+      customTabsConfig: customTabsConfig ?? const BPSSsoCustomTabsConfig(),
+      errorConfig: errorConfig ?? const BPSSsoErrorConfig(),
+      securityConfig: securityConfig ?? BPSSsoSecurityConfig.iso27001,
+      authCallbacks: authCallbacks ?? BPSSsoAuthCallback.none,
+    );
+  }
+
   /// Base URL for BPS SSO server
   final String baseUrl;
 
