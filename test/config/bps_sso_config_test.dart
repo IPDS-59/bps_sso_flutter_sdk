@@ -66,6 +66,36 @@ void main() {
         expect(config.internal.codeChallengeMethod, equals('plain'));
         expect(config.external.codeChallengeMethod, equals('plain'));
       });
+
+      test('should create config with custom realm names', () {
+        final config = BPSSsoConfig.create(
+          appName: 'testapp',
+          internalClientId: 'internal-client',
+          externalClientId: 'external-client',
+          internalRealmName: 'custom-internal-realm',
+          externalRealmName: 'custom-external-realm',
+        );
+
+        expect(config.internal.realm, equals('custom-internal-realm'));
+        expect(config.external.realm, equals('custom-external-realm'));
+        expect(config.internal.realmName, equals('custom-internal-realm'));
+        expect(config.external.realmName, equals('custom-external-realm'));
+      });
+
+      test('should use default realm names when custom names are null', () {
+        final config = BPSSsoConfig.create(
+          appName: 'testapp',
+          internalClientId: 'internal-client',
+          externalClientId: 'external-client',
+          internalRealmName: null,
+          externalRealmName: null,
+        );
+
+        expect(config.internal.realm, equals('pegawai-bps'));
+        expect(config.external.realm, equals('eksternal'));
+        expect(config.internal.realmName, isNull);
+        expect(config.external.realmName, isNull);
+      });
     });
 
     group('Manual Constructor', () {
