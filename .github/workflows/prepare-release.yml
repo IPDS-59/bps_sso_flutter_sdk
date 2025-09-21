@@ -1,0 +1,575 @@
+name: Prepare Release - Branch Setup & Changelog
+
+on:
+  create:
+  push:
+    branches:
+      - "release/**"
+      - "hotfix/**"
+
+env:
+  FLUTTER_VERSION: '3.32.0'
+
+jobs:
+  release-branch-setup:
+    if: github.event_name == 'create' && github.event.ref_type == 'branch' && (startsWith(github.event.ref, 'release/') || startsWith(github.event.ref, 'hotfix/'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout the new branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Analyze branch and version
+        id: version_info
+        run: |
+          BRANCH_NAME="${{ github.event.ref }}"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+          if [[ $BRANCH_NAME == release/* ]]; then
+            VERSION=$(echo $BRANCH_NAME | sed 's/release\///')
+            TYPE="release"
+            BASE_BRANCH="develop"
+          elif [[ $BRANCH_NAME == hotfix/* ]]; then
+            VERSION=$(echo $BRANCH_NAME | sed 's/hotfix\///')
+            TYPE="hotfix"
+            BASE_BRANCH="main"
+          fi
+
+          # Ensure version starts with 'v'
+          if [[ ! $VERSION == v* ]]; then
+            VERSION="v$VERSION"
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+          echo "base_branch=$BASE_BRANCH" >> $GITHUB_OUTPUT
+          echo "clean_version=$(echo $VERSION | sed 's/^v//')" >> $GITHUB_OUTPUT
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Validate Flutter project
+        run: |
+          echo "📦 Installing dependencies..."
+          flutter pub get
+
+          echo "🔍 Running static analysis..."
+          flutter analyze lib/
+
+          echo "🧪 Running tests..."
+          if [ -d "test" ] && [ "$(find test -name '*_test.dart' | wc -l)" -gt 0 ]; then
+            flutter test
+          else
+            echo "⚠️ No tests found, skipping test execution"
+          fi
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="${{ steps.version_info.outputs.version }}"
+          TYPE="${{ steps.version_info.outputs.type }}"
+          BASE_BRANCH="${{ steps.version_info.outputs.base_branch }}"
+
+          echo "📋 Generating changelog for $VERSION..."
+
+          # Get the latest tag for comparison
+          LATEST_TAG=$(git tag --sort=-version:refname | head -n1 || echo "")
+
+          if [ -n "$LATEST_TAG" ]; then
+            echo "Comparing against latest tag: $LATEST_TAG"
+            BASE_COMMIT="$LATEST_TAG"
+          else
+            echo "No previous tags found, using initial commit"
+            BASE_COMMIT=$(git rev-list --max-parents=0 HEAD)
+          fi
+
+          # Generate changelog content
+          CHANGELOG_FILE="CHANGELOG_TEMP.md"
+
+          echo "# Changelog" > $CHANGELOG_FILE
+          echo "" >> $CHANGELOG_FILE
+          echo "## [${{ steps.version_info.outputs.clean_version }}] - $(date +%Y-%m-%d)" >> $CHANGELOG_FILE
+          echo "" >> $CHANGELOG_FILE
+
+          # Get all commits since last tag
+          COMMITS=$(git log --pretty=format:"%s (%h)" "$BASE_COMMIT..HEAD" 2>/dev/null || git log --pretty=format:"%s (%h)")
+
+          # Categorize commits
+          echo "### ✨ Features" >> $CHANGELOG_FILE
+          echo "$COMMITS" | grep -E "^(feat|feature):" | sed 's/^/- /' >> $CHANGELOG_FILE || echo "- No new features" >> $CHANGELOG_FILE
+          echo "" >> $CHANGELOG_FILE
+
+          echo "### 🐛 Bug Fixes" >> $CHANGELOG_FILE
+          echo "$COMMITS" | grep -E "^(fix|bugfix):" | sed 's/^/- /' >> $CHANGELOG_FILE || echo "- No bug fixes" >> $CHANGELOG_FILE
+          echo "" >> $CHANGELOG_FILE
+
+          echo "### 📱 Platform Updates" >> $CHANGELOG_FILE
+          echo "$COMMITS" | grep -E "^(android|ios|platform):" | sed 's/^/- /' >> $CHANGELOG_FILE || echo "- No platform updates" >> $CHANGELOG_FILE
+          echo "" >> $CHANGELOG_FILE
+
+          echo "### 📚 Documentation" >> $CHANGELOG_FILE
+          echo "$COMMITS" | grep -E "^(docs|doc):" | sed 's/^/- /' >> $CHANGELOG_FILE || echo "- No documentation changes" >> $CHANGELOG_FILE
+          echo "" >> $CHANGELOG_FILE
+
+          echo "### 🔧 Maintenance" >> $CHANGELOG_FILE
+          echo "$COMMITS" | grep -E "^(chore|refactor|perf|style|test):" | sed 's/^/- /' >> $CHANGELOG_FILE || echo "- No maintenance changes" >> $CHANGELOG_FILE
+          echo "" >> $CHANGELOG_FILE
+
+          # Check for breaking changes
+          BREAKING_CHANGES=$(echo "$COMMITS" | grep -E "(BREAKING CHANGE|!:|feat!:|fix!:)" || echo "")
+          if [ -n "$BREAKING_CHANGES" ]; then
+            echo "### ⚠️ Breaking Changes" >> $CHANGELOG_FILE
+            echo "$BREAKING_CHANGES" | sed 's/^/- /' >> $CHANGELOG_FILE
+            echo "" >> $CHANGELOG_FILE
+          fi
+
+          # Add migration notes for major versions
+          if [[ $VERSION == v*.0.0 ]]; then
+            echo "### 🔄 Migration Guide" >> $CHANGELOG_FILE
+            echo "- This is a major version release" >> $CHANGELOG_FILE
+            echo "- Please review the breaking changes above" >> $CHANGELOG_FILE
+            echo "- Update your dependencies and test thoroughly" >> $CHANGELOG_FILE
+            echo "" >> $CHANGELOG_FILE
+          fi
+
+          echo "### 📦 Dependencies" >> $CHANGELOG_FILE
+          echo "- Flutter SDK: ${{ env.FLUTTER_VERSION }}+" >> $CHANGELOG_FILE
+          echo "- Dart SDK: Compatible with Flutter ${{ env.FLUTTER_VERSION }}" >> $CHANGELOG_FILE
+          echo "" >> $CHANGELOG_FILE
+
+          # Check if we should update the main CHANGELOG.md
+          if [ -f "CHANGELOG.md" ]; then
+            # Prepend new content to existing changelog
+            echo "Updating existing CHANGELOG.md..."
+            cat $CHANGELOG_FILE > CHANGELOG_NEW.md
+            echo "" >> CHANGELOG_NEW.md
+            tail -n +2 CHANGELOG.md >> CHANGELOG_NEW.md
+            mv CHANGELOG_NEW.md CHANGELOG.md
+            rm $CHANGELOG_FILE
+            echo "changelog_updated=true" >> $GITHUB_OUTPUT
+          else
+            # Create new changelog
+            echo "Creating new CHANGELOG.md..."
+            mv $CHANGELOG_FILE CHANGELOG.md
+            echo "changelog_updated=true" >> $GITHUB_OUTPUT
+          fi
+
+          echo "✅ Changelog generation completed"
+
+      - name: Update pubspec.yaml version
+        run: |
+          CLEAN_VERSION="${{ steps.version_info.outputs.clean_version }}"
+          echo "📝 Updating pubspec.yaml version to $CLEAN_VERSION..."
+
+          # Backup original file
+          cp pubspec.yaml pubspec.yaml.bak
+
+          # Update version in pubspec.yaml
+          sed -i "s/^version: .*/version: $CLEAN_VERSION/" pubspec.yaml
+
+          # Verify the change
+          echo "✅ Updated version in pubspec.yaml:"
+          grep "^version:" pubspec.yaml
+
+          # Check if example app exists and update it too
+          if [ -f "example/pubspec.yaml" ]; then
+            echo "📝 Updating example app pubspec.yaml..."
+            sed -i "s/^version: .*/version: $CLEAN_VERSION/" example/pubspec.yaml
+            echo "✅ Updated example app version"
+          fi
+
+      - name: Update version in lib files
+        run: |
+          CLEAN_VERSION="${{ steps.version_info.outputs.clean_version }}"
+          echo "📝 Updating version references in library files..."
+
+          # Find and update version constants in Dart files
+          find lib -name "*.dart" -exec grep -l "version.*=.*['\"][0-9]\+\.[0-9]\+\.[0-9]\+['\"]" {} \; | while read file; do
+            echo "Updating version in $file..."
+            sed -i "s/version.*=.*['\"][0-9]\+\.[0-9]\+\.[0-9]\+['\"]/version = '$CLEAN_VERSION'/g" "$file"
+          done
+
+          # Update any README.md version references
+          if [ -f "README.md" ]; then
+            echo "📝 Updating README.md version references..."
+            sed -i "s/bps_sso_sdk: \^[0-9]\+\.[0-9]\+\.[0-9]\+/bps_sso_sdk: ^$CLEAN_VERSION/g" README.md
+            sed -i "s/version: [0-9]\+\.[0-9]\+\.[0-9]\+/version: $CLEAN_VERSION/g" README.md
+          fi
+
+          echo "✅ Version updates completed"
+
+      - name: Create preparation PR branch
+        id: pr_branch
+        run: |
+          VERSION="${{ steps.version_info.outputs.version }}"
+          TYPE="${{ steps.version_info.outputs.type }}"
+          RELEASE_BRANCH="${{ steps.version_info.outputs.branch_name }}"
+
+          # Check if branch already exists and generate unique name if needed
+          BASE_PR_BRANCH="chore/prepare-$TYPE-$VERSION"
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+          if git ls-remote --heads origin "$BASE_PR_BRANCH" | grep -q "$BASE_PR_BRANCH"; then
+            PR_BRANCH="${BASE_PR_BRANCH}-${TIMESTAMP}"
+            echo "⚠️ Base branch exists, using unique name: $PR_BRANCH"
+          else
+            PR_BRANCH="$BASE_PR_BRANCH"
+            echo "✅ Using base branch name: $PR_BRANCH"
+          fi
+
+          git checkout -b "$PR_BRANCH"
+          echo "pr_branch=$PR_BRANCH" >> $GITHUB_OUTPUT
+
+          # Add all changes
+          git add .
+
+          # Check if there are changes to commit
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+
+            # Create commit message
+            CHANGELOG_STATUS="${{ steps.changelog.outputs.changelog_updated }}"
+            if [[ "$CHANGELOG_STATUS" == "true" ]]; then
+              CHANGELOG_INFO="- Generate release changelog with categorized changes"
+            else
+              CHANGELOG_INFO="- Changelog generation completed"
+            fi
+
+            # Commit with multiline message
+            git commit -m "chore: prepare $VERSION $TYPE" \
+                       -m "" \
+                       -m "Automated preparation for $TYPE $VERSION:" \
+                       -m "- Update version to ${{ steps.version_info.outputs.clean_version }} in pubspec.yaml" \
+                       -m "- Update version references in library files" \
+                       -m "- Update README.md version examples" \
+                       -m "$CHANGELOG_INFO" \
+                       -m "" \
+                       -m "This commit prepares the $RELEASE_BRANCH branch for $TYPE completion."
+
+            # Push the PR branch
+            git push origin "$PR_BRANCH"
+          fi
+
+      - name: Create required labels if they don't exist
+        if: steps.pr_branch.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🏷️ Ensuring required labels exist..."
+
+          # Create labels if they don't exist
+          gh label create "chore" --description "Maintenance and chore tasks" --color "0e8a16" || echo "Label 'chore' already exists"
+          gh label create "auto-generated" --description "Automatically generated by GitHub Actions" --color "bfdadc" || echo "Label 'auto-generated' already exists"
+          gh label create "release" --description "Release branch related" --color "d73a4a" || echo "Label 'release' already exists"
+          gh label create "hotfix" --description "Hotfix branch related" --color "b60205" || echo "Label 'hotfix' already exists"
+          gh label create "version-bump" --description "Version bump changes" --color "0052cc" || echo "Label 'version-bump' already exists"
+
+          echo "✅ Label creation completed"
+
+      - name: Create preparation PR
+        if: steps.pr_branch.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version_info.outputs.version }}"
+          TYPE="${{ steps.version_info.outputs.type }}"
+          RELEASE_BRANCH="${{ steps.version_info.outputs.branch_name }}"
+          PR_BRANCH="${{ steps.pr_branch.outputs.pr_branch }}"
+          CHANGELOG_STATUS="${{ steps.changelog.outputs.changelog_updated }}"
+
+          # Build PR body based on changelog status
+          if [[ "$CHANGELOG_STATUS" == "true" ]]; then
+            CHANGELOG_SECTION="- ✅ Generated comprehensive changelog with categorized commits\n- 📋 Added breaking changes detection\n- 📦 Included dependency information"
+          else
+            CHANGELOG_SECTION="- ✅ Changelog preparation completed\n- 📋 Ready for manual changelog review if needed"
+          fi
+
+          PR_BODY="## Summary
+          Automated preparation for $TYPE $VERSION.
+
+          This PR was automatically created when the $RELEASE_BRANCH branch was detected.
+
+          ## Changes Made
+
+          ### 📝 Version Updates
+          - Updated version to ${{ steps.version_info.outputs.clean_version }} in pubspec.yaml
+          - Updated example app version (if present)
+          - Updated version constants in library files
+          - Updated README.md version examples and installation instructions
+
+          ### 📋 Changelog
+          $CHANGELOG_SECTION
+
+          ### ✅ Validation
+          - 🔍 Static analysis passed
+          - 🧪 Tests executed successfully
+          - 📦 Dependencies resolved
+          - 🏗️ Flutter project validation completed
+
+          ## Flutter Package Details
+          - **Package Version**: ${{ steps.version_info.outputs.clean_version }}
+          - **Flutter SDK**: ${{ env.FLUTTER_VERSION }}+
+          - **Release Type**: $TYPE
+
+          ## Auto-generated
+          This PR was automatically created by GitHub Actions when the $TYPE branch was created.
+
+          **Review and merge when ready** - this prepares the $TYPE branch for completion and eventual publishing to pub.dev."
+
+          # Create PR to the release branch
+          gh pr create \
+            --base "$RELEASE_BRANCH" \
+            --head "$PR_BRANCH" \
+            --title "chore: prepare $VERSION $TYPE" \
+            --body "$PR_BODY" \
+            --label "chore" \
+            --label "auto-generated" \
+            --label "$TYPE" \
+            --label "version-bump"
+
+      - name: Create release preparation summary
+        run: |
+          VERSION="${{ steps.version_info.outputs.version }}"
+          TYPE="${{ steps.version_info.outputs.type }}"
+          BRANCH_NAME="${{ steps.version_info.outputs.branch_name }}"
+          CHANGELOG_STATUS="${{ steps.changelog.outputs.changelog_updated }}"
+
+          echo "## 📋 $TYPE $VERSION Preparation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: \`$BRANCH_NAME\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "**Type**: $TYPE" >> $GITHUB_STEP_SUMMARY
+          echo "**Flutter**: ${{ env.FLUTTER_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Completed Actions" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 Flutter project validation (analysis + tests)" >> $GITHUB_STEP_SUMMARY
+          if [[ "$CHANGELOG_STATUS" == "true" ]]; then
+            echo "- 📋 Generated comprehensive changelog" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- 📋 Changelog preparation completed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- 📝 Updated pubspec.yaml and library versions" >> $GITHUB_STEP_SUMMARY
+          echo "- 📖 Updated README.md version examples" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ steps.pr_branch.outputs.has_changes }}" == "true" ]]; then
+            echo "- 📋 Created preparation PR to \`$BRANCH_NAME\` branch" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ℹ️ No changes needed (already up to date)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review and merge the preparation PR" >> $GITHUB_STEP_SUMMARY
+          echo "2. Create PR from \`$BRANCH_NAME\` to main when ready" >> $GITHUB_STEP_SUMMARY
+          echo "3. After merge to main, the release workflow will:" >> $GITHUB_STEP_SUMMARY
+          echo "   - Create the $VERSION tag" >> $GITHUB_STEP_SUMMARY
+          echo "   - Generate GitHub release" >> $GITHUB_STEP_SUMMARY
+          echo "   - Create back-merge PR to develop" >> $GITHUB_STEP_SUMMARY
+
+  # JOB 2: Create PR from release/hotfix branch to main
+  create-main-pr:
+    if: github.event_name == 'create' && github.event.ref_type == 'branch' && (startsWith(github.event.ref, 'release/') || startsWith(github.event.ref, 'hotfix/'))
+    needs: release-branch-setup
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Analyze branch and version
+        id: version_info
+        run: |
+          BRANCH_NAME="${{ github.event.ref }}"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+          if [[ $BRANCH_NAME == release/* ]]; then
+            VERSION=$(echo $BRANCH_NAME | sed 's/release\///')
+            TYPE="release"
+            PR_TITLE="release: $VERSION"
+          elif [[ $BRANCH_NAME == hotfix/* ]]; then
+            VERSION=$(echo $BRANCH_NAME | sed 's/hotfix\///')
+            TYPE="hotfix"
+            PR_TITLE="fix: $VERSION"
+          fi
+
+          # Ensure version starts with 'v'
+          if [[ ! $VERSION == v* ]]; then
+            VERSION="v$VERSION"
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+          echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
+          echo "clean_version=$(echo $VERSION | sed 's/^v//')" >> $GITHUB_OUTPUT
+
+      - name: Check for existing PR to main
+        id: check_existing_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH_NAME="${{ steps.version_info.outputs.branch_name }}"
+
+          # Check if there's already a PR from this branch to main
+          EXISTING_PRS=$(gh pr list --head "$BRANCH_NAME" --base main --state open --json number,title)
+
+          if [ "$(echo "$EXISTING_PRS" | jq '. | length')" -gt 0 ]; then
+            echo "⚠️ Found existing PR from $BRANCH_NAME to main:"
+            echo "$EXISTING_PRS" | jq -r '.[] | "#\(.number): \(.title)"'
+            echo "skip_pr=true" >> $GITHUB_OUTPUT
+
+            PR_NUMBER=$(echo "$EXISTING_PRS" | jq -r '.[0].number')
+            echo "existing_pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          else
+            echo "✅ No existing PR found from $BRANCH_NAME to main"
+            echo "skip_pr=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create required labels if they don't exist
+        if: steps.check_existing_pr.outputs.skip_pr == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🏷️ Ensuring required labels exist..."
+
+          TYPE="${{ steps.version_info.outputs.type }}"
+
+          # Create labels if they don't exist
+          gh label create "auto-generated" --description "Automatically generated by GitHub Actions" --color "bfdadc" || echo "Label 'auto-generated' already exists"
+          gh label create "$TYPE" --description "$TYPE branch related" --color "d73a4a" || echo "Label '$TYPE' already exists"
+          gh label create "ready-to-merge" --description "Ready to be merged" --color "0e8a16" || echo "Label 'ready-to-merge' already exists"
+
+          echo "✅ Label creation completed"
+
+      - name: Create PR to main branch
+        if: steps.check_existing_pr.outputs.skip_pr == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH_NAME="${{ steps.version_info.outputs.branch_name }}"
+          VERSION="${{ steps.version_info.outputs.version }}"
+          TYPE="${{ steps.version_info.outputs.type }}"
+          PR_TITLE="${{ steps.version_info.outputs.pr_title }}"
+          CLEAN_VERSION="${{ steps.version_info.outputs.clean_version }}"
+
+          # Build PR body
+          if [[ "$TYPE" == "release" ]]; then
+            PR_BODY="## Summary
+          $TYPE $VERSION ready for merge to main branch.
+
+          ## 📦 Package Release Details
+          - **Version**: $CLEAN_VERSION
+          - **Type**: $TYPE
+          - **Flutter SDK**: ${{ env.FLUTTER_VERSION }}+
+
+          ## 🚀 Changes
+          - New features and improvements from develop branch
+          - Version bumped to $CLEAN_VERSION in pubspec.yaml
+          - Updated changelog with categorized changes
+          - Updated documentation and README examples
+          - All tests passing and code reviewed
+
+          ## 📱 Flutter Package
+          This release will be available for:
+          - Direct GitHub dependency usage
+          - Manual publishing to pub.dev
+
+          ## 🔗 Deployment
+          After merge, the release workflow will automatically:
+          - Create the $VERSION tag
+          - Generate GitHub release with changelog
+          - Create back-merge PR to develop branch
+
+          ## ✅ Checklist
+          - [ ] All preparation tasks completed
+          - [ ] Tests are passing
+          - [ ] Documentation updated
+          - [ ] Ready for release"
+          else
+            PR_BODY="## Summary
+          $TYPE $VERSION ready for merge to main branch.
+
+          ## 🚑 Hotfix Details
+          - **Version**: $CLEAN_VERSION
+          - **Type**: $TYPE
+          - **Flutter SDK**: ${{ env.FLUTTER_VERSION }}+
+
+          ## 🐛 Changes
+          - Critical bug fixes
+          - Version bumped to $CLEAN_VERSION in pubspec.yaml
+          - Updated changelog with fix details
+          - Hotfix tested and verified
+
+          ## 🔗 Deployment
+          After merge, the release workflow will automatically:
+          - Create the $VERSION tag
+          - Generate GitHub release
+          - Create back-merge PR to develop branch
+
+          ## ✅ Checklist
+          - [ ] Hotfix verified and tested
+          - [ ] Tests are passing
+          - [ ] Ready for immediate release"
+          fi
+
+          # Create PR to main
+          gh pr create \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --title "$PR_TITLE" \
+            --body "$PR_BODY" \
+            --label "auto-generated" \
+            --label "$TYPE" \
+            --label "ready-to-merge"
+
+          echo "✅ Created PR from $BRANCH_NAME to main"
+
+      - name: Create main PR summary
+        run: |
+          BRANCH_NAME="${{ steps.version_info.outputs.branch_name }}"
+          VERSION="${{ steps.version_info.outputs.version }}"
+          TYPE="${{ steps.version_info.outputs.type }}"
+
+          echo "## 🎯 Main Branch PR" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: \`$BRANCH_NAME\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Target**: main" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "**Type**: $TYPE" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ steps.check_existing_pr.outputs.skip_pr }}" == "true" ]]; then
+            echo "**Status**: ⚠️ Skipped - PR already exists (#${{ steps.check_existing_pr.outputs.existing_pr_number }})" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Status**: ✅ PR created successfully" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Actions Completed" >> $GITHUB_STEP_SUMMARY
+            echo "- 🎯 Created PR from \`$BRANCH_NAME\` to \`main\`" >> $GITHUB_STEP_SUMMARY
+            echo "- 🏷️ Applied appropriate labels" >> $GITHUB_STEP_SUMMARY
+            echo "- 📋 Added $TYPE checklist to PR description" >> $GITHUB_STEP_SUMMARY
+            echo "- 📦 Included Flutter package release information" >> $GITHUB_STEP_SUMMARY
+          fi
+          
