@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.0] - 2025-09-21
+
+### ✨ Features
+
+### 🐛 Bug Fixes
+
+### 📱 Platform Updates
+
+### 📚 Documentation
+
+### 🔧 Maintenance
+- chore: bump version to v1.1.0 for next development cycle (ebcf74c)
+
+### 📦 Dependencies
+- Flutter SDK: 3.35.3+
+- Dart SDK: Compatible with Flutter 3.35.3
+
+
+
 ## [1.0.2] - 2025-09-21
 
 ### ✨ Features
