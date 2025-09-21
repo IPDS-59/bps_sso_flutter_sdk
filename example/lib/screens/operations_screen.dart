@@ -232,7 +232,7 @@ class OperationsScreen extends StatelessWidget {
                           Text(
                             'SSO Operations',
                             style: GoogleFonts.inter(
-                              fontSize: 24,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.onSurface,
                             ),
@@ -358,7 +358,7 @@ class OperationsScreen extends StatelessWidget {
                                       Text(
                                         'Realm Selection',
                                         style: GoogleFonts.inter(
-                                          fontSize: 16,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           color: theme.colorScheme.onSurface,
                                         ),
@@ -412,14 +412,15 @@ class OperationsScreen extends StatelessWidget {
                                       ),
                                     ],
                                     selected: {state.selectedRealm},
-                                    onSelectionChanged:
-                                        (Set<BPSRealmType> selection) {
-                                          context
-                                              .read<AuthenticationCubit>()
-                                              .setSelectedRealm(
-                                                selection.first,
-                                              );
-                                        },
+                                    onSelectionChanged: state.currentUser != null
+                                        ? null
+                                        : (Set<BPSRealmType> selection) {
+                                            context
+                                                .read<AuthenticationCubit>()
+                                                .setSelectedRealm(
+                                                  selection.first,
+                                                );
+                                          },
                                     style: SegmentedButton.styleFrom(
                                       backgroundColor:
                                           theme.colorScheme.surface,
@@ -450,7 +451,7 @@ class OperationsScreen extends StatelessWidget {
                     Text(
                           'Operations',
                           style: GoogleFonts.inter(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: theme.colorScheme.onSurface,
                           ),
@@ -472,7 +473,7 @@ class OperationsScreen extends StatelessWidget {
                               title: 'Login',
                               subtitle:
                                   'Authenticate with BPS SSO using selected realm',
-                              onPressed: state.isLoading
+                              onPressed: state.isLoading || state.currentUser != null
                                   ? null
                                   : () => _performLogin(context),
                               isPrimary: true,
@@ -588,6 +589,21 @@ class OperationsScreen extends StatelessWidget {
                                   : () => _logout(context),
                               isDestructive: true,
                               delay: 1100.ms,
+                            ),
+
+                            const Gap(12),
+
+                            OperationCard(
+                              icon: PhosphorIcons.monitor(
+                                PhosphorIconsStyle.duotone,
+                              ),
+                              title: 'HTTP Inspector',
+                              subtitle: 'View network requests and responses',
+                              onPressed: () {
+                                final configCubit = context.read<ConfigurationCubit>();
+                                configCubit.alice.showInspector();
+                              },
+                              delay: 1200.ms,
                             ),
                           ],
                         );
