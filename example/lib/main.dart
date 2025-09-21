@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'core/di/injection.dart';
 import 'cubits/authentication_cubit.dart';
 import 'cubits/configuration_cubit.dart';
 import 'routes/app_router.dart';
@@ -18,13 +19,16 @@ void main() async {
     storageDirectory: HydratedStorageDirectory(storageDirectory.path),
   );
 
+  // Configure dependencies
+  configureDependencies();
+
   runApp(const BPSSsoExampleApp());
 }
 
 class BPSSsoExampleApp extends StatelessWidget {
   const BPSSsoExampleApp({super.key});
 
-  static final _appRouter = AppRouter();
+  static final _appRouter = getIt<AppRouter>();
 
   @override
   Widget build(BuildContext context) {
