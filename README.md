@@ -29,6 +29,7 @@ A Flutter SDK for seamless integration with BPS (Badan Pusat Statistik) SSO auth
 - ✅ **Runtime Security Checks** - Debug and root detection capabilities
 - ✅ **Secure Token Storage** - Encrypted token storage with memory protection
 - ✅ **Audit Logging** - Comprehensive security event logging
+- ✅ **Privacy Mode** - Optional data obscuring for sensitive information
 
 ### 🎨 Customizable UI
 
@@ -36,15 +37,17 @@ A Flutter SDK for seamless integration with BPS (Badan Pusat Statistik) SSO auth
 - ✅ **Government Branding Presets** - Pre-configured BPS visual identity
 - ✅ **Security-Focused UI Options** - Disable sharing, bookmarks for secure environments
 - ✅ **Custom Menu Items** - Add help, security info, and custom actions
+- ✅ **Authenticated Image Loading** - Secure image loading with access tokens
 
 ### 🚀 Authentication & Integration
 
 - ✅ **Chrome Custom Tabs Authentication** - Better user experience than WebView
 - ✅ **OAuth2/OpenID Connect** - Secure authentication flow with PKCE
-- ✅ **Multi-realm Support** - Internal and External BPS realms
+- ✅ **Multi-realm Support** - Internal and External BPS realms with different user structures
 - ✅ **Type-Safe Configuration** - List-based parameters for better developer experience
 - ✅ **Token Management** - Automatic token refresh and validation
 - ✅ **Comprehensive Error Handling** - Production-safe error sanitization
+- ✅ **Deep Link Integration** - Seamless OAuth callback handling
 
 ## Architecture
 
@@ -428,7 +431,7 @@ await BPSSsoClient.instance.logout(user);
 // Access user information
 print('ID: ${user.id}');
 print('Username: ${user.username}');
-print('Full Name: ${user.displayName}');
+print('Full Name: ${user.fullName}');
 print('Email: ${user.email}');
 print('NIP: ${user.nip}');
 print('Position: ${user.position}');
@@ -436,12 +439,30 @@ print('Organization: ${user.organization}');
 print('Region: ${user.region}');
 print('Province: ${user.province}');
 print('Realm: ${user.realmDisplayName}');
+print('Photo URL: ${user.photo}');
+print('Office Address: ${user.address}');
+print('Rank: ${user.rank}');
+print('Old NIP: ${user.oldNip}');
+print('First Name: ${user.firstName}');
+print('Last Name: ${user.lastName}');
 
 // Check user type
-if (user.isInternalUser) {
+if (user.isInternal) {
   print('Internal BPS employee');
-} else if (user.isExternalUser) {
+} else if (user.isExternal) {
   print('External BPS user');
+}
+
+// Check authentication status
+if (user.isTokenExpired) {
+  print('Token has expired');
+} else {
+  print('Token is valid until: ${user.tokenExpiry}');
+}
+
+// Check if user has photo
+if (user.hasPhoto) {
+  print('User has profile photo');
 }
 
 // Get user initials for avatar
@@ -540,6 +561,9 @@ final config = BPSSsoConfig.create(
 - **Runtime Security Checks**: Debug and root detection
 - **Audit Logging**: Comprehensive security event logging
 - **Error Sanitization**: Production-safe error messages
+- **Deep Link Validation**: Security validation for OAuth callback URLs
+- **State Parameter Verification**: CSRF protection for OAuth flows
+- **Token Expiry Management**: Automatic token validation and refresh
 
 ## 🎨 UI Customization
 
@@ -712,14 +736,40 @@ try {
 
 ⚠️ **Important**: Configuration is now required! You must provide your own client IDs and redirect URIs. The SDK no longer includes default values to ensure each app uses its own credentials.
 
-### Example: FASIH App Configuration
+### User Type Support
+
+The SDK supports different user structures for internal and external realms:
+
+#### Internal Users (BPS Employees)
+- Full employee data including NIP, organization, position, rank
+- Office location information (region, province, address)
+- Complete profile data with photos
+
+#### External Users (Third-party)
+- Basic profile information (name, email, username)
+- Simplified structure without employee-specific fields
+- OAuth standard fields (given_name, family_name)
+
+### Example App Configuration
 
 ```dart
-// This is how the FASIH app configures the SDK
-final fasihConfig = BPSSsoConfig.create(
-  appName: 'fasih',
-  internalClientId: '***REMOVED***',
-  externalClientId: '***REMOVED***',
+// Example configuration for a BPS application
+final config = BPSSsoConfig.create(
+  appName: 'myapp',
+  internalClientId: 'internal-client-id',
+  externalClientId: 'external-client-id',
+  // Additional configuration for callbacks and UI
+  authCallbacks: BPSSsoAuthCallbacks(
+    onLoginSuccess: (user, realm) {
+      print('Login successful for ${user.fullName}');
+    },
+    onLoginFailed: (error, realm) {
+      print('Login failed: $error');
+    },
+    onTokenRefreshSuccess: (user) {
+      print('Token refreshed for ${user.fullName}');
+    },
+  ),
 );
 ```
 
@@ -980,6 +1030,35 @@ This SDK is proprietary software for BPS applications.
 
 For issues or questions, please contact the BPS development team or create an issue in the repository.
 
+## Example Application
+
+The SDK includes a comprehensive example application demonstrating:
+
+- Complete OAuth2 authentication flow
+- User interface with privacy mode toggle
+- Authenticated image loading for user avatars
+- Real-time initialization status checking
+- Proper error handling and user feedback
+- Navigation with deep link integration
+- State management with Cubit/Bloc pattern
+
+To run the example:
+
+```bash
+cd example
+flutter pub get
+flutter run
+```
+
+### Example Features
+
+- **Home Screen**: Shows SDK initialization status and authentication state
+- **Operations Screen**: Login/logout functionality with real-time status
+- **User Info Screen**: Detailed user information with privacy controls
+- **Privacy Mode**: Toggle to obscure sensitive information
+- **Status Cards**: Visual feedback for all operations
+- **Error Handling**: User-friendly error messages and recovery
+
 ## Changelog
 
 ### Version 1.0.0
@@ -990,3 +1069,9 @@ For issues or questions, please contact the BPS development team or create an is
 - Type-safe configuration with lists
 - Comprehensive error handling
 - Token management functionality
+- External user structure support
+- Privacy mode for sensitive data
+- Authenticated image loading
+- Enhanced deep link handling
+- Real-time SDK status checking
+- Complete example application
