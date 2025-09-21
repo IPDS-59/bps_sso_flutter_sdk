@@ -6,7 +6,6 @@ class BPSRealmConfig {
   const BPSRealmConfig({
     required this.clientId,
     required this.redirectUri,
-    required this.realm,
     required this.realmType,
     this.baseUrl = 'https://sso.bps.go.id',
     this.responseTypes = const ['code'],
@@ -19,9 +18,6 @@ class BPSRealmConfig {
 
   /// Redirect URI for OAuth2 flow
   final String redirectUri;
-
-  /// Keycloak realm name
-  final String realm;
 
   /// Type of realm (internal/external)
   final BPSRealmType realmType;
@@ -78,6 +74,9 @@ class BPSRealmConfig {
 
     return '$baseUrl/auth/realms/$realm/protocol/openid-connect/auth?$query';
   }
+
+  /// Keycloak realm name
+  String get realm => realmType.value;
 
   /// Get token endpoint URL
   String get tokenUrl =>

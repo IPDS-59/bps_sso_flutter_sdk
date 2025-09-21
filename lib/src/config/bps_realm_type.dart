@@ -8,7 +8,7 @@ enum BPSRealmType {
 
   /// String representation of the realm type
   String get value => switch (this) {
-    internal => 'internal',
+    internal => 'pegawai-bps',
     external => 'eksternal',
   };
 }
