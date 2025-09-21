@@ -180,11 +180,24 @@ jobs:
 
             if git status --porcelain | grep -q "pubspec.lock"; then
               echo "🔄 Resolving pubspec.lock conflict..."
-              # Remove lock file and regenerate
-              git rm pubspec.lock
+              # Remove conflicted lock file and regenerate
+              git add pubspec.lock  # Stage the conflicted file first
+              git reset HEAD pubspec.lock  # Unstage it
+              rm -f pubspec.lock  # Remove the conflicted file
+              rm -f example/pubspec.lock  # Remove example lock file too
+
+              echo "📦 Regenerating pubspec.lock files..."
               flutter pub get
+
+              if [ -d "example" ]; then
+                cd example && flutter pub get && cd ..
+              fi
+
               git add pubspec.lock
-              echo "Regenerated pubspec.lock"
+              if [ -f "example/pubspec.lock" ]; then
+                git add example/pubspec.lock
+              fi
+              echo "✅ Regenerated pubspec.lock files"
             fi
 
             if git status --porcelain | grep -q "example/"; then
