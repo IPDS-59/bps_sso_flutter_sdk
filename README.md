@@ -65,11 +65,11 @@ A Flutter SDK for seamless integration with BPS (Badan Pusat Statistik) SSO auth
 
 ### Authentication Flow Sequence Diagram
 
-![Authentication Flow Sequence Diagram](img/authentication_flow_sequence.png)
+![Authentication Flow Sequence Diagram](img/sequence_diagram_bps_sso.png)
 
 ### SDK Architecture Diagram
 
-![SDK Architecture Diagram](img/sdk_architecture.png)
+![SDK Architecture Diagram](img/bps_sso_architecture.png)
 
 ## Installation
 
@@ -77,8 +77,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  bps_sso_sdk:
-    path: ../packages/bps_sso_sdk
+  bps_sso_sdk: ^1.2.0
 ```
 
 ## Setup
@@ -89,8 +88,7 @@ Add the required dependencies to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  bps_sso_sdk:
-    path: ../packages/bps_sso_sdk
+  bps_sso_sdk: ^1.2.0
   app_links: ^6.3.2 # For deep link handling
   # OR if using auto_route for navigation
   auto_route: ^10.1.2
@@ -450,7 +448,7 @@ Text(user.initials); // e.g., "JD" for John Doe
 
 ### Configuration Flow Diagram
 
-![Configuration Flow Diagram](img/configuration_flow.png)
+![Configuration Flow Diagram](img/bps_sso_config_flow_diagram.png)
 
 ### Easy Configuration (Recommended)
 
@@ -798,7 +796,7 @@ Supported values:
 
 ### Error Flow Diagram
 
-![Error Flow Diagram](img/error_flow.png)
+![Error Flow Diagram](img/bps_sso_error_flow_diagram.png)
 
 The SDK provides specific exception types:
 
@@ -1168,7 +1166,7 @@ This repository uses automated GitHub Actions workflows for CI/CD. See our [Work
 
 ### Workflow Overview
 
-![Workflow Overview](img/workflow_overview.png)
+![Workflow Overview](img/bps_sso_repo_workflow.png)
 
 For complete workflow documentation, see [WORKFLOWS.md](WORKFLOWS.md).
 
