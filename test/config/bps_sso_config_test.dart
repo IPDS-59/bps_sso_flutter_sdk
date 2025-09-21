@@ -93,8 +93,6 @@ void main() {
           appName: 'testapp',
           internalClientId: 'internal-client',
           externalClientId: 'external-client',
-          internalRealmName: null,
-          externalRealmName: null,
         );
 
         expect(config.internal.realm, equals('pegawai-bps'));
