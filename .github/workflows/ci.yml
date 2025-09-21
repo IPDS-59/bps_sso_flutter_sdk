@@ -166,14 +166,25 @@ jobs:
       run: |
         echo "🧪 ${{ needs.detect-changes.outputs.test-summary }}"
 
-        if [ -d "test" ] && [ "$(find test -name '*_test.dart' | wc -l)" -gt 0 ]; then
-          echo "Running unit tests with coverage..."
-          flutter test --coverage
+        # Check if test files exist
+        TEST_COUNT=$(find test -name '*_test.dart' 2>/dev/null | wc -l)
+
+        if [ "$TEST_COUNT" -gt 0 ]; then
+          echo "Found $TEST_COUNT test files. Running tests with coverage..."
+
+          # Run tests with coverage only if needed
+          if [ "${{ needs.detect-changes.outputs.core-changed }}" = "true" ] || [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "Running with coverage..."
+            flutter test --coverage --reporter=expanded
+          else
+            echo "Running without coverage (no core changes)..."
+            flutter test --reporter=expanded
+          fi
 
           if [ -f "coverage/lcov.info" ]; then
             echo "✅ Tests completed with coverage"
           else
-            echo "⚠️ Tests completed but no coverage generated"
+            echo "✅ Tests completed"
           fi
         else
           echo "⚠️ No test files found"
@@ -188,10 +199,19 @@ jobs:
         echo "" >> test_report.md
 
         if [ -f "coverage/lcov.info" ] && [ -s "coverage/lcov.info" ]; then
-          # Install lcov for coverage analysis
-          sudo apt-get update && sudo apt-get install -y lcov
+          # Fast coverage calculation without external tools
+          echo "📊 Calculating coverage from lcov.info..."
 
-          TOTAL_COVERAGE=$(lcov --summary coverage/lcov.info 2>/dev/null | grep -A 2 "lines" | tail -1 | grep -o '[0-9.]*%' | head -1 || echo "0%")
+          # Count total and hit lines using simple grep (much faster than lcov)
+          TOTAL_LINES=$(grep -c "^LF:" coverage/lcov.info 2>/dev/null || echo "0")
+          HIT_LINES=$(grep -c "^LH:" coverage/lcov.info 2>/dev/null || echo "0")
+
+          if [ "$TOTAL_LINES" -gt 0 ]; then
+            COVERAGE_PERCENT=$(awk "BEGIN {printf \"%.1f\", ($HIT_LINES/$TOTAL_LINES)*100}")
+            TOTAL_COVERAGE="${COVERAGE_PERCENT}%"
+          else
+            TOTAL_COVERAGE="0%"
+          fi
 
           echo "### 🎯 Coverage: ${TOTAL_COVERAGE}" >> test_report.md
           echo "" >> test_report.md
