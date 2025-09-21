@@ -118,7 +118,7 @@ class BPSSsoSecurityManager {
 
       _logSecurityEvent('Secure state parameter generated', AuditLogLevel.info);
       return state;
-    } catch (e) {
+    } on Exception catch (e) {
       _logSecurityEvent('State generation failed: $e', AuditLogLevel.detailed);
       throw const SecurityException(
         'Failed to generate secure state parameter',
@@ -177,7 +177,7 @@ class BPSSsoSecurityManager {
 
       _logSecurityEvent('Deep link validation successful', AuditLogLevel.info);
       return true;
-    } catch (e) {
+    } on Exception catch (e) {
       _logSecurityEvent(
         'Deep link validation error: $e',
         AuditLogLevel.detailed,
@@ -209,7 +209,7 @@ class BPSSsoSecurityManager {
       } else {
         return const NetworkException('Authentication failed');
       }
-    } catch (e) {
+    } on Exception catch (e) {
       _logSecurityEvent(
         'Error sanitization failed: $e',
         AuditLogLevel.detailed,
@@ -235,7 +235,7 @@ class BPSSsoSecurityManager {
         'Sensitive data cleared from memory',
         AuditLogLevel.info,
       );
-    } catch (e) {
+    } on Exception catch (e) {
       _logSecurityEvent('Memory cleanup failed: $e', AuditLogLevel.detailed);
     }
   }
@@ -278,7 +278,7 @@ class BPSSsoSecurityManager {
       // Simple entropy check - in production, use more sophisticated methods
       final uniqueValues = testData.toSet().length;
       return uniqueValues > 50; // At least 50% unique values
-    } catch (e) {
+    } on Exception {
       return false;
     }
   }
@@ -298,7 +298,7 @@ class BPSSsoSecurityManager {
 
       return entropyRatio <
           0.1; // No character should appear more than 10% of the time
-    } catch (e) {
+    } on Exception {
       return false;
     }
   }
@@ -368,7 +368,5 @@ class BPSSsoSecurityManager {
     if (kDebugMode) {
       debugPrint('[SECURITY AUDIT] $logEntry');
     }
-
-    // TODO: Implement secure remote logging for production
   }
 }
