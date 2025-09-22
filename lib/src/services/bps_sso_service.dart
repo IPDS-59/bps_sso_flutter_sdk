@@ -4,7 +4,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:bps_sso_sdk/src/config/config.dart';
+import 'package:bps_sso_sdk/src/core/constants.dart';
+import 'package:bps_sso_sdk/src/core/token_cache.dart';
+import 'package:bps_sso_sdk/src/core/token_utils.dart';
 import 'package:bps_sso_sdk/src/exceptions/exceptions.dart';
 import 'package:bps_sso_sdk/src/models/models.dart';
 import 'package:bps_sso_sdk/src/security/security.dart';
@@ -45,6 +49,15 @@ class BPSSsoService {
       // Ignore platform check errors (e.g., on web)
       debugPrint('Platform check failed, skipping closeCustomTabs: $e');
     }
+  }
+
+  /// Close Custom Tabs with configured delay and proper state management
+  void _scheduleCustomTabsClose() {
+    unawaited(
+      Future<void>.delayed(SecurityConstants.iOSTabCloseDelay).then((_) {
+        return _closeCustomTabsIfIOS();
+      }),
+    );
   }
 
   /// Authenticate user using webview OAuth2 flow
@@ -157,7 +170,7 @@ class BPSSsoService {
         ),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == HttpStatusCodes.ok) {
         final tokenData = response.data as Map<String, dynamic>;
 
         final newAccessToken = tokenData['access_token'] as String?;
@@ -244,6 +257,9 @@ class BPSSsoService {
         ..secureClearSensitiveData(user.accessToken)
         ..secureClearSensitiveData(user.refreshToken);
 
+      // Clear token validation cache for this user
+      TokenValidationCache.instance.clearUserCache(user.id);
+
       // Call success callback
       config.authCallbacks.onLogoutSuccess?.call(user);
     } on Exception catch (e) {
@@ -251,6 +267,9 @@ class BPSSsoService {
       _securityManager
         ..secureClearSensitiveData(user.accessToken)
         ..secureClearSensitiveData(user.refreshToken);
+
+      // Clear token validation cache for this user even on failure
+      TokenValidationCache.instance.clearUserCache(user.id);
 
       // Handle error with security manager
       final errorConfig = config.errorConfig;
@@ -268,11 +287,42 @@ class BPSSsoService {
     }
   }
 
-  /// Validate access token
+  /// Validate access token with caching for improved performance
+  ///
+  /// This method first checks for cached validation results to avoid
+  /// unnecessary network calls. If no cached result is available,
+  /// it performs a network validation and caches the result.
   Future<bool> validateToken(BPSUser user) async {
     try {
-      final realmConfig = config.getConfig(user.realm);
+      // Quick local check first - if token is expired, no need to validate
+      if (user.isTokenExpired) {
+        return false;
+      }
 
+      // Check if token is near expiry using buffer time
+      final tokenExpiry = TokenUtils.extractTokenExpiry(user.accessToken);
+      if (tokenExpiry != null &&
+          TokenUtils.isTokenNearExpiry(
+            tokenExpiry,
+            SecurityConstants.tokenExpiryBuffer,
+          )) {
+        return false;
+      }
+
+      // Check cache for recent validation result
+      final tokenHash = TokenUtils.hashToken(user.accessToken);
+      final cachedResult = TokenValidationCache.instance.getCachedValidation(
+        userId: user.id,
+        tokenHash: tokenHash,
+      );
+
+      if (cachedResult != null) {
+        // Return cached result without network call
+        return cachedResult;
+      }
+
+      // Perform network validation
+      final realmConfig = config.getConfig(user.realm);
       final response = await _dio.get<dynamic>(
         realmConfig.userInfoUrl,
         options: Options(
@@ -280,27 +330,47 @@ class BPSSsoService {
         ),
       );
 
-      if (response.statusCode == 200) {
-        return true;
-      } else if (response.statusCode == 401 || response.statusCode == 403) {
+      bool isValid;
+      if (response.statusCode == HttpStatusCodes.ok) {
+        isValid = true;
+      } else if (response.statusCode == HttpStatusCodes.unauthorized ||
+          response.statusCode == HttpStatusCodes.forbidden) {
         // Token is invalid, trigger authentication failure
         config.authCallbacks.onAuthenticationFailure?.call(
           SecurityException('Token validation failed: ${response.statusCode}'),
           user,
         );
-        return false;
+        isValid = false;
       } else {
-        return false;
+        isValid = false;
       }
+
+      // Cache the validation result
+      TokenValidationCache.instance.cacheValidation(
+        userId: user.id,
+        tokenHash: tokenHash,
+        isValid: isValid,
+      );
+
+      return isValid;
     } on Exception catch (e) {
       // Check if this is an authentication error
       if (e is DioException &&
-          (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
+          (e.response?.statusCode == HttpStatusCodes.unauthorized ||
+              e.response?.statusCode == HttpStatusCodes.forbidden)) {
         config.authCallbacks.onAuthenticationFailure?.call(
           SecurityException(
             'Token validation failed: ${e.response?.statusCode}',
           ),
           user,
+        );
+
+        // Cache the failed validation result
+        final tokenHash = TokenUtils.hashToken(user.accessToken);
+        TokenValidationCache.instance.cacheValidation(
+          userId: user.id,
+          tokenHash: tokenHash,
+          isValid: false,
         );
       }
       return false;
@@ -320,7 +390,7 @@ class BPSSsoService {
         ),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == HttpStatusCodes.ok) {
         return response.data as Map<String, dynamic>;
       } else {
         throw UserInfoException(
@@ -387,7 +457,7 @@ class BPSSsoService {
         ),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == HttpStatusCodes.ok) {
         return response.data as Map<String, dynamic>;
       } else {
         throw TokenExchangeException.fromStatusCode(response.statusCode!);
@@ -437,9 +507,7 @@ class BPSSsoService {
           if (error != null) {
             completer.complete(null);
             // Close Custom Tabs after authentication error
-            Future.delayed(const Duration(milliseconds: 1000), () async {
-              await _closeCustomTabsIfIOS();
-            });
+            _scheduleCustomTabsClose();
             final sanitizedError = _securityManager.sanitizeError(
               NetworkException('Authentication failed: $error'),
               isProduction:
@@ -452,15 +520,11 @@ class BPSSsoService {
           if (code != null && state == expectedState) {
             completer.complete(code);
             // Close Custom Tabs after successful authentication with delay
-            Future.delayed(const Duration(milliseconds: 1000), () async {
-              await _closeCustomTabsIfIOS();
-            });
+            _scheduleCustomTabsClose();
           } else {
             completer.complete(null);
             // Close Custom Tabs after authentication failure
-            Future.delayed(const Duration(milliseconds: 1000), () async {
-              await _closeCustomTabsIfIOS();
-            });
+            _scheduleCustomTabsClose();
             final sanitizedError = _securityManager.sanitizeError(
               const InvalidStateException(),
               isProduction:
@@ -480,22 +544,18 @@ class BPSSsoService {
 
       // Wait for the auth code or timeout
       return await completer.future.timeout(
-        const Duration(minutes: 5),
+        SecurityConstants.authTimeout,
         onTimeout: () async {
           await linkSubscription?.cancel();
           // Close Custom Tabs on timeout
-          Future.delayed(const Duration(milliseconds: 500), () async {
-            await _closeCustomTabsIfIOS();
-          });
+          _scheduleCustomTabsClose();
           return null;
         },
       );
     } on Exception catch (e) {
       debugPrint('Custom Tabs auth failed: $e');
       // Close Custom Tabs on exception
-      Future.delayed(const Duration(milliseconds: 500), () async {
-        await _closeCustomTabsIfIOS();
-      });
+      _scheduleCustomTabsClose();
       return null;
     }
   }

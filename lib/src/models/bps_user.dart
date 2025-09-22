@@ -1,4 +1,5 @@
 import 'package:bps_sso_sdk/src/config/config.dart';
+import 'package:bps_sso_sdk/src/core/core.dart';
 import 'package:bps_sso_sdk/src/exceptions/exceptions.dart';
 import 'package:flutter/material.dart';
 
@@ -54,7 +55,8 @@ class BPSUser {
     }
 
     // Calculate token expiry
-    final expiresIn = json['expires_in'] as int? ?? 3600;
+    final expiresIn =
+        json['expires_in'] as int? ?? TokenConstants.defaultTokenExpirySeconds;
     final tokenExpiry = DateTime.now().add(Duration(seconds: expiresIn));
 
     // Handle different user structures for internal vs external realms
