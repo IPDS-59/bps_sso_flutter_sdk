@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:bps_sso_sdk/src/config/config.dart';
+import 'package:bps_sso_sdk/src/core/constants.dart';
 import 'package:bps_sso_sdk/src/exceptions/exceptions.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
@@ -40,7 +42,12 @@ class BPSSsoSecurityManager {
 
       // RFC 7636: 43-128 characters recommended
       final length =
-          43 + Random.secure().nextInt(86); // Random length between 43-128
+          SecurityConstants.minCodeVerifierLength +
+          Random.secure().nextInt(
+            SecurityConstants.maxCodeVerifierLength -
+                SecurityConstants.minCodeVerifierLength +
+                1,
+          );
       const chars =
           'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
       final random = Random.secure();
@@ -78,7 +85,8 @@ class BPSSsoSecurityManager {
   /// Generate PKCE code challenge with security validation
   String generateCodeChallenge(String codeVerifier) {
     try {
-      if (codeVerifier.length < 43 || codeVerifier.length > 128) {
+      if (codeVerifier.length < SecurityConstants.minCodeVerifierLength ||
+          codeVerifier.length > SecurityConstants.maxCodeVerifierLength) {
         throw const SecurityException(
           'Code verifier length violates RFC 7636 requirements',
         );
@@ -105,8 +113,8 @@ class BPSSsoSecurityManager {
   /// Generate cryptographically secure state parameter
   String generateSecureState() {
     try {
-      // Use minimum 32 characters for government-grade security
-      const length = 32;
+      // Use configured length for government-grade security
+      const length = SecurityConstants.stateParameterLength;
       const chars =
           'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
       final random = Random.secure();
@@ -296,8 +304,8 @@ class BPSSsoSecurityManager {
       final maxFrequency = charCounts.values.reduce((a, b) => a > b ? a : b);
       final entropyRatio = maxFrequency / verifier.length;
 
-      return entropyRatio <
-          0.1; // No character should appear more than 10% of the time
+      // No character should appear more than the configured threshold
+      return entropyRatio < SecurityConstants.minEntropyRatio;
     } on Exception {
       return false;
     }
