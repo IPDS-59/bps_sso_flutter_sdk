@@ -77,7 +77,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  bps_sso_sdk: ^1.2.0
+  bps_sso_sdk: ^1.3.0
 ```
 
 ## Setup
@@ -88,7 +88,7 @@ Add the required dependencies to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  bps_sso_sdk: ^1.2.0
+  bps_sso_sdk: ^1.3.0
   app_links: ^6.3.2 # For deep link handling
   # OR if using auto_route for navigation
   auto_route: ^10.1.2
