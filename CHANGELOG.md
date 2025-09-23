@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.2.0] - 2025-09-23
+
+### ✨ Features
+- feat: implement intelligent token validation caching system (4604229)
+
+### 🐛 Bug Fixes
+- fix: resolve line length violations and add remaining constants (742ef66)
+
+### 📱 Platform Updates
+
+
+### 📚 Documentation
+- docs(README): remove unnecessary changelog (63e6816)
+- docs(README): update readme and workflow (38e0ccf)
+- docs(CHANGELOG): update the changelog (58b7b2c)
+
+### 🔧 Maintenance
+- refactor(design): adjust status row text size (907d7bd)
+- refactor: implement comprehensive SDK improvements and performance optimizations (5a815d4)
+- chore: back-merge v1.1.0 release from main to develop (53a7042)
+- chore: bump version to v1.2.0 for next development cycle (b416f65)
+
+### 📦 Dependencies
+- Flutter SDK: 3.35.3+
+- Dart SDK: Compatible with Flutter 3.35.3
+
+### 🎯 Key Highlights
+
+### 📦 Dependencies
+- Flutter SDK: 3.35.3+
+- Dart SDK: Compatible with Flutter 3.35.3
+
+
+
 ## [1.1.0] - 2025-09-21
 
 ### ✨ Features
