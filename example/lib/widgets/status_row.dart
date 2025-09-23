@@ -33,7 +33,7 @@ class StatusRow extends StatelessWidget {
           ),
           child: PhosphorIcon(
             icon,
-            size: 12,
+            size: 16,
             color: isSuccess ? Colors.green.shade600 : Colors.orange.shade600,
           ),
         ),
@@ -53,7 +53,7 @@ class StatusRow extends StatelessWidget {
               Text(
                 subtitle,
                 style: GoogleFonts.inter(
-                  fontSize: 8,
+                  fontSize: 10,
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 maxLines: 1,

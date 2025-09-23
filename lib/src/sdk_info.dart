@@ -1,7 +1,7 @@
 /// BPS SSO SDK information and metadata
 class BPSSsoSdkInfo {
   /// Current version of the BPS SSO SDK
-  static const String version = '1.1.0';
+  static const String version = '1.2.0';
 
   /// SDK name
   static const String name = 'BPS SSO SDK';

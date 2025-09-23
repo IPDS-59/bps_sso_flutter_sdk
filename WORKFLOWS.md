@@ -91,7 +91,7 @@ develop ───●────●───●────●───●──
 
 ### Branch-Based Workflow Triggers
 
-![Branch-Based Workflow Triggers](img/branch_workflow_triggers.png)
+![Branch-Based Workflow Triggers](img/branch_based_workflow_trigger.png)
 
 ## Workflow Diagrams
 
@@ -101,7 +101,7 @@ develop ───●────●───●────●───●──
 
 ### 2. Release Workflow
 
-![Release Workflow](img/release_workflow.png)
+![Release Workflow](img/releasw_workflow.png)
 
 ### 3. Publish Workflow
 
@@ -109,7 +109,7 @@ develop ───●────●───●────●───●──
 
 ### 4. CI Workflow with Smart Execution
 
-![CI Workflow with Smart Execution](img/ci_workflow_smart_execution.png)
+![CI Workflow with Smart Execution](img/general_pr_workflow.png)
 
 ## Manual Triggers
 
