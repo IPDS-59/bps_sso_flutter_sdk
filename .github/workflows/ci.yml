@@ -16,7 +16,6 @@ jobs:
     name: Flutter CI
     uses: banua-coder/banua-coder-workflow/.github/workflows/ci-flutter.yml@v1
     with:
-      flutter-version: 'stable'
       flutter-channel: 'stable'
       run-analyze: true
       run-format: true
