@@ -1,0 +1,22 @@
+name: Sanity Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sanity:
+    name: Sanity Check
+    uses: banua-coder/banua-coder-workflow/.github/workflows/sanity-check.yml@v1
+    with:
+      project-type: 'flutter'
+      flutter-version: 'stable'
+      dart-max-file-size: 18
+      dart-max-loc: 600
+      check-assets: true
+      post-comment: true
+      fail-on-issues: false
