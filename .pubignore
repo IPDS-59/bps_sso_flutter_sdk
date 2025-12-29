@@ -1,0 +1,19 @@
+# Images and assets not needed for pub.dev
+img/
+
+# Example app
+example/
+
+# CI/CD
+.github/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Coverage
+coverage/
+
+# Documentation build artifacts
+doc/api/
