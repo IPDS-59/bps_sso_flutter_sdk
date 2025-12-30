@@ -1,23 +1,17 @@
-// need to add that async
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:bps_sso_sdk/src/config/config.dart';
-import 'package:bps_sso_sdk/src/core/constants.dart';
 import 'package:bps_sso_sdk/src/core/token_cache.dart';
-import 'package:bps_sso_sdk/src/core/token_utils.dart';
 import 'package:bps_sso_sdk/src/exceptions/exceptions.dart';
 import 'package:bps_sso_sdk/src/models/models.dart';
 import 'package:bps_sso_sdk/src/security/security.dart';
+import 'package:bps_sso_sdk/src/services/mixins/custom_tabs_mixin.dart';
+import 'package:bps_sso_sdk/src/services/mixins/token_operations_mixin.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_custom_tabs/flutter_custom_tabs.dart';
 
 /// Internal SSO authentication service
-class BPSSsoService {
+class BPSSsoService with TokenOperationsMixin, CustomTabsMixin {
   BPSSsoService({
     required this.config,
     this.linkStream,
@@ -34,31 +28,20 @@ class BPSSsoService {
     _securityManager.initialize(config.securityConfig);
   }
 
+  @override
   final BPSSsoConfig config;
+
+  @override
   final Stream<String>? linkStream;
+
   final Dio _dio;
   final BPSSsoSecurityManager _securityManager;
 
-  /// Close Custom Tabs only on iOS platform
-  Future<void> _closeCustomTabsIfIOS() async {
-    try {
-      if (Platform.isIOS) {
-        await closeCustomTabs();
-      }
-    } on Exception catch (e) {
-      // Ignore platform check errors (e.g., on web)
-      debugPrint('Platform check failed, skipping closeCustomTabs: $e');
-    }
-  }
+  @override
+  Dio get dio => _dio;
 
-  /// Close Custom Tabs with configured delay and proper state management
-  void _scheduleCustomTabsClose() {
-    unawaited(
-      Future<void>.delayed(SecurityConstants.iOSTabCloseDelay).then((_) {
-        return _closeCustomTabsIfIOS();
-      }),
-    );
-  }
+  @override
+  BPSSsoSecurityManager get securityManager => _securityManager;
 
   /// Authenticate user using webview OAuth2 flow
   ///
@@ -73,11 +56,9 @@ class BPSSsoService {
       final realmConfig = config.getConfig(realmType);
 
       // Generate PKCE parameters for security using secure manager
-      final codeVerifier = _securityManager.generateSecureCodeVerifier();
-      final codeChallenge = _securityManager.generateCodeChallenge(
-        codeVerifier,
-      );
-      final state = _securityManager.generateSecureState();
+      final codeVerifier = securityManager.generateSecureCodeVerifier();
+      final codeChallenge = securityManager.generateCodeChallenge(codeVerifier);
+      final state = securityManager.generateSecureState();
 
       // Build authorization URL
       final authUrl = realmConfig.buildAuthUrl(
@@ -86,7 +67,7 @@ class BPSSsoService {
       );
 
       // Show Custom Tabs for authentication
-      final authCode = await _showCustomTabsAuth(
+      final authCode = await showCustomTabsAuth(
         context,
         authUrl,
         state,
@@ -98,14 +79,14 @@ class BPSSsoService {
       }
 
       // Exchange authorization code for tokens
-      final tokenData = await _exchangeCodeForTokens(
-        config: realmConfig,
+      final tokenData = await exchangeCodeForTokens(
+        realmConfig: realmConfig,
         authCode: authCode,
         codeVerifier: codeVerifier,
       );
 
       // Get user info from access token
-      final userInfo = await _getUserInfo(
+      final userInfo = await getUserInfo(
         accessToken: tokenData['access_token'] as String,
         config: realmConfig,
       );
@@ -123,116 +104,32 @@ class BPSSsoService {
 
       return user;
     } on Exception catch (e) {
-      // Handle errors with security manager
-      final errorConfig = config.errorConfig;
-      errorConfig.onError?.call(e, StackTrace.current);
-
-      Exception sanitized;
-      if (e is BPSSsoException) {
-        // Re-throw SDK exceptions, but sanitize them
-        sanitized = _securityManager.sanitizeError(
-          e,
-          isProduction: !errorConfig.enableDetailedErrorMessages,
-        );
-      } else {
-        // Sanitize unknown errors
-        sanitized = _securityManager.sanitizeError(
-          NetworkException('Authentication failed: $e'),
-          isProduction: !errorConfig.enableDetailedErrorMessages,
-        );
-      }
-
-      // Call appropriate callback based on error type
-      if (e is AuthenticationCancelledException) {
-        config.authCallbacks.onLoginCancelled?.call(realmType);
-      } else {
-        config.authCallbacks.onLoginFailed?.call(sanitized, realmType);
-      }
-
-      throw sanitized;
+      _handleLoginError(e, realmType);
+      rethrow;
     }
   }
 
-  /// Refresh access token using refresh token
-  Future<BPSUser> refreshToken(BPSUser user) async {
-    try {
-      final realmConfig = config.getConfig(user.realm);
+  void _handleLoginError(Exception e, BPSRealmType realmType) {
+    final errorConfig = config.errorConfig;
+    errorConfig.onError?.call(e, StackTrace.current);
 
-      final response = await _dio.post<dynamic>(
-        realmConfig.tokenUrl,
-        data: {
-          'grant_type': 'refresh_token',
-          'client_id': realmConfig.clientId,
-          'refresh_token': user.refreshToken,
-        },
-        options: Options(
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        ),
+    Exception sanitized;
+    if (e is BPSSsoException) {
+      sanitized = securityManager.sanitizeError(
+        e,
+        isProduction: !errorConfig.enableDetailedErrorMessages,
       );
+    } else {
+      sanitized = securityManager.sanitizeError(
+        NetworkException('Authentication failed: $e'),
+        isProduction: !errorConfig.enableDetailedErrorMessages,
+      );
+    }
 
-      if (response.statusCode == HttpStatusCodes.ok) {
-        final tokenData = response.data as Map<String, dynamic>;
-
-        final newAccessToken = tokenData['access_token'] as String?;
-        final newRefreshToken = tokenData['refresh_token'] as String?;
-
-        if (newAccessToken == null) {
-          throw const TokenExchangeException(
-            'Access token is null in refresh response',
-          );
-        }
-
-        // Get updated user info
-        final userInfo = await _getUserInfo(
-          accessToken: newAccessToken,
-          config: realmConfig,
-        );
-
-        final userData = {
-          ...userInfo,
-          'access_token': newAccessToken,
-          'refresh_token': newRefreshToken ?? user.refreshToken,
-          'expires_in': tokenData['expires_in'],
-        };
-
-        // Clean up old tokens before returning new ones
-        _securityManager.secureClearSensitiveData(user.accessToken);
-        if (newRefreshToken != null) {
-          _securityManager.secureClearSensitiveData(user.refreshToken);
-        }
-
-        final updatedUser = BPSUser.fromJson(userData, user.realm);
-
-        // Call success callback
-        config.authCallbacks.onTokenRefreshSuccess?.call(updatedUser);
-
-        return updatedUser;
-      } else {
-        throw TokenExchangeException.fromStatusCode(response.statusCode!);
-      }
-    } on Exception catch (e) {
-      // Handle token refresh failure
-      Exception error;
-      if (e is BPSSsoException) {
-        error = e;
-      } else {
-        error = NetworkException('Token refresh failed: $e');
-      }
-
-      // Call token refresh failed callback
-      config.authCallbacks.onTokenRefreshFailed?.call(error, user);
-
-      // Check if this is an authentication failure (expired refresh token,
-      // etc.)
-      if (e is TokenExchangeException ||
-          (e is DioException &&
-              (e.response?.statusCode == 401 ||
-                  e.response?.statusCode == 403))) {
-        // This indicates the user's session is completely invalid
-        config.authCallbacks.onAuthenticationFailure?.call(error, user);
-      }
-
-      throw error;
+    if (e is AuthenticationCancelledException) {
+      config.authCallbacks.onLoginCancelled?.call(realmType);
+    } else {
+      config.authCallbacks.onLoginFailed?.call(sanitized, realmType);
     }
   }
 
@@ -241,7 +138,7 @@ class BPSSsoService {
     try {
       final realmConfig = config.getConfig(user.realm);
 
-      await _dio.post<dynamic>(
+      await dio.post<dynamic>(
         realmConfig.logoutUrl,
         data: {
           'client_id': realmConfig.clientId,
@@ -253,23 +150,13 @@ class BPSSsoService {
       );
 
       // Secure memory cleanup after successful logout
-      _securityManager
-        ..secureClearSensitiveData(user.accessToken)
-        ..secureClearSensitiveData(user.refreshToken);
-
-      // Clear token validation cache for this user
-      TokenValidationCache.instance.clearUserCache(user.id);
+      _clearUserTokens(user);
 
       // Call success callback
       config.authCallbacks.onLogoutSuccess?.call(user);
     } on Exception catch (e) {
       // Always clean up sensitive data even if logout fails
-      _securityManager
-        ..secureClearSensitiveData(user.accessToken)
-        ..secureClearSensitiveData(user.refreshToken);
-
-      // Clear token validation cache for this user even on failure
-      TokenValidationCache.instance.clearUserCache(user.id);
+      _clearUserTokens(user);
 
       // Handle error with security manager
       final errorConfig = config.errorConfig;
@@ -287,364 +174,12 @@ class BPSSsoService {
     }
   }
 
-  /// Validate access token with caching for improved performance
-  ///
-  /// This method first checks for cached validation results to avoid
-  /// unnecessary network calls. If no cached result is available,
-  /// it performs a network validation and caches the result.
-  Future<bool> validateToken(BPSUser user) async {
-    try {
-      // Quick local check first - if token is expired, no need to validate
-      if (user.isTokenExpired) {
-        return false;
-      }
+  void _clearUserTokens(BPSUser user) {
+    securityManager
+      ..secureClearSensitiveData(user.accessToken)
+      ..secureClearSensitiveData(user.refreshToken);
 
-      // Check if token is near expiry using buffer time
-      final tokenExpiry = TokenUtils.extractTokenExpiry(user.accessToken);
-      if (tokenExpiry != null &&
-          TokenUtils.isTokenNearExpiry(
-            tokenExpiry,
-            SecurityConstants.tokenExpiryBuffer,
-          )) {
-        return false;
-      }
-
-      // Check cache for recent validation result
-      final tokenHash = TokenUtils.hashToken(user.accessToken);
-      final cachedResult = TokenValidationCache.instance.getCachedValidation(
-        userId: user.id,
-        tokenHash: tokenHash,
-      );
-
-      if (cachedResult != null) {
-        // Return cached result without network call
-        return cachedResult;
-      }
-
-      // Perform network validation
-      final realmConfig = config.getConfig(user.realm);
-      final response = await _dio.get<dynamic>(
-        realmConfig.userInfoUrl,
-        options: Options(
-          headers: {'Authorization': 'Bearer ${user.accessToken}'},
-        ),
-      );
-
-      bool isValid;
-      if (response.statusCode == HttpStatusCodes.ok) {
-        isValid = true;
-      } else if (response.statusCode == HttpStatusCodes.unauthorized ||
-          response.statusCode == HttpStatusCodes.forbidden) {
-        // Token is invalid, trigger authentication failure
-        config.authCallbacks.onAuthenticationFailure?.call(
-          SecurityException('Token validation failed: ${response.statusCode}'),
-          user,
-        );
-        isValid = false;
-      } else {
-        isValid = false;
-      }
-
-      // Cache the validation result
-      TokenValidationCache.instance.cacheValidation(
-        userId: user.id,
-        tokenHash: tokenHash,
-        isValid: isValid,
-      );
-
-      return isValid;
-    } on Exception catch (e) {
-      // Check if this is an authentication error
-      if (e is DioException &&
-          (e.response?.statusCode == HttpStatusCodes.unauthorized ||
-              e.response?.statusCode == HttpStatusCodes.forbidden)) {
-        config.authCallbacks.onAuthenticationFailure?.call(
-          SecurityException(
-            'Token validation failed: ${e.response?.statusCode}',
-          ),
-          user,
-        );
-
-        // Cache the failed validation result
-        final tokenHash = TokenUtils.hashToken(user.accessToken);
-        TokenValidationCache.instance.cacheValidation(
-          userId: user.id,
-          tokenHash: tokenHash,
-          isValid: false,
-        );
-      }
-      return false;
-    }
-  }
-
-  /// Get user information from access token
-  Future<Map<String, dynamic>> _getUserInfo({
-    required String accessToken,
-    required BPSRealmConfig config,
-  }) async {
-    try {
-      final response = await _dio.get<dynamic>(
-        config.userInfoUrl,
-        options: Options(
-          headers: {'Authorization': 'Bearer $accessToken'},
-        ),
-      );
-
-      if (response.statusCode == HttpStatusCodes.ok) {
-        return response.data as Map<String, dynamic>;
-      } else {
-        throw UserInfoException(
-          'Failed to get user info: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      if (e is BPSSsoException) rethrow;
-
-      // Fallback: decode JWT token manually
-      try {
-        return _decodeJwtToken(accessToken);
-      } on Exception {
-        throw UserInfoException('Failed to get user info: $e');
-      }
-    }
-  }
-
-  /// Decode JWT token manually to extract user information
-  Map<String, dynamic> _decodeJwtToken(String token) {
-    try {
-      final parts = token.split('.');
-      if (parts.length != 3) {
-        throw const UserInfoException('Invalid JWT token format');
-      }
-
-      // Decode the payload (second part)
-      var payload = parts[1];
-
-      // Add padding if needed
-      switch (payload.length % 4) {
-        case 2:
-          payload += '==';
-        case 3:
-          payload += '=';
-      }
-
-      final bytes = base64Url.decode(payload);
-      final decoded = utf8.decode(bytes);
-      return json.decode(decoded) as Map<String, dynamic>;
-    } catch (e) {
-      throw UserInfoException('Failed to decode JWT token: $e');
-    }
-  }
-
-  /// Exchange authorization code for access tokens
-  Future<Map<String, dynamic>> _exchangeCodeForTokens({
-    required BPSRealmConfig config,
-    required String authCode,
-    required String codeVerifier,
-  }) async {
-    try {
-      final response = await _dio.post<dynamic>(
-        config.tokenUrl,
-        data: {
-          'grant_type': 'authorization_code',
-          'client_id': config.clientId,
-          'code': authCode,
-          'redirect_uri': config.redirectUri,
-          'code_verifier': codeVerifier,
-        },
-        options: Options(
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        ),
-      );
-
-      if (response.statusCode == HttpStatusCodes.ok) {
-        return response.data as Map<String, dynamic>;
-      } else {
-        throw TokenExchangeException.fromStatusCode(response.statusCode!);
-      }
-    } catch (e) {
-      if (e is BPSSsoException) rethrow;
-      throw TokenExchangeException('Token exchange failed: $e');
-    }
-  }
-
-  /// Show Chrome Custom Tabs for authentication and capture authorization code
-  Future<String?> _showCustomTabsAuth(
-    BuildContext context,
-    String authUrl,
-    String expectedState,
-    BPSRealmConfig config,
-  ) async {
-    try {
-      final completer = Completer<String?>();
-      StreamSubscription<dynamic>? linkSubscription;
-
-      // Listen for incoming deep links
-      linkSubscription = linkStream?.listen((String link) async {
-        // Validate deep link using security manager
-        if (!_securityManager.validateDeepLink(link, expectedState)) {
-          await linkSubscription?.cancel();
-          completer.complete(null);
-          final sanitizedError = _securityManager.sanitizeError(
-            const SecurityException('Invalid deep link received'),
-            isProduction: !this.config.errorConfig.enableDetailedErrorMessages,
-          );
-          _showErrorSnackBar(context, _getErrorMessage(sanitizedError));
-          return;
-        }
-
-        final uri = Uri.parse(link);
-        final redirectUri = Uri.parse(config.redirectUri);
-
-        // Check if this is our callback URL
-        if (uri.scheme == redirectUri.scheme && uri.host == redirectUri.host) {
-          final code = uri.queryParameters['code'];
-          final state = uri.queryParameters['state'];
-          final error = uri.queryParameters['error'];
-
-          await linkSubscription?.cancel();
-
-          if (error != null) {
-            completer.complete(null);
-            // Close Custom Tabs after authentication error
-            _scheduleCustomTabsClose();
-            final sanitizedError = _securityManager.sanitizeError(
-              NetworkException('Authentication failed: $error'),
-              isProduction:
-                  !this.config.errorConfig.enableDetailedErrorMessages,
-            );
-            _showErrorSnackBar(context, _getErrorMessage(sanitizedError));
-            return;
-          }
-
-          if (code != null && state == expectedState) {
-            completer.complete(code);
-            // Close Custom Tabs after successful authentication with delay
-            _scheduleCustomTabsClose();
-          } else {
-            completer.complete(null);
-            // Close Custom Tabs after authentication failure
-            _scheduleCustomTabsClose();
-            final sanitizedError = _securityManager.sanitizeError(
-              const InvalidStateException(),
-              isProduction:
-                  !this.config.errorConfig.enableDetailedErrorMessages,
-            );
-            _showErrorSnackBar(context, _getErrorMessage(sanitizedError));
-          }
-        }
-      });
-
-      // Launch Custom Tabs with configuration
-      await launchUrl(
-        Uri.parse(authUrl),
-        customTabsOptions: _buildCustomTabsOptions(),
-        safariVCOptions: _buildSafariOptions(),
-      );
-
-      // Wait for the auth code or timeout
-      return await completer.future.timeout(
-        SecurityConstants.authTimeout,
-        onTimeout: () async {
-          await linkSubscription?.cancel();
-          // Close Custom Tabs on timeout
-          _scheduleCustomTabsClose();
-          return null;
-        },
-      );
-    } on Exception catch (e) {
-      debugPrint('Custom Tabs auth failed: $e');
-      // Close Custom Tabs on exception
-      _scheduleCustomTabsClose();
-      return null;
-    }
-  }
-
-  /// Show error snackbar
-  void _showErrorSnackBar(BuildContext context, String message) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  /// Build Custom Tabs options from configuration
-  CustomTabsOptions _buildCustomTabsOptions() {
-    final uiConfig = config.customTabsConfig;
-
-    return CustomTabsOptions(
-      colorSchemes: CustomTabsColorSchemes(
-        defaultPrams: CustomTabsColorSchemeParams(
-          toolbarColor: uiConfig.toolbarColor ?? const Color(0xFF1E3A8A),
-          navigationBarColor: uiConfig.navigationBarColor,
-        ),
-        lightParams:
-            uiConfig.enableColorScheme &&
-                uiConfig.colorScheme == BPSSsoColorScheme.light
-            ? CustomTabsColorSchemeParams(
-                toolbarColor: uiConfig.toolbarColor ?? const Color(0xFF1E3A8A),
-                navigationBarColor: uiConfig.navigationBarColor,
-              )
-            : null,
-        darkParams:
-            uiConfig.enableColorScheme &&
-                uiConfig.colorScheme == BPSSsoColorScheme.dark
-            ? CustomTabsColorSchemeParams(
-                toolbarColor: uiConfig.toolbarColor ?? const Color(0xFF0F172A),
-                navigationBarColor:
-                    uiConfig.navigationBarColor ?? const Color(0xFF0F172A),
-              )
-            : null,
-      ),
-      shareState: uiConfig.enableDefaultShare
-          ? CustomTabsShareState.on
-          : CustomTabsShareState.off,
-      urlBarHidingEnabled: uiConfig.enableUrlBarHiding,
-      showTitle: uiConfig.showTitle,
-      instantAppsEnabled: uiConfig.enableInstantApps,
-      // Note: Custom menu items would need native implementation
-    );
-  }
-
-  /// Build Safari View Controller options from configuration
-  SafariViewControllerOptions _buildSafariOptions() {
-    final uiConfig = config.customTabsConfig;
-
-    return SafariViewControllerOptions(
-      preferredBarTintColor: uiConfig.toolbarColor ?? const Color(0xFF1E3A8A),
-      preferredControlTintColor: Colors.white,
-      barCollapsingEnabled: uiConfig.enableUrlBarHiding,
-      entersReaderIfAvailable: false,
-      dismissButtonStyle: SafariViewControllerDismissButtonStyle.close,
-    );
-  }
-
-  /// Get user-friendly error message from exception
-  String _getErrorMessage(Exception error) {
-    final errorConfig = config.errorConfig;
-
-    // Use custom error messages if configured
-    if (errorConfig.customErrorMessages.containsKey(error.runtimeType)) {
-      return errorConfig.customErrorMessages[error.runtimeType]!;
-    }
-
-    // Default user-friendly messages
-    if (error is AuthenticationCancelledException) {
-      return 'Authentication was cancelled';
-    } else if (error is NetworkException) {
-      return 'Network connection failed. '
-          'Please check your internet connection.';
-    } else if (error is SecurityException) {
-      return 'Security validation failed. Please try again.';
-    } else if (error is InvalidStateException) {
-      return 'Authentication security check failed. '
-          'Please restart the login process.';
-    } else {
-      return 'Authentication failed. Please try again.';
-    }
+    // Clear token validation cache for this user
+    TokenValidationCache.instance.clearUserCache(user.id);
   }
 }
