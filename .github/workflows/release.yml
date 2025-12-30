@@ -18,6 +18,6 @@ jobs:
       develop-branch: 'develop'
       changelog-format: 'keepachangelog'
       auto-merge-backport: false
-      flutter-version: 'stable'
+      flutter-channel: 'stable'
     secrets:
       GH_PAT: ${{ secrets.PAT_TOKEN }}
