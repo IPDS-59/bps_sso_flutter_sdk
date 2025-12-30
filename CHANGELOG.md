@@ -1,4 +1,38 @@
 # Changelog
+## [1.3.0] - 2025-12-30
+
+### 🐛 Bug Fixes
+
+-  remove duplicate flutter-version in ci workflow (e1c01b0)
+- fix(ci): add contents write permission to housekeeping workflow (006f072)
+- fix(ci): use flutter-channel instead of flutter-version in release workflow (884311a)
+
+### ♻️ Refactoring
+
+- refactor(services): extract mixins from bps_sso_service (f5047dd)
+
+### 🔧 Chores
+
+-  bump version to v1.3.0 for next development cycle (8437f89)
+-  back-merge v1.2.0 release from main to develop (3cf03ae)
+-  migrate to reusable workflows from banua-coder-workflow (e1352c1)
+-  add .pubignore to exclude img from pub.dev (ee3c8d3)
+-  add sanity-check workflow (670a215)
+-  update dependencies and cleanup pubspec (39aafd0)
+-  update example app dependencies (92a233b)
+-  add housekeeping workflow for branch cleanup (16c5b55)
+-  bump version to 1.3.0 (411689a)
+
+### 📝 Other Changes
+
+- Merge pull request #15 from IPDS-59/chore/bump-version-to-v1.3.0-dev (6af174e)
+- Merge pull request #18 from IPDS-59/chore/back-merge-v1.2.0-release-to-develop-20250923-044613 (be85d52)
+- Merge pull request #19 from IPDS-59/chore/migrate-to-reusable-workflows (ed729bd)
+- Merge pull request #20 from IPDS-59/chore/add-sanitize-workflow (4418206)
+- Merge pull request #21 from IPDS-59/fix/housekeeping-workflow-permissions (462bbc7)
+- Merge pull request #22 from IPDS-59/fix/release-workflow-flutter-setup (240d5d1)
+- Merge pull request #23 from IPDS-59/release/1.3.0 (649dd0d)
+
 
 ## [1.2.0] - 2025-09-23
 
