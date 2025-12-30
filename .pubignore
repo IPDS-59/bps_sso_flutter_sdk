@@ -24,3 +24,5 @@ coverage/
 
 doc/api/
 pubspec.yaml.bak
+build/
+WORKFLOWS.md
