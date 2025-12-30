@@ -3,7 +3,7 @@ name: Publish Package
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - '*.*.*'
   workflow_dispatch:
     inputs:
       dry-run:
@@ -17,7 +17,7 @@ jobs:
     name: Publish to pub.dev
     uses: banua-coder/banua-coder-workflow/.github/workflows/publish-dart.yml@v1
     with:
-      flutter-version: 'stable'
+      flutter-channel: 'stable'
       use-flutter: true
       dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
       environment: 'pub.dev'
