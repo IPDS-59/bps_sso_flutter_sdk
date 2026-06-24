@@ -23,7 +23,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   flutter_svg: ^2.0.10+1
   gap: ^3.0.1
-  get_it: ^8.0.2
+  get_it: ^9.2.1
   google_fonts: ^6.2.1
   hydrated_bloc: ^10.1.1
   injectable: ^2.4.4
