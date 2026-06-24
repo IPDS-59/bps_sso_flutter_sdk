@@ -112,7 +112,7 @@ mixin CustomTabsMixin {
       );
 
       return await completer.future.timeout(
-        SecurityConstants.authTimeout,
+        config.authTimeout,
         onTimeout: () async {
           await linkSubscription?.cancel();
           scheduleCustomTabsClose();
