@@ -1,0 +1,125 @@
+name: Validate PAT Token
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-pat:
+    name: Validate PAT_TOKEN
+    runs-on: ubuntu-latest
+    # Secrets are not available on PRs from forks — skip in that case
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Check PAT token validity and expiry
+        id: check_pat
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          RESPONSE=$(curl -sI -o /dev/null -D - \
+            -H "Authorization: Bearer $PAT_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/user)
+
+          HTTP_STATUS=$(echo "$RESPONSE" | grep -i '^HTTP/' | tail -1 | awk '{print $2}')
+          EXPIRY_HEADER=$(echo "$RESPONSE" | grep -i '^github-authentication-token-expiration:' | sed 's/^[^:]*: //' | tr -d '\r')
+          SCOPES_HEADER=$(echo "$RESPONSE" | grep -i '^x-oauth-scopes:' | sed 's/^[^:]*: //' | tr -d '\r')
+
+          echo "http_status=$HTTP_STATUS" >> "$GITHUB_OUTPUT"
+          echo "expiry_header=$EXPIRY_HEADER" >> "$GITHUB_OUTPUT"
+          echo "scopes_header=$SCOPES_HEADER" >> "$GITHUB_OUTPUT"
+
+      - name: Build summary and set outcome
+        id: outcome
+        env:
+          HTTP_STATUS: ${{ steps.check_pat.outputs.http_status }}
+          EXPIRY_HEADER: ${{ steps.check_pat.outputs.expiry_header }}
+          SCOPES_HEADER: ${{ steps.check_pat.outputs.scopes_header }}
+        run: |
+          TOKEN_VALID=false
+          WARN_EXPIRY=false
+          DAYS_REMAINING="N/A"
+          EXPIRY_DATE="N/A"
+          HAS_REPO_SCOPE=false
+
+          if [ "$HTTP_STATUS" = "200" ]; then
+            TOKEN_VALID=true
+          fi
+
+          if [ -n "$EXPIRY_HEADER" ]; then
+            EXPIRY_DATE=$(echo "$EXPIRY_HEADER" | sed 's/ UTC$//')
+            EXPIRY_EPOCH=$(date -d "$EXPIRY_DATE UTC" +%s 2>/dev/null || date -jf "%Y-%m-%d %H:%M:%S" "$EXPIRY_DATE" +%s 2>/dev/null)
+            NOW_EPOCH=$(date +%s)
+            SECONDS_REMAINING=$((EXPIRY_EPOCH - NOW_EPOCH))
+            DAYS_REMAINING=$(( SECONDS_REMAINING / 86400 ))
+
+            if [ "$DAYS_REMAINING" -le 0 ]; then
+              TOKEN_VALID=false
+            elif [ "$DAYS_REMAINING" -le 30 ]; then
+              WARN_EXPIRY=true
+            fi
+          fi
+
+          if echo "$SCOPES_HEADER" | grep -qw "repo"; then
+            HAS_REPO_SCOPE=true
+          fi
+
+          if [ "$TOKEN_VALID" = "true" ]; then
+            TOKEN_STATUS_ICON="✅"
+            TOKEN_STATUS_TEXT="Valid"
+          else
+            TOKEN_STATUS_ICON="❌"
+            TOKEN_STATUS_TEXT="Invalid or Expired"
+          fi
+
+          if [ "$HAS_REPO_SCOPE" = "true" ]; then
+            SCOPE_STATUS_ICON="✅"
+          else
+            SCOPE_STATUS_ICON="❌"
+          fi
+
+          {
+            echo "## PAT_TOKEN Validation Report"
+            echo ""
+            echo "| Check | Result |"
+            echo "|-------|--------|"
+            echo "| Token status | $TOKEN_STATUS_ICON $TOKEN_STATUS_TEXT |"
+            echo "| HTTP status | \`$HTTP_STATUS\` |"
+            echo "| Expiry date | $EXPIRY_DATE |"
+            echo "| Days remaining | $DAYS_REMAINING |"
+            echo "| \`repo\` scope present | $SCOPE_STATUS_ICON $HAS_REPO_SCOPE |"
+            echo "| Scopes | \`$SCOPES_HEADER\` |"
+            echo ""
+            if [ "$WARN_EXPIRY" = "true" ]; then
+              echo "> [!WARNING]"
+              echo "> Token expires in **$DAYS_REMAINING days**. Rotate \`PAT_TOKEN\` before it expires."
+              echo ""
+            fi
+            if [ "$TOKEN_VALID" = "false" ]; then
+              echo "> [!CAUTION]"
+              echo "> Token is **invalid or expired**. Update the \`PAT_TOKEN\` repository secret immediately."
+              echo ""
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "token_valid=$TOKEN_VALID" >> "$GITHUB_OUTPUT"
+          echo "warn_expiry=$WARN_EXPIRY" >> "$GITHUB_OUTPUT"
+          echo "days_remaining=$DAYS_REMAINING" >> "$GITHUB_OUTPUT"
+
+      - name: Fail if token invalid
+        if: steps.outcome.outputs.token_valid == 'false'
+        run: |
+          echo "::error::PAT_TOKEN is invalid or expired. Update the repository secret."
+          exit 1
+
+      - name: Warn if token expiring soon
+        if: steps.outcome.outputs.warn_expiry == 'true'
+        env:
+          DAYS_REMAINING: ${{ steps.outcome.outputs.days_remaining }}
+        run: |
+          echo "::warning::PAT_TOKEN expires in $DAYS_REMAINING days. Rotate it soon."

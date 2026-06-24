@@ -41,17 +41,36 @@ A comprehensive Flutter example application showcasing the **BPS SSO SDK** for a
    cd bps_sso_sdk/example
    ```
 
-2. **Install dependencies**
+2. **Set up your app name**
+
+   Copy `.env.example` to `.env` and set `APP_NAME`:
+   ```bash
+   cp .env.example .env
+   # edit .env: APP_NAME=your-app
+   ```
+
+   Then run the pre-build script to patch platform files:
+   ```bash
+   dart run tool/setup_app_id.dart
+   # or pass it directly: dart run tool/setup_app_id.dart --app-name=your-app
+   ```
+
+   This sets the deep link hosts in `AndroidManifest.xml` and the `BPSSsoAppName`
+   key in `Info.plist` to match the redirect URIs your SSO server expects:
+   - `id.go.bps://your-app-sso-internal`
+   - `id.go.bps://your-app-sso-eksternal`
+
+3. **Install dependencies**
    ```bash
    flutter pub get
    ```
 
-3. **Generate route files**
+4. **Generate route files**
    ```bash
    dart run build_runner build
    ```
 
-4. **Run the app**
+5. **Run the app**
    ```bash
    flutter run
    ```

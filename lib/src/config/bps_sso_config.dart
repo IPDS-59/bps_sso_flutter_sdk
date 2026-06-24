@@ -13,6 +13,7 @@ class BPSSsoConfig {
     this.securityConfig = BPSSsoSecurityConfig.iso27001,
     this.authCallbacks = BPSSsoAuthCallback.none,
     this.interceptors = const <Interceptor>[],
+    this.authTimeout = const Duration(minutes: 5),
   });
 
   /// Factory constructor to create BPS SSO config with sensible defaults
@@ -37,6 +38,7 @@ class BPSSsoConfig {
     BPSSsoSecurityConfig? securityConfig,
     BPSSsoAuthCallback? authCallbacks,
     List<Interceptor> interceptors = const <Interceptor>[],
+    Duration authTimeout = const Duration(minutes: 5),
   }) {
     return BPSSsoConfig(
       baseUrl: baseUrl,
@@ -65,6 +67,7 @@ class BPSSsoConfig {
       securityConfig: securityConfig ?? BPSSsoSecurityConfig.iso27001,
       authCallbacks: authCallbacks ?? BPSSsoAuthCallback.none,
       interceptors: interceptors,
+      authTimeout: authTimeout,
     );
   }
 
@@ -108,6 +111,13 @@ class BPSSsoConfig {
   /// );
   /// ```
   final List<Interceptor> interceptors;
+
+  /// Maximum time to wait for the user to complete authentication in the
+  /// browser before timing out. Increase this when OTP (e.g. TOTP or SMS)
+  /// is required, as users need extra time to retrieve and enter the code.
+  ///
+  /// Defaults to 5 minutes.
+  final Duration authTimeout;
 
   /// Get configuration for specific realm type
   BPSRealmConfig getConfig(BPSRealmType realmType) {

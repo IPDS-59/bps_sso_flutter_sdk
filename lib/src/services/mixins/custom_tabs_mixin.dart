@@ -57,7 +57,7 @@ mixin CustomTabsMixin {
       final completer = Completer<String?>();
       StreamSubscription<dynamic>? linkSubscription;
 
-      linkSubscription = linkStream?.listen((String link) async {
+      linkSubscription = linkStream?.listen((link) async {
         if (!securityManager.validateDeepLink(link, expectedState)) {
           await linkSubscription?.cancel();
           completer.complete(null);
@@ -112,7 +112,7 @@ mixin CustomTabsMixin {
       );
 
       return await completer.future.timeout(
-        SecurityConstants.authTimeout,
+        config.authTimeout,
         onTimeout: () async {
           await linkSubscription?.cancel();
           scheduleCustomTabsClose();
