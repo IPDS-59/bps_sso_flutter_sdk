@@ -49,14 +49,24 @@
     <array>
       <dict>
         <key>CFBundleURLName</key>
-        <string>BPS SSO</string>
+        <string>BPS SSO Internal</string>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>id.go.bps</string>
+          <string>PLACEHOLDER_INTERNAL_SCHEME</string>
+        </array>
+      </dict>
+      <dict>
+        <key>CFBundleURLName</key>
+        <string>BPS SSO External</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>PLACEHOLDER_EXTERNAL_SCHEME</string>
         </array>
       </dict>
     </array>
-    <key>BPSSsoAppName</key>
-    <string>PLACEHOLDER</string>
+    <key>BPSSsoInternalHost</key>
+    <string>PLACEHOLDER_INTERNAL_HOST</string>
+    <key>BPSSsoExternalHost</key>
+    <string>PLACEHOLDER_EXTERNAL_HOST</string>
   </dict>
 </plist>
