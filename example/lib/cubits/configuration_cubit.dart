@@ -6,12 +6,13 @@ import 'package:equatable/equatable.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 import '../core/di/injection.dart';
+import '../env/env.dart';
 import '../routes/app_router.dart';
 
 part 'configuration_state.dart';
 
 class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
-  ConfigurationCubit() : super(const ConfigurationState()) {
+  ConfigurationCubit() : super(ConfigurationState()) {
     _appLinks = AppLinks();
     _alice = getIt<Alice>();
     _aliceDioAdapter = getIt<AliceDioAdapter>();
@@ -156,8 +157,9 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
     responseTypes: state.internalResponseTypes,
     scopes: state.internalScopes,
     codeChallengeMethod: state.internalCodeChallengeMethod,
-    realmName:
-        state.internalRealm == 'pegawai-bps' ? null : state.internalRealm,
+    realmName: state.internalRealm == 'pegawai-bps'
+        ? null
+        : state.internalRealm,
   );
 
   BPSRealmConfig _externalRealmConfig() => BPSRealmConfig(
@@ -168,8 +170,7 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
     responseTypes: state.externalResponseTypes,
     scopes: state.externalScopes,
     codeChallengeMethod: state.externalCodeChallengeMethod,
-    realmName:
-        state.externalRealm == 'eksternal' ? null : state.externalRealm,
+    realmName: state.externalRealm == 'eksternal' ? null : state.externalRealm,
   );
 
   BPSSsoConfig toBPSConfig() {
@@ -232,7 +233,7 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
     try {
       return ConfigurationState.fromJson(json);
     } catch (e) {
-      return const ConfigurationState();
+      return ConfigurationState();
     }
   }
 

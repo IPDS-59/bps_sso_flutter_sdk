@@ -21,22 +21,22 @@ class ConfigurationState extends Equatable {
   final bool isInitialized;
   final bool privacyMode;
 
-  const ConfigurationState({
-    this.baseUrl = 'https://sso.bps.go.id',
-    this.internalClientId = '',
-    this.internalRedirectScheme = 'id.go.bps',
-    this.internalRedirectHost = '',
-    this.internalRealm = 'pegawai-bps',
+  ConfigurationState({
+    String? baseUrl,
+    String? internalClientId,
+    String? internalRedirectScheme,
+    String? internalRedirectHost,
+    String? internalRealm,
     this.internalResponseTypes = const [BPSOAuthResponseType.code],
     this.internalScopes = const [
       BPSOAuthScope.openid,
       BPSOAuthScope.profilePegawai,
     ],
     this.internalCodeChallengeMethod = BPSCodeChallengeMethod.s256,
-    this.externalClientId = '',
-    this.externalRedirectScheme = 'id.go.bps',
-    this.externalRedirectHost = '',
-    this.externalRealm = 'eksternal',
+    String? externalClientId,
+    String? externalRedirectScheme,
+    String? externalRedirectHost,
+    String? externalRealm,
     this.externalResponseTypes = const [BPSOAuthResponseType.code],
     this.externalScopes = const [
       BPSOAuthScope.openid,
@@ -48,13 +48,27 @@ class ConfigurationState extends Equatable {
     this.initializationError,
     this.isInitialized = false,
     this.privacyMode = false,
-  });
+  }) : baseUrl = baseUrl ?? Env.baseUrl,
+       internalClientId = internalClientId ?? Env.internalClientId,
+       internalRedirectScheme =
+           internalRedirectScheme ?? Env.internalRedirectScheme,
+       internalRedirectHost = internalRedirectHost ?? Env.internalRedirectHost,
+       internalRealm = internalRealm ?? Env.internalRealm,
+       externalClientId = externalClientId ?? Env.externalClientId,
+       externalRedirectScheme =
+           externalRedirectScheme ?? Env.externalRedirectScheme,
+       externalRedirectHost = externalRedirectHost ?? Env.externalRedirectHost,
+       externalRealm = externalRealm ?? Env.externalRealm;
 
-  BPSRedirectUri get internalRedirectUri =>
-      BPSRedirectUri(scheme: internalRedirectScheme, host: internalRedirectHost);
+  BPSRedirectUri get internalRedirectUri => BPSRedirectUri(
+    scheme: internalRedirectScheme,
+    host: internalRedirectHost,
+  );
 
-  BPSRedirectUri get externalRedirectUri =>
-      BPSRedirectUri(scheme: externalRedirectScheme, host: externalRedirectHost);
+  BPSRedirectUri get externalRedirectUri => BPSRedirectUri(
+    scheme: externalRedirectScheme,
+    host: externalRedirectHost,
+  );
 
   ConfigurationState copyWith({
     String? baseUrl,
@@ -113,16 +127,18 @@ class ConfigurationState extends Equatable {
       'internalRedirectScheme': internalRedirectScheme,
       'internalRedirectHost': internalRedirectHost,
       'internalRealm': internalRealm,
-      'internalResponseTypes':
-          internalResponseTypes.map((e) => e.name).toList(),
+      'internalResponseTypes': internalResponseTypes
+          .map((e) => e.name)
+          .toList(),
       'internalScopes': internalScopes.map((e) => e.name).toList(),
       'internalCodeChallengeMethod': internalCodeChallengeMethod.name,
       'externalClientId': externalClientId,
       'externalRedirectScheme': externalRedirectScheme,
       'externalRedirectHost': externalRedirectHost,
       'externalRealm': externalRealm,
-      'externalResponseTypes':
-          externalResponseTypes.map((e) => e.name).toList(),
+      'externalResponseTypes': externalResponseTypes
+          .map((e) => e.name)
+          .toList(),
       'externalScopes': externalScopes.map((e) => e.name).toList(),
       'externalCodeChallengeMethod': externalCodeChallengeMethod.name,
       'isLoading': isLoading,
@@ -151,12 +167,11 @@ class ConfigurationState extends Equatable {
         );
 
     return ConfigurationState(
-      baseUrl: json['baseUrl'] as String? ?? 'https://sso.bps.go.id',
-      internalClientId: json['internalClientId'] as String? ?? '',
-      internalRedirectScheme:
-          json['internalRedirectScheme'] as String? ?? 'id.go.bps',
-      internalRedirectHost: json['internalRedirectHost'] as String? ?? '',
-      internalRealm: json['internalRealm'] as String? ?? 'pegawai-bps',
+      baseUrl: json['baseUrl'] as String?,
+      internalClientId: json['internalClientId'] as String?,
+      internalRedirectScheme: json['internalRedirectScheme'] as String?,
+      internalRedirectHost: json['internalRedirectHost'] as String?,
+      internalRealm: json['internalRealm'] as String?,
       internalResponseTypes:
           (json['internalResponseTypes'] as List<dynamic>?)
               ?.map((e) => parseResponseType(e as String))
@@ -170,11 +185,10 @@ class ConfigurationState extends Equatable {
       internalCodeChallengeMethod: parseChallengeMethod(
         json['internalCodeChallengeMethod'] as String? ?? 's256',
       ),
-      externalClientId: json['externalClientId'] as String? ?? '',
-      externalRedirectScheme:
-          json['externalRedirectScheme'] as String? ?? 'id.go.bps',
-      externalRedirectHost: json['externalRedirectHost'] as String? ?? '',
-      externalRealm: json['externalRealm'] as String? ?? 'eksternal',
+      externalClientId: json['externalClientId'] as String?,
+      externalRedirectScheme: json['externalRedirectScheme'] as String?,
+      externalRedirectHost: json['externalRedirectHost'] as String?,
+      externalRealm: json['externalRealm'] as String?,
       externalResponseTypes:
           (json['externalResponseTypes'] as List<dynamic>?)
               ?.map((e) => parseResponseType(e as String))
