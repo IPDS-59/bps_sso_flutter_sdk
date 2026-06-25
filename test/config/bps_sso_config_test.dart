@@ -17,20 +17,56 @@ void main() {
         expect(config.external.clientId, equals('external-client'));
         expect(
           config.internal.redirectUri,
-          equals('id.go.bps://testapp-sso-internal'),
+          equals(
+            const BPSRedirectUri(
+              scheme: 'id.go.bps',
+              host: 'testapp-sso-internal',
+            ),
+          ),
         );
         expect(
           config.external.redirectUri,
-          equals('id.go.bps://testapp-sso-eksternal'),
+          equals(
+            const BPSRedirectUri(
+              scheme: 'id.go.bps',
+              host: 'testapp-sso-eksternal',
+            ),
+          ),
         );
         expect(config.internal.realm, equals('pegawai-bps'));
         expect(config.external.realm, equals('eksternal'));
-        expect(config.internal.responseTypes, equals(['code']));
-        expect(config.external.responseTypes, equals(['code']));
-        expect(config.internal.scopes, equals(['openid', 'profile', 'email']));
-        expect(config.external.scopes, equals(['openid', 'profile', 'email']));
-        expect(config.internal.codeChallengeMethod, equals('S256'));
-        expect(config.external.codeChallengeMethod, equals('S256'));
+        expect(
+          config.internal.responseTypes,
+          equals([BPSOAuthResponseType.code]),
+        );
+        expect(
+          config.external.responseTypes,
+          equals([BPSOAuthResponseType.code]),
+        );
+        expect(
+          config.internal.scopes,
+          equals([
+            BPSOAuthScope.openid,
+            BPSOAuthScope.profile,
+            BPSOAuthScope.email,
+          ]),
+        );
+        expect(
+          config.external.scopes,
+          equals([
+            BPSOAuthScope.openid,
+            BPSOAuthScope.profile,
+            BPSOAuthScope.email,
+          ]),
+        );
+        expect(
+          config.internal.codeChallengeMethod,
+          equals(BPSCodeChallengeMethod.s256),
+        );
+        expect(
+          config.external.codeChallengeMethod,
+          equals(BPSCodeChallengeMethod.s256),
+        );
         expect(config.interceptors, isEmpty);
       });
 
@@ -53,24 +89,54 @@ void main() {
           internalClientId: 'custom-internal',
           externalClientId: 'custom-external',
           baseUrl: 'https://custom.sso.example.com',
-          responseTypes: ['code', 'token'],
-          scopes: ['openid', 'profile', 'email', 'roles'],
-          codeChallengeMethod: 'plain',
+          responseTypes: [
+            BPSOAuthResponseType.code,
+            BPSOAuthResponseType.token,
+          ],
+          scopes: [
+            BPSOAuthScope.openid,
+            BPSOAuthScope.profile,
+            BPSOAuthScope.email,
+            BPSOAuthScope.roles,
+          ],
+          codeChallengeMethod: BPSCodeChallengeMethod.plain,
         );
 
         expect(config.baseUrl, equals('https://custom.sso.example.com'));
-        expect(config.internal.responseTypes, equals(['code', 'token']));
-        expect(config.external.responseTypes, equals(['code', 'token']));
+        expect(
+          config.internal.responseTypes,
+          equals([BPSOAuthResponseType.code, BPSOAuthResponseType.token]),
+        );
+        expect(
+          config.external.responseTypes,
+          equals([BPSOAuthResponseType.code, BPSOAuthResponseType.token]),
+        );
         expect(
           config.internal.scopes,
-          equals(['openid', 'profile', 'email', 'roles']),
+          equals([
+            BPSOAuthScope.openid,
+            BPSOAuthScope.profile,
+            BPSOAuthScope.email,
+            BPSOAuthScope.roles,
+          ]),
         );
         expect(
           config.external.scopes,
-          equals(['openid', 'profile', 'email', 'roles']),
+          equals([
+            BPSOAuthScope.openid,
+            BPSOAuthScope.profile,
+            BPSOAuthScope.email,
+            BPSOAuthScope.roles,
+          ]),
         );
-        expect(config.internal.codeChallengeMethod, equals('plain'));
-        expect(config.external.codeChallengeMethod, equals('plain'));
+        expect(
+          config.internal.codeChallengeMethod,
+          equals(BPSCodeChallengeMethod.plain),
+        );
+        expect(
+          config.external.codeChallengeMethod,
+          equals(BPSCodeChallengeMethod.plain),
+        );
       });
 
       test('should create config with custom realm names', () {
@@ -106,16 +172,26 @@ void main() {
       test('should create config with manual realm configs', () {
         const internalConfig = BPSRealmConfig(
           clientId: 'internal-123',
-          redirectUri: 'id.go.bps://myapp-internal',
+          redirectUri: BPSRedirectUri(
+            scheme: 'id.go.bps',
+            host: 'myapp-internal',
+          ),
           realmType: BPSRealmType.internal,
-          scopes: <String>['openid', 'profile-pegawai'],
+          scopes: [BPSOAuthScope.openid, BPSOAuthScope.profilePegawai],
         );
 
         const externalConfig = BPSRealmConfig(
           clientId: 'external-456',
-          redirectUri: 'id.go.bps://myapp-external',
+          redirectUri: BPSRedirectUri(
+            scheme: 'id.go.bps',
+            host: 'myapp-external',
+          ),
           realmType: BPSRealmType.external,
-          scopes: <String>['openid', 'email', 'profile'],
+          scopes: [
+            BPSOAuthScope.openid,
+            BPSOAuthScope.email,
+            BPSOAuthScope.profile,
+          ],
         );
 
         const config = BPSSsoConfig(
@@ -165,7 +241,10 @@ void main() {
       setUp(() {
         config = const BPSRealmConfig(
           clientId: 'test-client',
-          redirectUri: 'id.go.bps://testapp-sso-internal',
+          redirectUri: BPSRedirectUri(
+            scheme: 'id.go.bps',
+            host: 'testapp-sso-internal',
+          ),
           realmType: BPSRealmType.internal,
         );
       });
@@ -239,9 +318,9 @@ void main() {
       test('should return correct realm for internal type', () {
         const config = BPSRealmConfig(
           clientId: 'test-client',
-          redirectUri: 'id.go.bps://test',
+          redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'test'),
           realmType: BPSRealmType.internal,
-          scopes: <String>['openid'],
+          scopes: [BPSOAuthScope.openid],
         );
 
         expect(config.realm, equals('pegawai-bps'));
@@ -250,9 +329,9 @@ void main() {
       test('should return correct realm for external type', () {
         const config = BPSRealmConfig(
           clientId: 'test-client',
-          redirectUri: 'id.go.bps://test',
+          redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'test'),
           realmType: BPSRealmType.external,
-          scopes: <String>['openid'],
+          scopes: [BPSOAuthScope.openid],
         );
 
         expect(config.realm, equals('eksternal'));
@@ -263,16 +342,16 @@ void main() {
       test('should be equal when all properties match', () {
         const config1 = BPSRealmConfig(
           clientId: 'test-client',
-          redirectUri: 'id.go.bps://test',
+          redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'test'),
           realmType: BPSRealmType.internal,
-          scopes: <String>['openid', 'profile'],
+          scopes: [BPSOAuthScope.openid, BPSOAuthScope.profile],
         );
 
         const config2 = BPSRealmConfig(
           clientId: 'test-client',
-          redirectUri: 'id.go.bps://test',
+          redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'test'),
           realmType: BPSRealmType.internal,
-          scopes: <String>['openid', 'profile'],
+          scopes: [BPSOAuthScope.openid, BPSOAuthScope.profile],
         );
 
         expect(config1, equals(config2));
@@ -282,16 +361,16 @@ void main() {
       test('should not be equal when properties differ', () {
         const config1 = BPSRealmConfig(
           clientId: 'test-client-1',
-          redirectUri: 'id.go.bps://test',
+          redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'test'),
           realmType: BPSRealmType.internal,
-          scopes: <String>['openid'],
+          scopes: [BPSOAuthScope.openid],
         );
 
         const config2 = BPSRealmConfig(
-          clientId: 'test-client-2', // Different client ID
-          redirectUri: 'id.go.bps://test',
+          clientId: 'test-client-2',
+          redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'test'),
           realmType: BPSRealmType.internal,
-          scopes: <String>['openid'],
+          scopes: [BPSOAuthScope.openid],
         );
 
         expect(config1, isNot(equals(config2)));
@@ -302,10 +381,14 @@ void main() {
       test('should handle multiple response types', () {
         const config = BPSRealmConfig(
           clientId: 'test-client',
-          redirectUri: 'id.go.bps://test',
+          redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'test'),
           realmType: BPSRealmType.internal,
-          responseTypes: <String>['code', 'token', 'id_token'],
-          scopes: <String>['openid'],
+          responseTypes: [
+            BPSOAuthResponseType.code,
+            BPSOAuthResponseType.token,
+            BPSOAuthResponseType.idToken,
+          ],
+          scopes: [BPSOAuthScope.openid],
         );
 
         final authUrl = config.buildAuthUrl(
@@ -323,9 +406,15 @@ void main() {
       test('should handle multiple scopes', () {
         const config = BPSRealmConfig(
           clientId: 'test-client',
-          redirectUri: 'id.go.bps://test',
+          redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'test'),
           realmType: BPSRealmType.internal,
-          scopes: <String>['openid', 'profile', 'email', 'roles', 'groups'],
+          scopes: [
+            BPSOAuthScope.openid,
+            BPSOAuthScope.profile,
+            BPSOAuthScope.email,
+            BPSOAuthScope.roles,
+            BPSOAuthScope.groups,
+          ],
         );
 
         final authUrl = config.buildAuthUrl(
