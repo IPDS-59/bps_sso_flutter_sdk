@@ -109,11 +109,8 @@ class ConfigurationState extends Equatable {
   factory ConfigurationState.fromJson(Map<String, dynamic> json) {
     return ConfigurationState(
       baseUrl: json['baseUrl'] as String? ?? 'https://sso.bps.go.id',
-      internalClientId:
-          json['internalClientId'] as String? ?? '',
-      internalRedirectUri:
-          json['internalRedirectUri'] as String? ??
-          '',
+      internalClientId: json['internalClientId'] as String? ?? '',
+      internalRedirectUri: json['internalRedirectUri'] as String? ?? '',
       internalRealm: json['internalRealm'] as String? ?? 'pegawai-bps',
       internalResponseTypes:
           (json['internalResponseTypes'] as List<dynamic>?)?.cast<String>() ??
@@ -123,11 +120,8 @@ class ConfigurationState extends Equatable {
           const ['openid', 'profile', 'email'],
       internalCodeChallengeMethod:
           json['internalCodeChallengeMethod'] as String? ?? 'S256',
-      externalClientId:
-          json['externalClientId'] as String? ?? '',
-      externalRedirectUri:
-          json['externalRedirectUri'] as String? ??
-          '',
+      externalClientId: json['externalClientId'] as String? ?? '',
+      externalRedirectUri: json['externalRedirectUri'] as String? ?? '',
       externalRealm: json['externalRealm'] as String? ?? 'eksternal',
       externalResponseTypes:
           (json['externalResponseTypes'] as List<dynamic>?)?.cast<String>() ??
