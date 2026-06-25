@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class MultiSelectChips extends StatelessWidget {
+class MultiSelectChips<T> extends StatelessWidget {
   const MultiSelectChips({
     super.key,
     required this.title,
     required this.icon,
     required this.selectedValues,
     required this.availableValues,
+    required this.labelOf,
     required this.onChanged,
   });
 
   final String title;
   final IconData icon;
-  final List<String> selectedValues;
-  final List<String> availableValues;
-  final Function(List<String>) onChanged;
+  final List<T> selectedValues;
+  final List<T> availableValues;
+  final String Function(T) labelOf;
+  final void Function(List<T>) onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -50,14 +52,12 @@ class MultiSelectChips extends StatelessWidget {
           children: availableValues.map((value) {
             final isSelected = selectedValues.contains(value);
             return FilterChip(
-              label: Text(value),
+              label: Text(labelOf(value)),
               selected: isSelected,
               onSelected: (selected) {
-                final newValues = List<String>.from(selectedValues);
+                final newValues = List<T>.from(selectedValues);
                 if (selected) {
-                  if (!newValues.contains(value)) {
-                    newValues.add(value);
-                  }
+                  if (!newValues.contains(value)) newValues.add(value);
                 } else {
                   newValues.remove(value);
                 }

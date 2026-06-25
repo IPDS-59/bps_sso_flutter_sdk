@@ -31,13 +31,13 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="id.go.bps" android:host="fasih-sso-internal" />
+                <data android:scheme="PLACEHOLDER_INTERNAL_SCHEME" android:host="PLACEHOLDER_INTERNAL_HOST" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="id.go.bps" android:host="fasih-sso-eksternal" />
+                <data android:scheme="PLACEHOLDER_EXTERNAL_SCHEME" android:host="PLACEHOLDER_EXTERNAL_HOST" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

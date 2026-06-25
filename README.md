@@ -47,7 +47,7 @@ A Flutter SDK for seamless integration with BPS (Badan Pusat Statistik) SSO auth
 - ✅ **Chrome Custom Tabs Authentication** - Better user experience than WebView
 - ✅ **OAuth2/OpenID Connect** - Secure authentication flow with PKCE
 - ✅ **Multi-realm Support** - Internal and External BPS realms with different user structures
-- ✅ **Type-Safe Configuration** - List-based parameters for better developer experience
+- ✅ **Type-Safe Configuration** - Typed enums for response types, scopes, and PKCE method
 - ✅ **Token Management** - Automatic token refresh and validation
 - ✅ **Comprehensive Error Handling** - Production-safe error sanitization
 - ✅ **Deep Link Integration** - Seamless OAuth callback handling
@@ -77,7 +77,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  bps_sso_sdk: ^1.3.0
+  bps_sso_sdk: ^1.4.0
 ```
 
 ## Setup
@@ -88,7 +88,7 @@ Add the required dependencies to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  bps_sso_sdk: ^1.3.0
+  bps_sso_sdk: ^1.4.0
   app_links: ^6.3.2 # For deep link handling
   # OR if using auto_route for navigation
   auto_route: ^10.1.2
@@ -208,9 +208,9 @@ class _MyAppState extends State<MyApp> {
       appName: 'myapp', // Creates redirect URIs like 'id.go.bps://myapp-sso-internal'
       internalClientId: 'your-internal-client-id',
       externalClientId: 'your-external-client-id',
-      responseTypes: ['code'],                          // OAuth2 response types
-      scopes: ['openid', 'profile', 'email'],          // OAuth2 scopes
-      codeChallengeMethod: 'S256',                     // PKCE method
+      responseTypes: [BPSOAuthResponseType.code],
+      scopes: [BPSOAuthScope.openid, BPSOAuthScope.profile, BPSOAuthScope.email],
+      codeChallengeMethod: BPSCodeChallengeMethod.s256,
     );
 
     // Optional: Debug incoming deep links
@@ -475,9 +475,14 @@ final config = BPSSsoConfig.create(
   appName: 'myapp',
   internalClientId: 'your-internal-client-id',
   externalClientId: 'your-external-client-id',
-  responseTypes: ['code'],                           // OAuth2 response types
-  scopes: ['openid', 'profile', 'email', 'roles'],   // Custom scopes
-  codeChallengeMethod: 'S256',                       // PKCE method
+  responseTypes: [BPSOAuthResponseType.code],
+  scopes: [
+    BPSOAuthScope.openid,
+    BPSOAuthScope.profile,
+    BPSOAuthScope.email,
+    BPSOAuthScope.roles,
+  ],
+  codeChallengeMethod: BPSCodeChallengeMethod.s256,
 );
 ```
 
@@ -734,21 +739,19 @@ const config = BPSSsoConfig(
   baseUrl: 'https://your-sso-server.com', // Optional
   internal: BPSRealmConfig(
     clientId: 'your-internal-client-id',
-    redirectUri: 'id.go.bps://your-app-sso-internal',
-    realm: 'pegawai-bps',
+    redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'your-app-sso-internal'),
     realmType: BPSRealmType.internal,
-    responseTypes: ['code'],                               // Configurable response types
-    scopes: ['openid', 'profile', 'email', 'custom'],      // Configurable scopes
-    codeChallengeMethod: 'S256',                           // Configurable PKCE method
+    responseTypes: [BPSOAuthResponseType.code],
+    scopes: [BPSOAuthScope.openid, BPSOAuthScope.profile, BPSOAuthScope.email],
+    codeChallengeMethod: BPSCodeChallengeMethod.s256,
   ),
   external: BPSRealmConfig(
     clientId: 'your-external-client-id',
-    redirectUri: 'id.go.bps://your-app-sso-eksternal',
-    realm: 'eksternal',
+    redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'your-app-sso-eksternal'),
     realmType: BPSRealmType.external,
-    responseTypes: ['code'],
-    scopes: ['openid', 'profile', 'email'],
-    codeChallengeMethod: 'plain',                          // Different PKCE method
+    responseTypes: [BPSOAuthResponseType.code],
+    scopes: [BPSOAuthScope.openid, BPSOAuthScope.profile, BPSOAuthScope.email],
+    codeChallengeMethod: BPSCodeChallengeMethod.plain,
   ),
 );
 ```
@@ -757,43 +760,40 @@ const config = BPSSsoConfig(
 
 ## OAuth2 Parameters
 
-The SDK supports configurable OAuth2 parameters with type-safe lists:
+The SDK supports configurable OAuth2 parameters via typed Dart enums:
 
-### Response Types (List\<String\>)
+### Response Types (`List<BPSOAuthResponseType>`)
 
-Default: `['code']`
+Default: `[BPSOAuthResponseType.code]`
 
-Common values:
+| Enum value                   | OAuth2 value | Description                                      |
+| ---------------------------- | ------------ | ------------------------------------------------ |
+| `BPSOAuthResponseType.code`  | `code`       | Authorization code flow with PKCE (recommended)  |
+| `BPSOAuthResponseType.token` | `token`      | Implicit flow (not recommended for mobile apps)  |
+| `BPSOAuthResponseType.idToken` | `id_token` | OpenID Connect implicit flow                     |
 
-- `['code']` - Authorization code flow with PKCE (recommended)
-- `['token']` - Implicit flow (not recommended for mobile apps)
-- `['id_token']` - OpenID Connect implicit flow
-- `['code', 'token']` - Hybrid flow
-- `['code', 'id_token']` - Hybrid flow with ID token
-- `['token', 'id_token']` - Implicit flow with ID token
-- `['code', 'token', 'id_token']` - Full hybrid flow
+### Scopes (`List<BPSOAuthScope>`)
 
-### Scopes (List\<String\>)
+Default: `[BPSOAuthScope.openid, BPSOAuthScope.profile, BPSOAuthScope.email]`
 
-Default: `['openid', 'profile', 'email']`
+| Enum value                      | OAuth2 value      |
+| ------------------------------- | ----------------- |
+| `BPSOAuthScope.openid`          | `openid`          |
+| `BPSOAuthScope.profile`         | `profile`         |
+| `BPSOAuthScope.email`           | `email`           |
+| `BPSOAuthScope.profilePegawai`  | `profile-pegawai` |
+| `BPSOAuthScope.roles`           | `roles`           |
+| `BPSOAuthScope.groups`          | `groups`          |
+| `BPSOAuthScope.offlineAccess`   | `offline_access`  |
 
-Common values:
+### Code Challenge Method (`BPSCodeChallengeMethod`)
 
-- `['openid']` - Basic OpenID Connect
-- `['openid', 'profile']` - With user profile information
-- `['openid', 'profile', 'email']` - Standard set (default)
-- `['openid', 'profile', 'email', 'roles']` - Include user roles
-- `['openid', 'profile', 'email', 'groups']` - Include user groups
-- `['openid', 'profile', 'email', 'offline_access']` - For refresh tokens
+Default: `BPSCodeChallengeMethod.s256`
 
-### Code Challenge Method (String)
-
-Default: `'S256'`
-
-Supported values:
-
-- `'S256'` - SHA256 hash method (recommended)
-- `'plain'` - Plain text method (less secure, use only if S256 not supported)
+| Enum value                      | OAuth2 value | Description                                      |
+| ------------------------------- | ------------ | ------------------------------------------------ |
+| `BPSCodeChallengeMethod.s256`   | `S256`       | SHA256 hash method (recommended)                 |
+| `BPSCodeChallengeMethod.plain`  | `plain`      | Plain text (less secure, legacy compatibility)   |
 
 ## Error Handling
 
@@ -979,7 +979,9 @@ final config = BPSSsoConfig.create(
   appName: 'myapp',
   internalClientId: 'your-internal-client-id',
   externalClientId: 'your-external-client-id',
-  // Uses defaults: responseTypes: ['code'], scopes: ['openid', 'profile', 'email'], codeChallengeMethod: 'S256'
+  // Defaults: responseTypes: [BPSOAuthResponseType.code],
+  //           scopes: [BPSOAuthScope.openid, BPSOAuthScope.profile, BPSOAuthScope.email],
+  //           codeChallengeMethod: BPSCodeChallengeMethod.s256
 );
 ```
 
@@ -991,7 +993,13 @@ final config = BPSSsoConfig.create(
   appName: 'myapp',
   internalClientId: 'your-internal-client-id',
   externalClientId: 'your-external-client-id',
-  scopes: ['openid', 'profile', 'email', 'roles', 'groups'], // Request roles and groups
+  scopes: [
+    BPSOAuthScope.openid,
+    BPSOAuthScope.profile,
+    BPSOAuthScope.email,
+    BPSOAuthScope.roles,
+    BPSOAuthScope.groups,
+  ],
 );
 ```
 
@@ -1003,7 +1011,7 @@ final config = BPSSsoConfig.create(
   appName: 'myapp',
   internalClientId: 'your-internal-client-id',
   externalClientId: 'your-external-client-id',
-  codeChallengeMethod: 'plain', // Less secure but compatible
+  codeChallengeMethod: BPSCodeChallengeMethod.plain,
 );
 ```
 
@@ -1014,19 +1022,22 @@ final config = BPSSsoConfig.create(
 const config = BPSSsoConfig(
   internal: BPSRealmConfig(
     clientId: 'internal-client-id',
-    redirectUri: 'id.go.bps://myapp-sso-internal',
-    realm: 'pegawai-bps',
+    redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'myapp-sso-internal'),
     realmType: BPSRealmType.internal,
-    scopes: ['openid', 'profile', 'email', 'roles'],  // More scopes for internal users
-    codeChallengeMethod: 'S256',                       // Secure method
+    scopes: [
+      BPSOAuthScope.openid,
+      BPSOAuthScope.profile,
+      BPSOAuthScope.email,
+      BPSOAuthScope.roles,
+    ],
+    codeChallengeMethod: BPSCodeChallengeMethod.s256,
   ),
   external: BPSRealmConfig(
     clientId: 'external-client-id',
-    redirectUri: 'id.go.bps://myapp-sso-eksternal',
-    realm: 'eksternal',
+    redirectUri: BPSRedirectUri(scheme: 'id.go.bps', host: 'myapp-sso-eksternal'),
     realmType: BPSRealmType.external,
-    scopes: ['openid', 'profile', 'email'],            // Basic scopes for external users
-    codeChallengeMethod: 'plain',                      // Legacy compatibility
+    scopes: [BPSOAuthScope.openid, BPSOAuthScope.profile, BPSOAuthScope.email],
+    codeChallengeMethod: BPSCodeChallengeMethod.plain,
   ),
 );
 ```
@@ -1037,8 +1048,8 @@ const config = BPSSsoConfig(
 
 1. **OAuth2 Security**
 
-   - Always use `responseTypes: ['code']` with PKCE for mobile apps
-   - Prefer `codeChallengeMethod: 'S256'` over `'plain'`
+   - Always use `responseTypes: [BPSOAuthResponseType.code]` with PKCE for mobile apps
+   - Prefer `codeChallengeMethod: BPSCodeChallengeMethod.s256` over `.plain`
    - Request minimal scopes needed for your app functionality
 
 2. **Handle Multiple Deep Link Sources**
@@ -1074,14 +1085,18 @@ try {
 
 ### Main Classes
 
-| Class            | Description                              |
-| ---------------- | ---------------------------------------- |
-| `BPSSsoClient`   | Main SDK client singleton                |
-| `BPSSsoConfig`   | SDK configuration                        |
-| `BPSRealmConfig` | Realm-specific configuration             |
-| `BPSUser`        | User model with authentication data      |
-| `BPSRealmType`   | Enum for realm types (internal/external) |
-| `BPSSsoSdkInfo`  | SDK version and metadata information     |
+| Class                    | Description                                        |
+| ------------------------ | -------------------------------------------------- |
+| `BPSSsoClient`           | Main SDK client singleton                          |
+| `BPSSsoConfig`           | SDK configuration                                  |
+| `BPSRealmConfig`         | Realm-specific configuration                       |
+| `BPSRedirectUri`         | Typed redirect URI (`scheme` + `host`)             |
+| `BPSOAuthResponseType`   | Enum for OAuth2 response types                     |
+| `BPSOAuthScope`          | Enum for OAuth2 scopes                             |
+| `BPSCodeChallengeMethod` | Enum for PKCE code challenge method                |
+| `BPSUser`                | User model with authentication data               |
+| `BPSRealmType`           | Enum for realm types (internal/external)           |
+| `BPSSsoSdkInfo`          | SDK version and metadata information               |
 
 ### Methods
 

@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class DropdownField extends StatelessWidget {
+class DropdownField<T> extends StatelessWidget {
   const DropdownField({
     super.key,
     required this.title,
     required this.icon,
     required this.value,
     required this.items,
+    required this.labelOf,
     required this.onChanged,
   });
 
   final String title;
   final IconData icon;
-  final String value;
-  final List<String> items;
-  final Function(String?) onChanged;
+  final T value;
+  final List<T> items;
+  final String Function(T) labelOf;
+  final void Function(T?) onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +46,12 @@ class DropdownField extends StatelessWidget {
           ],
         ),
         const Gap(8),
-        DropdownButtonFormField<String>(
+        DropdownButtonFormField<T>(
           initialValue: value,
           items: items.map((item) {
-            return DropdownMenuItem<String>(
+            return DropdownMenuItem<T>(
               value: item,
-              child: Text(item, style: GoogleFonts.inter()),
+              child: Text(labelOf(item), style: GoogleFonts.inter()),
             );
           }).toList(),
           onChanged: onChanged,

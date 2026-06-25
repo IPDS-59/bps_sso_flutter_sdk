@@ -10,9 +10,13 @@ class BPSRealmConfig {
     required this.redirectUri,
     required this.realmType,
     this.baseUrl = 'https://sso.bps.go.id',
-    this.responseTypes = const ['code'],
-    this.scopes = const ['openid', 'profile', 'email'],
-    this.codeChallengeMethod = 'S256',
+    this.responseTypes = const [BPSOAuthResponseType.code],
+    this.scopes = const [
+      BPSOAuthScope.openid,
+      BPSOAuthScope.profile,
+      BPSOAuthScope.email,
+    ],
+    this.codeChallengeMethod = BPSCodeChallengeMethod.s256,
     this.realmName,
   });
 
@@ -20,7 +24,7 @@ class BPSRealmConfig {
   final String clientId;
 
   /// Redirect URI for OAuth2 flow
-  final String redirectUri;
+  final BPSRedirectUri redirectUri;
 
   /// Type of realm (internal/external)
   final BPSRealmType realmType;
@@ -28,30 +32,24 @@ class BPSRealmConfig {
   /// Base URL for BPS SSO server
   final String baseUrl;
 
-  /// OAuth2 response types (default: ['code'])
-  /// Common values: 'code', 'token', 'id_token'
-  /// Can be combined: ['code', 'token'], ['code', 'id_token'], ['token',
-  /// 'id_token']
-  final List<String> responseTypes;
+  /// OAuth2 response types (default: [BPSOAuthResponseType.code])
+  final List<BPSOAuthResponseType> responseTypes;
 
-  /// OAuth2 scopes (default: ['openid', 'profile', 'email'])
-  /// Common values: 'openid', 'profile', 'email', 'roles', 'groups',
-  /// 'offline_access'
-  final List<String> scopes;
+  /// OAuth2 scopes
+  final List<BPSOAuthScope> scopes;
 
-  /// PKCE code challenge method (default: 'S256')
-  /// Supported values: 'plain', 'S256'
-  final String codeChallengeMethod;
+  /// PKCE code challenge method (default: S256)
+  final BPSCodeChallengeMethod codeChallengeMethod;
 
   /// Optional custom realm name
   /// If null, uses realmType.value as the realm name
   final String? realmName;
 
   /// Get space-separated response type string for OAuth2 URL
-  String get responseType => responseTypes.join(' ');
+  String get responseType => responseTypes.map((e) => e.value).join(' ');
 
   /// Get space-separated scope string for OAuth2 URL
-  String get scope => scopes.join(' ');
+  String get scope => scopes.map((e) => e.value).join(' ');
 
   /// Build authorization URL for this realm
   String buildAuthUrl({
@@ -62,14 +60,13 @@ class BPSRealmConfig {
       'client_id': clientId,
       'response_type': responseType,
       'scope': scope,
-      'redirect_uri': redirectUri,
+      'redirect_uri': redirectUri.toString(),
       'state': state,
     };
 
-    // Only add PKCE parameters if using authorization code flow
-    if (responseTypes.contains('code')) {
+    if (responseTypes.contains(BPSOAuthResponseType.code)) {
       params['code_challenge'] = codeChallenge;
-      params['code_challenge_method'] = codeChallengeMethod;
+      params['code_challenge_method'] = codeChallengeMethod.value;
     }
 
     final query = params.entries
