@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "sso: setup app id",
+      "label": "sso: generate env",
       "type": "shell",
-      "command": "dart run tool/setup_app_id.dart",
+      "command": "dart run build_runner build",
       "options": {
         "cwd": "${workspaceFolder}/example"
       },
@@ -16,9 +16,24 @@
       "problemMatcher": []
     },
     {
+      "label": "sso: setup app id",
+      "type": "shell",
+      "command": "dart run tool/setup_app_id.dart",
+      "options": {
+        "cwd": "${workspaceFolder}/example"
+      },
+      "dependsOn": ["sso: generate env"],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "close": true
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "sso: revert app id",
       "type": "shell",
-      "command": "dart run tool/setup_app_id.dart --app-name=PLACEHOLDER",
+      "command": "dart run tool/setup_app_id.dart --revert",
       "options": {
         "cwd": "${workspaceFolder}/example"
       },

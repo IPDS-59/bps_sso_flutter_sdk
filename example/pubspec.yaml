@@ -16,6 +16,7 @@ dependencies:
     path: ../.
 
   cupertino_icons: ^1.0.8
+  envied: ^1.3.6
   equatable: ^2.0.7
   flutter:
     sdk: flutter
@@ -35,6 +36,7 @@ dev_dependencies:
   auto_route_generator: ^10.2.4
   build_runner: ^2.4.13
 
+  envied_generator: ^1.3.6
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter

@@ -192,6 +192,8 @@ class ConfigurationScreen extends StatelessWidget {
                                 children: [
                                   _InternalClientIdField(state: state),
                                   const Gap(16),
+                                  _InternalRedirectSchemeField(state: state),
+                                  const Gap(16),
                                   _InternalRedirectHostField(state: state),
                                   const Gap(16),
                                   _InternalRealmField(state: state),
@@ -251,6 +253,8 @@ class ConfigurationScreen extends StatelessWidget {
                                 delay: 600.ms,
                                 children: [
                                   _ExternalClientIdField(state: state),
+                                  const Gap(16),
+                                  _ExternalRedirectSchemeField(state: state),
                                   const Gap(16),
                                   _ExternalRedirectHostField(state: state),
                                   const Gap(16),
@@ -520,6 +524,56 @@ class _InternalClientIdFieldState extends State<_InternalClientIdField> {
   }
 }
 
+class _InternalRedirectSchemeField extends StatefulWidget {
+  final ConfigurationState state;
+
+  const _InternalRedirectSchemeField({required this.state});
+
+  @override
+  State<_InternalRedirectSchemeField> createState() =>
+      _InternalRedirectSchemeFieldState();
+}
+
+class _InternalRedirectSchemeFieldState
+    extends State<_InternalRedirectSchemeField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.state.internalRedirectScheme,
+    );
+    _controller.addListener(() {
+      context.read<ConfigurationCubit>().updateInternalRedirectScheme(
+        _controller.text,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: _controller,
+      label: 'Redirect Scheme',
+      hint: 'id.go.bps',
+      icon: Icons.schema_outlined,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter internal redirect scheme';
+        }
+        return null;
+      },
+    );
+  }
+}
+
 class _InternalRedirectHostField extends StatefulWidget {
   final ConfigurationState state;
 
@@ -609,6 +663,56 @@ class _ExternalClientIdFieldState extends State<_ExternalClientIdField> {
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter external client ID';
+        }
+        return null;
+      },
+    );
+  }
+}
+
+class _ExternalRedirectSchemeField extends StatefulWidget {
+  final ConfigurationState state;
+
+  const _ExternalRedirectSchemeField({required this.state});
+
+  @override
+  State<_ExternalRedirectSchemeField> createState() =>
+      _ExternalRedirectSchemeFieldState();
+}
+
+class _ExternalRedirectSchemeFieldState
+    extends State<_ExternalRedirectSchemeField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.state.externalRedirectScheme,
+    );
+    _controller.addListener(() {
+      context.read<ConfigurationCubit>().updateExternalRedirectScheme(
+        _controller.text,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: _controller,
+      label: 'Redirect Scheme',
+      hint: 'id.go.bps',
+      icon: Icons.schema_outlined,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter external redirect scheme';
         }
         return null;
       },
