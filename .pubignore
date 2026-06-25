@@ -9,6 +9,7 @@ example/
 # CI/CD
 
 .github/
+.version-config.yml
 
 # IDE
 
