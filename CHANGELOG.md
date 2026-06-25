@@ -1,4 +1,84 @@
 # Changelog
+## [1.5.0] - 2026-06-25
+
+### ✨ Features
+
+- feat(example): add pre-build app id hook with VSCode integration (1f3014c)
+- feat(config): add configurable authTimeout to BPSSsoConfig (2a2ff7a)
+- feat(ci): add PAT_TOKEN validation workflow (#28) (da6ca79)
+- feat(example): replace phosphor_flutter with Material Icons (1c4d248)
+- feat(example): add pre-build app id hook with VSCode integration (41c52af)
+-  replace string-based OAuth params with typed Dart enums (821c987)
+- feat(example): add envied for env-prefilled config screen with scheme+host fields (cd47b98)
+
+### 🐛 Bug Fixes
+
+-  remove duplicate flutter-version in ci workflow (e1c01b0)
+- fix(ci): add contents write permission to housekeeping workflow (006f072)
+- fix(ci): use flutter-channel instead of flutter-version in release workflow (884311a)
+- fix(ci): use flutter-channel in publish workflow and fix tag format (3b26190)
+- fix(analysis): remove unnecessary type annotation on closure parameter (c348b3c)
+- fix(ci): grant id-token write permission to publish job for OIDC (a9949f1)
+- fix(example): replace PhosphorIcon widget and PhosphorIconData type with Material equivalents (8ccac5e)
+- fix(example): set presensi credentials as default configuration values (e3bd974)
+- fix(example): switch default SSO config to Fasih credentials (a105f8c)
+- fix(example): clear hardcoded credentials from default config state (5cef5d7)
+-  allow SDK re-initialization with updated config via forceReinitialize flag (7c51894)
+
+### ♻️ Refactoring
+
+- refactor(services): extract mixins from bps_sso_service (f5047dd)
+
+### 📚 Documentation
+
+-  update changelog for 1.3.0 (6ffafb8)
+-  update changelog for 1.4.0 (cbb153f)
+
+### 🏗️ Build
+
+- build(android): upgrade AGP to 8.11.1, Kotlin to 2.2.20, migrate to built-in KGP (19b0213)
+- build(android): bump Gradle wrapper to 8.13 for AGP 8.11.1 compatibility (488d3dd)
+
+### 🔧 Chores
+
+-  bump version to v1.3.0 for next development cycle (8437f89)
+-  back-merge v1.2.0 release from main to develop (3cf03ae)
+-  migrate to reusable workflows from banua-coder-workflow (e1352c1)
+-  add .pubignore to exclude img from pub.dev (ee3c8d3)
+-  add sanity-check workflow (670a215)
+-  update dependencies and cleanup pubspec (39aafd0)
+-  update example app dependencies (92a233b)
+-  add housekeeping workflow for branch cleanup (16c5b55)
+-  bump version to 1.3.0 (411689a)
+-  bump version to 1.4.0 for next development cycle (c48c852)
+-  update pubignore (9ea6ea7)
+-  add codegraph gitignore (82dd116)
+-  bump version to 1.5.0 for next development cycle (#30) (20faa12)
+-  back-merge 1.4.0 to develop (0cc0ea9)
+-  add daemon.pid to codegraph gitignore and update env example with presensi values (85a0ae8)
+- chore(example): remove app-specific values from env example (4136074)
+-  add codegraph gitignore (f53a569)
+-  add .version-config.yml and sync sdk_info.dart version (0630bef)
+-  bump sdk_info version to 1.5.0 (ff085ae)
+
+### 📝 Other Changes
+
+- Merge pull request #15 from IPDS-59/chore/bump-version-to-v1.3.0-dev (6af174e)
+- Merge pull request #18 from IPDS-59/chore/back-merge-v1.2.0-release-to-develop-20250923-044613 (be85d52)
+- Merge pull request #19 from IPDS-59/chore/migrate-to-reusable-workflows (ed729bd)
+- Merge pull request #20 from IPDS-59/chore/add-sanitize-workflow (4418206)
+- Merge pull request #21 from IPDS-59/fix/housekeeping-workflow-permissions (462bbc7)
+- Merge pull request #22 from IPDS-59/fix/release-workflow-flutter-setup (240d5d1)
+- Merge pull request #24 from IPDS-59/chore/bump-next-version (c3d36ef)
+- Merge pull request #23 from IPDS-59/release/1.3.0 (649dd0d)
+- Merge pull request #25 from IPDS-59/chore/back-merge-1.3.0 (1ac71b6)
+- Merge pull request #26 from IPDS-59/fix/publish-workflow-flutter-setup (6fecf77)
+- Merge pull request #27 from IPDS-59/feature/pre-build-app-id-hook (5ce276b)
+- release: 1.4.0 (#29) (721abb1)
+- Merge pull request #32 from IPDS-59/chore/back-merge-1.4.0 (b2288dc)
+- Merge pull request #38 from IPDS-59/feature/typed-config-api (d000941)
+- Merge pull request #39 from IPDS-59/release/1.5.0 (002fb82)
+
 ## [1.4.0] - 2026-06-24
 
 ### 🐛 Bug Fixes
