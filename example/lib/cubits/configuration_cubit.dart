@@ -82,23 +82,27 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
     emit(state.copyWith(internalClientId: clientId));
   }
 
-  void updateInternalRedirectUri(String redirectUri) {
-    emit(state.copyWith(internalRedirectUri: redirectUri));
+  void updateInternalRedirectScheme(String scheme) {
+    emit(state.copyWith(internalRedirectScheme: scheme));
+  }
+
+  void updateInternalRedirectHost(String host) {
+    emit(state.copyWith(internalRedirectHost: host));
   }
 
   void updateInternalRealm(String realm) {
     emit(state.copyWith(internalRealm: realm));
   }
 
-  void updateInternalResponseTypes(List<String> responseTypes) {
+  void updateInternalResponseTypes(List<BPSOAuthResponseType> responseTypes) {
     emit(state.copyWith(internalResponseTypes: responseTypes));
   }
 
-  void updateInternalScopes(List<String> scopes) {
+  void updateInternalScopes(List<BPSOAuthScope> scopes) {
     emit(state.copyWith(internalScopes: scopes));
   }
 
-  void updateInternalCodeChallengeMethod(String method) {
+  void updateInternalCodeChallengeMethod(BPSCodeChallengeMethod method) {
     emit(state.copyWith(internalCodeChallengeMethod: method));
   }
 
@@ -106,23 +110,27 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
     emit(state.copyWith(externalClientId: clientId));
   }
 
-  void updateExternalRedirectUri(String redirectUri) {
-    emit(state.copyWith(externalRedirectUri: redirectUri));
+  void updateExternalRedirectScheme(String scheme) {
+    emit(state.copyWith(externalRedirectScheme: scheme));
+  }
+
+  void updateExternalRedirectHost(String host) {
+    emit(state.copyWith(externalRedirectHost: host));
   }
 
   void updateExternalRealm(String realm) {
     emit(state.copyWith(externalRealm: realm));
   }
 
-  void updateExternalResponseTypes(List<String> responseTypes) {
+  void updateExternalResponseTypes(List<BPSOAuthResponseType> responseTypes) {
     emit(state.copyWith(externalResponseTypes: responseTypes));
   }
 
-  void updateExternalScopes(List<String> scopes) {
+  void updateExternalScopes(List<BPSOAuthScope> scopes) {
     emit(state.copyWith(externalScopes: scopes));
   }
 
-  void updateExternalCodeChallengeMethod(String method) {
+  void updateExternalCodeChallengeMethod(BPSCodeChallengeMethod method) {
     emit(state.copyWith(externalCodeChallengeMethod: method));
   }
 
@@ -140,33 +148,35 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
     );
   }
 
+  BPSRealmConfig _internalRealmConfig() => BPSRealmConfig(
+    clientId: state.internalClientId,
+    redirectUri: state.internalRedirectUri,
+    realmType: BPSRealmType.internal,
+    baseUrl: state.baseUrl,
+    responseTypes: state.internalResponseTypes,
+    scopes: state.internalScopes,
+    codeChallengeMethod: state.internalCodeChallengeMethod,
+    realmName:
+        state.internalRealm == 'pegawai-bps' ? null : state.internalRealm,
+  );
+
+  BPSRealmConfig _externalRealmConfig() => BPSRealmConfig(
+    clientId: state.externalClientId,
+    redirectUri: state.externalRedirectUri,
+    realmType: BPSRealmType.external,
+    baseUrl: state.baseUrl,
+    responseTypes: state.externalResponseTypes,
+    scopes: state.externalScopes,
+    codeChallengeMethod: state.externalCodeChallengeMethod,
+    realmName:
+        state.externalRealm == 'eksternal' ? null : state.externalRealm,
+  );
+
   BPSSsoConfig toBPSConfig() {
     return BPSSsoConfig(
       baseUrl: state.baseUrl,
-      internal: BPSRealmConfig(
-        clientId: state.internalClientId,
-        redirectUri: state.internalRedirectUri,
-        realmType: BPSRealmType.internal,
-        baseUrl: state.baseUrl,
-        responseTypes: state.internalResponseTypes,
-        scopes: state.internalScopes,
-        codeChallengeMethod: state.internalCodeChallengeMethod,
-        realmName: state.internalRealm == 'pegawai-bps'
-            ? null
-            : state.internalRealm,
-      ),
-      external: BPSRealmConfig(
-        clientId: state.externalClientId,
-        redirectUri: state.externalRedirectUri,
-        realmType: BPSRealmType.external,
-        baseUrl: state.baseUrl,
-        responseTypes: state.externalResponseTypes,
-        scopes: state.externalScopes,
-        codeChallengeMethod: state.externalCodeChallengeMethod,
-        realmName: state.externalRealm == 'eksternal'
-            ? null
-            : state.externalRealm,
-      ),
+      internal: _internalRealmConfig(),
+      external: _externalRealmConfig(),
       securityConfig: BPSSsoSecurityConfig.development,
       interceptors: [_aliceDioAdapter],
     );
@@ -175,57 +185,19 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
   BPSSsoConfig toBPSConfigWithCallbacks() {
     return BPSSsoConfig(
       baseUrl: state.baseUrl,
-      internal: BPSRealmConfig(
-        clientId: state.internalClientId,
-        redirectUri: state.internalRedirectUri,
-        realmType: BPSRealmType.internal,
-        baseUrl: state.baseUrl,
-        responseTypes: state.internalResponseTypes,
-        scopes: state.internalScopes,
-        codeChallengeMethod: state.internalCodeChallengeMethod,
-        realmName: state.internalRealm == 'pegawai-bps'
-            ? null
-            : state.internalRealm,
-      ),
-      external: BPSRealmConfig(
-        clientId: state.externalClientId,
-        redirectUri: state.externalRedirectUri,
-        realmType: BPSRealmType.external,
-        baseUrl: state.baseUrl,
-        responseTypes: state.externalResponseTypes,
-        scopes: state.externalScopes,
-        codeChallengeMethod: state.externalCodeChallengeMethod,
-        realmName: state.externalRealm == 'eksternal'
-            ? null
-            : state.externalRealm,
-      ),
+      internal: _internalRealmConfig(),
+      external: _externalRealmConfig(),
       securityConfig: BPSSsoSecurityConfig.development,
       interceptors: [_aliceDioAdapter],
       authCallbacks: BPSSsoAuthCallback(
-        onLoginSuccess: (user, realmType) {
-          // Login successful callback
-        },
-        onLoginFailed: (error, realmType) {
-          // Login failed callback
-        },
-        onLoginCancelled: (realmType) {
-          // Login cancelled callback
-        },
-        onLogoutSuccess: (user) {
-          // Logout successful callback
-        },
-        onLogoutFailed: (error, user) {
-          // Logout failed callback
-        },
-        onTokenRefreshSuccess: (user) {
-          // Token refresh successful callback
-        },
-        onTokenRefreshFailed: (error, user) {
-          // Token refresh failed callback
-        },
-        onAuthenticationFailure: (error, user) {
-          // Authentication failure callback
-        },
+        onLoginSuccess: (user, realmType) {},
+        onLoginFailed: (error, realmType) {},
+        onLoginCancelled: (realmType) {},
+        onLogoutSuccess: (user) {},
+        onLogoutFailed: (error, user) {},
+        onTokenRefreshSuccess: (user) {},
+        onTokenRefreshFailed: (error, user) {},
+        onAuthenticationFailure: (error, user) {},
       ),
     );
   }
