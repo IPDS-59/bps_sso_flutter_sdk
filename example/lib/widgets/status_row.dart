@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class StatusRow extends StatelessWidget {
   const StatusRow({
@@ -12,7 +11,7 @@ class StatusRow extends StatelessWidget {
     required this.isSuccess,
   });
 
-  final PhosphorIconData icon;
+  final IconData icon;
   final String title;
   final String subtitle;
   final bool isSuccess;
@@ -31,7 +30,7 @@ class StatusRow extends StatelessWidget {
                 : Colors.orange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: PhosphorIcon(
+          child: Icon(
             icon,
             size: 16,
             color: isSuccess ? Colors.green.shade600 : Colors.orange.shade600,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class SectionCard extends StatelessWidget {
   const SectionCard({
@@ -14,7 +13,7 @@ class SectionCard extends StatelessWidget {
     required this.children,
   });
 
-  final PhosphorIconData icon;
+  final IconData icon;
   final String title;
   final String subtitle;
   final Duration delay;
@@ -51,7 +50,7 @@ class SectionCard extends StatelessWidget {
                       color: theme.colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: PhosphorIcon(
+                    child: Icon(
                       icon,
                       size: 24,
                       color: theme.colorScheme.primary,

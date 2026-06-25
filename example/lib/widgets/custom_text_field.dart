@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class CustomTextField extends StatelessWidget {
   const CustomTextField({
@@ -15,7 +14,7 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final String hint;
-  final PhosphorIconData icon;
+  final IconData icon;
   final String? Function(String?)? validator;
 
   @override
@@ -31,7 +30,7 @@ class CustomTextField extends StatelessWidget {
         hintText: hint,
         prefixIcon: Padding(
           padding: const EdgeInsets.all(12),
-          child: PhosphorIcon(
+          child: Icon(
             icon,
             size: 20,
             color: theme.colorScheme.onSurface.withValues(alpha: 0.6),

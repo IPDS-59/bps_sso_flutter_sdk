@@ -6,7 +6,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../cubits/configuration_cubit.dart';
 import '../widgets/authenticated_image.dart';
@@ -31,11 +30,7 @@ class UserInfoScreen extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            PhosphorIcon(
-              PhosphorIcons.copy(PhosphorIconsStyle.fill),
-              color: Colors.white,
-              size: 20,
-            ),
+            Icon(Icons.content_copy, color: Colors.white, size: 20),
             const Gap(8),
             const Text('User data copied to clipboard'),
           ],
@@ -74,10 +69,7 @@ class UserInfoScreen extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: () => context.router.pop(),
-                      icon: PhosphorIcon(
-                        PhosphorIcons.arrowLeft(PhosphorIconsStyle.bold),
-                        size: 24,
-                      ),
+                      icon: Icon(Icons.arrow_back, size: 24),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.surface,
                         foregroundColor: theme.colorScheme.onSurface,
@@ -113,10 +105,7 @@ class UserInfoScreen extends StatelessWidget {
                     ),
                     IconButton(
                       onPressed: () => _copyUserJson(context),
-                      icon: PhosphorIcon(
-                        PhosphorIcons.copy(PhosphorIconsStyle.duotone),
-                        size: 24,
-                      ),
+                      icon: Icon(Icons.content_copy, size: 24),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: theme.colorScheme.onPrimary,
@@ -266,31 +255,31 @@ class _ProfileSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      icon: PhosphorIcons.user(PhosphorIconsStyle.duotone),
+      icon: Icons.person_outline,
       title: 'Profile Information',
       delay: delay,
       children: [
         _InfoTile(
-          icon: PhosphorIcons.identificationCard(PhosphorIconsStyle.duotone),
+          icon: Icons.credit_card,
           label: 'Full Name',
           value: user.fullName,
           shouldObscure: false,
           isPrivacyMode: privacyMode,
         ),
         _InfoTile(
-          icon: PhosphorIcons.at(PhosphorIconsStyle.duotone),
+          icon: Icons.alternate_email,
           label: 'Email',
           value: user.email,
           isPrivacyMode: privacyMode,
         ),
         _InfoTile(
-          icon: PhosphorIcons.fingerprint(PhosphorIconsStyle.duotone),
+          icon: Icons.fingerprint,
           label: 'User ID',
           value: user.id,
           isPrivacyMode: privacyMode,
         ),
         _InfoTile(
-          icon: PhosphorIcons.user(PhosphorIconsStyle.duotone),
+          icon: Icons.person_outline,
           label: 'Username',
           value: user.username,
           isPrivacyMode: privacyMode,
@@ -314,32 +303,32 @@ class _WorkInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      icon: PhosphorIcons.briefcase(PhosphorIconsStyle.duotone),
+      icon: Icons.work_outline,
       title: 'Work Information',
       delay: delay,
       children: [
         _InfoTile(
-          icon: PhosphorIcons.identificationBadge(PhosphorIconsStyle.duotone),
+          icon: Icons.badge_outlined,
           label: 'NIP',
           value: user.nip,
           isPrivacyMode: privacyMode,
         ),
         _InfoTile(
-          icon: PhosphorIcons.building(PhosphorIconsStyle.duotone),
+          icon: Icons.business,
           label: 'Organization',
           value: user.organization,
           shouldObscure: false,
         ),
         if (user.position != null)
           _InfoTile(
-            icon: PhosphorIcons.crown(PhosphorIconsStyle.duotone),
+            icon: Icons.workspace_premium,
             label: 'Position',
             value: user.position!,
             shouldObscure: false,
           ),
         if (user.rank != null)
           _InfoTile(
-            icon: PhosphorIcons.medal(PhosphorIconsStyle.duotone),
+            icon: Icons.military_tech,
             label: 'Rank',
             value: user.rank!,
             shouldObscure: false,
@@ -363,12 +352,12 @@ class _AuthInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      icon: PhosphorIcons.shield(PhosphorIconsStyle.duotone),
+      icon: Icons.shield_outlined,
       title: 'Authentication Information',
       delay: delay,
       children: [
         _InfoTile(
-          icon: PhosphorIcons.globeHemisphereWest(PhosphorIconsStyle.duotone),
+          icon: Icons.public,
           label: 'Realm',
           value: user.realm.name.toUpperCase(),
           valueColor: user.realm == BPSRealmType.internal
@@ -378,16 +367,14 @@ class _AuthInfoSection extends StatelessWidget {
           isPrivacyMode: privacyMode,
         ),
         _InfoTile(
-          icon: PhosphorIcons.clock(PhosphorIconsStyle.duotone),
+          icon: Icons.access_time,
           label: 'Token Expires',
           value: _formatDateTime(user.tokenExpiry),
           shouldObscure: false,
           isPrivacyMode: privacyMode,
         ),
         _InfoTile(
-          icon: user.isTokenExpired
-              ? PhosphorIcons.clockCounterClockwise(PhosphorIconsStyle.duotone)
-              : PhosphorIcons.checkCircle(PhosphorIconsStyle.duotone),
+          icon: user.isTokenExpired ? Icons.history : Icons.check_circle,
           label: 'Token Status',
           value: user.isTokenExpired ? 'Expired' : 'Valid',
           valueColor: user.isTokenExpired
@@ -421,18 +408,18 @@ class _TokenInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      icon: PhosphorIcons.key(PhosphorIconsStyle.duotone),
+      icon: Icons.key,
       title: 'Token Information',
       delay: delay,
       children: [
         _TokenTile(
-          icon: PhosphorIcons.lockKey(PhosphorIconsStyle.duotone),
+          icon: Icons.lock_outline,
           label: 'Access Token',
           value: user.accessToken,
           isPrivacyMode: privacyMode,
         ),
         _TokenTile(
-          icon: PhosphorIcons.clockCounterClockwise(PhosphorIconsStyle.duotone),
+          icon: Icons.history,
           label: 'Refresh Token',
           value: user.refreshToken,
           isPrivacyMode: privacyMode,
@@ -450,7 +437,7 @@ class _SectionCard extends StatelessWidget {
     required this.children,
   });
 
-  final PhosphorIconData icon;
+  final IconData icon;
   final String title;
   final Duration delay;
   final List<Widget> children;
@@ -486,7 +473,7 @@ class _SectionCard extends StatelessWidget {
                       color: theme.colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: PhosphorIcon(
+                    child: Icon(
                       icon,
                       size: 20,
                       color: theme.colorScheme.primary,
@@ -529,7 +516,7 @@ class _InfoTile extends StatelessWidget {
     this.isPrivacyMode = false,
   });
 
-  final PhosphorIconData icon;
+  final IconData icon;
   final String label;
   final String value;
   final Color? valueColor;
@@ -543,7 +530,7 @@ class _InfoTile extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PhosphorIcon(
+        Icon(
           icon,
           size: 16,
           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -584,7 +571,7 @@ class _TokenTile extends StatelessWidget {
     this.isPrivacyMode = false,
   });
 
-  final PhosphorIconData icon;
+  final IconData icon;
   final String label;
   final String value;
   final bool isPrivacyMode;
@@ -600,11 +587,7 @@ class _TokenTile extends StatelessWidget {
         SnackBar(
           content: Row(
             children: [
-              PhosphorIcon(
-                PhosphorIcons.copy(PhosphorIconsStyle.fill),
-                color: Colors.white,
-                size: 20,
-              ),
+              Icon(Icons.content_copy, color: Colors.white, size: 20),
               const Gap(8),
               Text('$label copied to clipboard'),
             ],
@@ -631,7 +614,7 @@ class _TokenTile extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PhosphorIcon(
+            Icon(
               icon,
               size: 16,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -677,8 +660,8 @@ class _TokenTile extends StatelessWidget {
                         ),
                       ),
                       const Gap(8),
-                      PhosphorIcon(
-                        PhosphorIcons.copy(PhosphorIconsStyle.bold),
+                      Icon(
+                        Icons.content_copy,
                         size: 14,
                         color: theme.colorScheme.primary,
                       ),
