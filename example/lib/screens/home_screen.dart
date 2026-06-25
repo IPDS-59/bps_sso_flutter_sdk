@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../cubits/authentication_cubit.dart';
 import '../cubits/configuration_cubit.dart';
@@ -183,12 +182,8 @@ class HomeScreen extends StatelessWidget {
                                   // SDK Configuration Status
                                   StatusRow(
                                     icon: configState.isValidConfig
-                                        ? PhosphorIcons.checkCircle(
-                                            PhosphorIconsStyle.duotone,
-                                          )
-                                        : PhosphorIcons.warning(
-                                            PhosphorIconsStyle.duotone,
-                                          ),
+                                        ? Icons.check_circle
+                                        : Icons.warning_amber_outlined,
                                     title: 'SDK Configuration',
                                     subtitle: configState.isValidConfig
                                         ? 'Configuration Valid'
@@ -202,20 +197,12 @@ class HomeScreen extends StatelessWidget {
                                   StatusRow(
                                     icon:
                                         configState.initializationError != null
-                                        ? PhosphorIcons.xCircle(
-                                            PhosphorIconsStyle.duotone,
-                                          )
+                                        ? Icons.cancel_outlined
                                         : configState.isInitialized
-                                        ? PhosphorIcons.shieldCheck(
-                                            PhosphorIconsStyle.duotone,
-                                          )
+                                        ? Icons.verified_user_outlined
                                         : configState.isValidConfig
-                                        ? PhosphorIcons.play(
-                                            PhosphorIconsStyle.duotone,
-                                          )
-                                        : PhosphorIcons.prohibit(
-                                            PhosphorIconsStyle.duotone,
-                                          ),
+                                        ? Icons.play_circle_outline
+                                        : Icons.block,
                                     title: 'SDK Initialization',
                                     subtitle:
                                         configState.initializationError != null
@@ -250,9 +237,7 @@ class HomeScreen extends StatelessWidget {
                                       child: Row(
                                         children: [
                                           PhosphorIcon(
-                                            PhosphorIcons.warning(
-                                              PhosphorIconsStyle.fill,
-                                            ),
+                                            Icons.warning_amber_outlined,
                                             size: 16,
                                             color: Colors.red.shade600,
                                           ),
@@ -278,12 +263,8 @@ class HomeScreen extends StatelessWidget {
                                   // Authentication Status
                                   StatusRow(
                                     icon: authState.currentUser != null
-                                        ? PhosphorIcons.userCheck(
-                                            PhosphorIconsStyle.duotone,
-                                          )
-                                        : PhosphorIcons.user(
-                                            PhosphorIconsStyle.duotone,
-                                          ),
+                                        ? Icons.how_to_reg
+                                        : Icons.person_outline,
                                     title: 'Authentication',
                                     subtitle: authState.currentUser != null
                                         ? 'Logged in as ${authState.currentUser!.username}'
@@ -351,9 +332,7 @@ class HomeScreen extends StatelessWidget {
                               onPressed: () {
                                 context.router.push(const ConfigurationRoute());
                               },
-                              icon: PhosphorIcons.gear(
-                                PhosphorIconsStyle.duotone,
-                              ),
+                              icon: Icons.settings,
                               label: configState.initializationError != null
                                   ? 'Fix Configuration'
                                   : configState.isValidConfig &&
@@ -383,9 +362,7 @@ class HomeScreen extends StatelessWidget {
                                       );
                                     }
                                   : null,
-                              icon: PhosphorIcons.signIn(
-                                PhosphorIconsStyle.duotone,
-                              ),
+                              icon: Icons.login,
                               label: 'SSO Operations',
                               subtitle: configState.initializationError != null
                                   ? 'Fix initialization error first'
@@ -408,9 +385,7 @@ class HomeScreen extends StatelessWidget {
                                     .read<ConfigurationCubit>();
                                 configCubit.alice.showInspector();
                               },
-                              icon: PhosphorIcons.monitor(
-                                PhosphorIconsStyle.duotone,
-                              ),
+                              icon: Icons.desktop_windows_outlined,
                               label: 'HTTP Inspector',
                               subtitle: 'View network requests and responses',
                               isPrimary: false,
@@ -524,7 +499,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 PhosphorIcon(
-                  PhosphorIcons.arrowRight(PhosphorIconsStyle.bold),
+                  Icons.arrow_forward,
                   size: 14,
                   color: isPrimary
                       ? theme.colorScheme.onPrimary.withValues(alpha: 0.8)

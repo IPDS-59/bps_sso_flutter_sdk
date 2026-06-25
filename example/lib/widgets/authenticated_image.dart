@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class AuthenticatedImage extends StatelessWidget {
   const AuthenticatedImage({
@@ -72,7 +71,7 @@ class AuthenticatedImage extends StatelessWidget {
       ),
       child: Center(
         child: PhosphorIcon(
-          PhosphorIcons.user(PhosphorIconsStyle.duotone),
+          Icons.person_outline,
           size: (width ?? 100) * 0.5,
           color: theme.colorScheme.onSurfaceVariant,
         ),
