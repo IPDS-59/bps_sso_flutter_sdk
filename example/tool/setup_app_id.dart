@@ -1,99 +1,219 @@
 #!/usr/bin/env dart
-// dart run tool/setup_app_id.dart [--app-name=myapp]
+// dart run tool/setup_app_id.dart [--revert]
 //
-// Patches AndroidManifest.xml and Info.plist with the SSO redirect URI host.
-// App name resolution order:
-//   1. --app-name CLI argument
-//   2. APP_NAME in example/.env
-//   3. APP_NAME in .env (repo root)
+// Patches AndroidManifest.xml and Info.plist with SSO redirect URI schemes
+// and hosts read from example/.env:
+//   INTERNAL_REDIRECT_SCHEME, INTERNAL_REDIRECT_HOST
+//   EXTERNAL_REDIRECT_SCHEME, EXTERNAL_REDIRECT_HOST
+//
+// Falls back to APP_NAME:
+//   scheme → id.go.bps, host → <APP_NAME>-sso-internal / -sso-eksternal
+//
+// Pass --revert to reset everything back to PLACEHOLDER_* tokens.
 
 import 'dart:io';
 
+const _internalSchemeToken = 'PLACEHOLDER_INTERNAL_SCHEME';
+const _internalHostToken = 'PLACEHOLDER_INTERNAL_HOST';
+const _externalSchemeToken = 'PLACEHOLDER_EXTERNAL_SCHEME';
+const _externalHostToken = 'PLACEHOLDER_EXTERNAL_HOST';
+
 void main(List<String> args) {
-  final appName = _resolveAppName(args);
-  if (appName == null) {
+  final revert = args.contains('--revert');
+
+  if (revert) {
+    _patchAndroidManifest(
+      internalScheme: _internalSchemeToken,
+      internalHost: _internalHostToken,
+      externalScheme: _externalSchemeToken,
+      externalHost: _externalHostToken,
+    );
+    _patchInfoPlist(
+      internalScheme: _internalSchemeToken,
+      internalHost: _internalHostToken,
+      externalScheme: _externalSchemeToken,
+      externalHost: _externalHostToken,
+    );
+    stdout.writeln('✓ Reverted to PLACEHOLDER tokens');
+    return;
+  }
+
+  final env = _readEnv();
+
+  final internalScheme = env['INTERNAL_REDIRECT_SCHEME']?.isNotEmpty == true
+      ? env['INTERNAL_REDIRECT_SCHEME']!
+      : (env['APP_NAME'] != null ? 'id.go.bps' : null);
+
+  final internalHost = env['INTERNAL_REDIRECT_HOST']?.isNotEmpty == true
+      ? env['INTERNAL_REDIRECT_HOST']!
+      : _deriveHost(env['APP_NAME'], 'internal');
+
+  final externalScheme = env['EXTERNAL_REDIRECT_SCHEME']?.isNotEmpty == true
+      ? env['EXTERNAL_REDIRECT_SCHEME']!
+      : (env['APP_NAME'] != null ? 'id.go.bps' : null);
+
+  final externalHost = env['EXTERNAL_REDIRECT_HOST']?.isNotEmpty == true
+      ? env['EXTERNAL_REDIRECT_HOST']!
+      : _deriveHost(env['APP_NAME'], 'eksternal');
+
+  if (internalScheme == null ||
+      internalHost == null ||
+      externalScheme == null ||
+      externalHost == null) {
     stderr.writeln(
-      'Error: APP_NAME not set. Provide it via --app-name=<name> or .env.',
+      'Error: Set INTERNAL_REDIRECT_SCHEME, INTERNAL_REDIRECT_HOST, '
+      'EXTERNAL_REDIRECT_SCHEME, EXTERNAL_REDIRECT_HOST in .env.',
     );
     exit(1);
   }
 
-  _patchAndroidManifest(appName);
-  _patchInfoPlist(appName);
-
-  stdout.writeln('✓ App ID set to "$appName"');
-}
-
-String? _resolveAppName(List<String> args) {
-  // 1. CLI arg
-  const prefix = '--app-name=';
-  for (final arg in args) {
-    if (arg.startsWith(prefix)) {
-      final name = arg.substring(prefix.length).trim();
-      if (name.isNotEmpty) return name;
-    }
-  }
-
-  // 2. .env in example/ dir (script lives in example/tool/)
-  final scriptDir = File(Platform.script.toFilePath()).parent.parent;
-  final envFiles = [
-    File('${scriptDir.path}/.env'),
-    File('${scriptDir.parent.path}/.env'),
-  ];
-
-  for (final envFile in envFiles) {
-    if (!envFile.existsSync()) continue;
-    for (final line in envFile.readAsLinesSync()) {
-      final trimmed = line.trim();
-      if (trimmed.startsWith('#') || !trimmed.contains('=')) continue;
-      final idx = trimmed.indexOf('=');
-      final key = trimmed.substring(0, idx).trim();
-      final value = trimmed.substring(idx + 1).trim();
-      if (key == 'APP_NAME' && value.isNotEmpty) return value;
-    }
-  }
-
-  return null;
-}
-
-void _patchAndroidManifest(String appName) {
-  final manifest = File(
-    '${Platform.script.toFilePath().split('/tool/').first}/android/app/src/main/AndroidManifest.xml',
+  _patchAndroidManifest(
+    internalScheme: internalScheme,
+    internalHost: internalHost,
+    externalScheme: externalScheme,
+    externalHost: externalHost,
+  );
+  _patchInfoPlist(
+    internalScheme: internalScheme,
+    internalHost: internalHost,
+    externalScheme: externalScheme,
+    externalHost: externalHost,
   );
 
+  stdout.writeln('✓ Internal:  $internalScheme://$internalHost');
+  stdout.writeln('✓ External:  $externalScheme://$externalHost');
+}
+
+String? _deriveHost(String? appName, String suffix) {
+  if (appName == null || appName.isEmpty) return null;
+  return '$appName-sso-$suffix';
+}
+
+Map<String, String> _readEnv() {
+  final scriptDir = File(Platform.script.toFilePath()).parent.parent;
+  final envFile = File('${scriptDir.path}/.env');
+  if (!envFile.existsSync()) return {};
+
+  final result = <String, String>{};
+  for (final line in envFile.readAsLinesSync()) {
+    final trimmed = line.trim();
+    if (trimmed.startsWith('#') || !trimmed.contains('=')) continue;
+    final idx = trimmed.indexOf('=');
+    final key = trimmed.substring(0, idx).trim();
+    final value = trimmed.substring(idx + 1).trim();
+    if (key.isNotEmpty) result[key] = value;
+  }
+  return result;
+}
+
+// Manifest uses two separate <data> elements — match each by their position
+// (internal comes first, external second). We use regex so it always works
+// regardless of current values (token or real).
+void _patchAndroidManifest({
+  required String internalScheme,
+  required String internalHost,
+  required String externalScheme,
+  required String externalHost,
+}) {
+  final manifest = File(
+    '${_exampleRoot()}/android/app/src/main/AndroidManifest.xml',
+  );
   if (!manifest.existsSync()) {
-    stderr.writeln('Warning: AndroidManifest.xml not found at ${manifest.path}');
+    stderr.writeln('Warning: AndroidManifest.xml not found');
     return;
   }
 
   var content = manifest.readAsStringSync();
-  content = content.replaceAll(
-    RegExp(r'android:host="[^"]*-sso-internal"'),
-    'android:host="$appName-sso-internal"',
+  final dataPattern = RegExp(
+    r'<data android:scheme="[^"]+" android:host="[^"]+" />',
   );
-  content = content.replaceAll(
-    RegExp(r'android:host="[^"]*-sso-eksternal"'),
-    'android:host="$appName-sso-eksternal"',
+
+  // Replace internal (first match)
+  content = content.replaceFirstMapped(
+    dataPattern,
+    (_) =>
+        '<data android:scheme="$internalScheme" android:host="$internalHost" />',
   );
+
+  // Replace external (last remaining match)
+  final matches = dataPattern.allMatches(content).toList();
+  if (matches.isNotEmpty) {
+    final last = matches.last;
+    content =
+        '${content.substring(0, last.start)}'
+        '<data android:scheme="$externalScheme" android:host="$externalHost" />'
+        '${content.substring(last.end)}';
+  }
+
   manifest.writeAsStringSync(content);
   stdout.writeln('  Patched AndroidManifest.xml');
 }
 
-void _patchInfoPlist(String appName) {
-  final plist = File(
-    '${Platform.script.toFilePath().split('/tool/').first}/ios/Runner/Info.plist',
-  );
-
+void _patchInfoPlist({
+  required String internalScheme,
+  required String internalHost,
+  required String externalScheme,
+  required String externalHost,
+}) {
+  final plist = File('${_exampleRoot()}/ios/Runner/Info.plist');
   if (!plist.existsSync()) {
-    stderr.writeln('Warning: Info.plist not found at ${plist.path}');
+    stderr.writeln('Warning: Info.plist not found');
     return;
   }
 
   var content = plist.readAsStringSync();
-  content = content.replaceAll(
-    RegExp(r'(<key>BPSSsoAppName</key>\s*<string>)[^<]*(</string>)'),
-    '<key>BPSSsoAppName</key>\n    <string>$appName</string>',
+
+  // All four values are identified by unique marker strings — replace by marker.
+  // Scheme entries sit inside named dicts; host entries use dedicated keys.
+  content = _replaceMarked(
+    content,
+    'BPS SSO Internal</string>',
+    RegExp(r'<string>[^<]*</string>'),
+    '<string>$internalScheme</string>',
   );
+  content = _replaceMarked(
+    content,
+    'BPS SSO External</string>',
+    RegExp(r'<string>[^<]*</string>'),
+    '<string>$externalScheme</string>',
+  );
+  content = _replaceKeyValue(content, 'BPSSsoInternalHost', internalHost);
+  content = _replaceKeyValue(content, 'BPSSsoExternalHost', externalHost);
+
   plist.writeAsStringSync(content);
   stdout.writeln('  Patched Info.plist');
 }
+
+// Finds [marker] in [source], then replaces the next occurrence of [pattern]
+// after that marker with [replacement].
+String _replaceMarked(
+  String source,
+  String marker,
+  RegExp pattern,
+  String replacement,
+) {
+  final markerIdx = source.indexOf(marker);
+  if (markerIdx == -1) return source;
+  final after = source.substring(markerIdx);
+  final m = pattern.firstMatch(after);
+  if (m == null) return source;
+  final start = markerIdx + m.start;
+  final end = markerIdx + m.end;
+  return source.substring(0, start) + replacement + source.substring(end);
+}
+
+// Replaces the <string> value after <key>[key]</key> in a plist.
+String _replaceKeyValue(String source, String key, String value) {
+  return source.replaceFirstMapped(
+    RegExp('<key>$key</key>\\s*<string>[^<]*</string>'),
+    (m) {
+      final block = m[0]!;
+      return block.replaceFirst(
+        RegExp(r'<string>[^<]*</string>'),
+        '<string>$value</string>',
+      );
+    },
+  );
+}
+
+String _exampleRoot() => Platform.script.toFilePath().split('/tool/').first;
