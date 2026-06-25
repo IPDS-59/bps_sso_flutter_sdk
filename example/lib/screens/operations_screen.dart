@@ -33,7 +33,7 @@ class OperationsScreen extends StatelessWidget {
           SnackBar(
             content: Row(
               children: [
-                PhosphorIcon(Icons.check_circle, color: Colors.white, size: 20),
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
                 const Gap(8),
                 Expanded(
                   child: Text('Welcome ${state.currentUser!.displayName}!'),
@@ -123,7 +123,7 @@ class OperationsScreen extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            PhosphorIcon(Icons.check_circle, color: Colors.white, size: 20),
+            Icon(Icons.check_circle, color: Colors.white, size: 20),
             const Gap(8),
             Expanded(child: Text(message)),
           ],
@@ -140,11 +140,7 @@ class OperationsScreen extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            PhosphorIcon(
-              Icons.warning_amber_outlined,
-              color: Colors.white,
-              size: 20,
-            ),
+            Icon(Icons.warning_amber_outlined, color: Colors.white, size: 20),
             const Gap(8),
             Expanded(child: Text(message)),
           ],
@@ -161,11 +157,7 @@ class OperationsScreen extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            PhosphorIcon(
-              Icons.warning_amber_outlined,
-              color: Colors.white,
-              size: 20,
-            ),
+            Icon(Icons.warning_amber_outlined, color: Colors.white, size: 20),
             const Gap(8),
             Expanded(child: Text(message)),
           ],
@@ -203,7 +195,7 @@ class OperationsScreen extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: () => context.router.pop(),
-                      icon: PhosphorIcon(Icons.arrow_back, size: 24),
+                      icon: Icon(Icons.arrow_back, size: 24),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.surface,
                         foregroundColor: theme.colorScheme.onSurface,
@@ -244,7 +236,7 @@ class OperationsScreen extends StatelessWidget {
                           onPressed: () => context
                               .read<ConfigurationCubit>()
                               .togglePrivacyMode(),
-                          icon: PhosphorIcon(
+                          icon: Icon(
                             configState.privacyMode
                                 ? Icons.visibility_off
                                 : Icons.visibility,
@@ -268,7 +260,7 @@ class OperationsScreen extends StatelessWidget {
                     IconButton(
                       onPressed: () =>
                           context.router.push(const ConfigurationRoute()),
-                      icon: PhosphorIcon(Icons.settings, size: 24),
+                      icon: Icon(Icons.settings, size: 24),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.surface,
                         foregroundColor: theme.colorScheme.onSurface,
@@ -331,7 +323,7 @@ class OperationsScreen extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
-                                      PhosphorIcon(
+                                      Icon(
                                         Icons.public,
                                         size: 20,
                                         color: theme.colorScheme.primary,
@@ -355,10 +347,7 @@ class OperationsScreen extends StatelessWidget {
                                         label: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            PhosphorIcon(
-                                              Icons.business,
-                                              size: 16,
-                                            ),
+                                            Icon(Icons.business, size: 16),
                                             const Gap(8),
                                             Expanded(
                                               child: const Text(
@@ -374,7 +363,7 @@ class OperationsScreen extends StatelessWidget {
                                         label: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            PhosphorIcon(
+                                            Icon(
                                               Icons.group_outlined,
                                               size: 16,
                                             ),
@@ -470,7 +459,7 @@ class OperationsScreen extends StatelessWidget {
                                     child: ElevatedButton.icon(
                                       onPressed: () =>
                                           _cancelAuthentication(context),
-                                      icon: PhosphorIcon(Icons.close, size: 20),
+                                      icon: Icon(Icons.close, size: 20),
                                       label: const Text(
                                         'Cancel Authentication',
                                       ),

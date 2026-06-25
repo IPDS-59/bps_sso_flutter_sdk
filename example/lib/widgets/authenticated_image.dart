@@ -70,7 +70,7 @@ class AuthenticatedImage extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: Center(
-        child: PhosphorIcon(
+        child: Icon(
           Icons.person_outline,
           size: (width ?? 100) * 0.5,
           color: theme.colorScheme.onSurfaceVariant,

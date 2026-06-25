@@ -13,7 +13,7 @@ class SectionCard extends StatelessWidget {
     required this.children,
   });
 
-  final PhosphorIconData icon;
+  final IconData icon;
   final String title;
   final String subtitle;
   final Duration delay;
@@ -50,7 +50,7 @@ class SectionCard extends StatelessWidget {
                       color: theme.colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: PhosphorIcon(
+                    child: Icon(
                       icon,
                       size: 24,
                       color: theme.colorScheme.primary,

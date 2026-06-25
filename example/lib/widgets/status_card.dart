@@ -71,7 +71,7 @@ class StatusCard extends StatelessWidget {
                         : Colors.grey.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: PhosphorIcon(
+                  child: Icon(
                     user != null
                         ? Icons.how_to_reg
                         : Icons.person_remove_outlined,
@@ -316,7 +316,7 @@ class StatusCard extends StatelessWidget {
             const Gap(16),
             Row(
               children: [
-                PhosphorIcon(
+                Icon(
                   Icons.monitor_heart_outlined,
                   size: 16,
                   color: theme.colorScheme.primary,
@@ -351,7 +351,7 @@ class StatusCard extends StatelessWidget {
   }
 
   Widget _buildInfoRow({
-    required PhosphorIconData icon,
+    required IconData icon,
     required String label,
     required String value,
     required ThemeData theme,
@@ -361,7 +361,7 @@ class StatusCard extends StatelessWidget {
   }) {
     return Row(
       children: [
-        PhosphorIcon(
+        Icon(
           icon,
           size: 16,
           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),

@@ -13,7 +13,7 @@ class DropdownField extends StatelessWidget {
   });
 
   final String title;
-  final PhosphorIconData icon;
+  final IconData icon;
   final String value;
   final List<String> items;
   final Function(String?) onChanged;
@@ -27,7 +27,7 @@ class DropdownField extends StatelessWidget {
       children: [
         Row(
           children: [
-            PhosphorIcon(
+            Icon(
               icon,
               size: 20,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),

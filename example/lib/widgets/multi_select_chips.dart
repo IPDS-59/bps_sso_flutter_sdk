@@ -13,7 +13,7 @@ class MultiSelectChips extends StatelessWidget {
   });
 
   final String title;
-  final PhosphorIconData icon;
+  final IconData icon;
   final List<String> selectedValues;
   final List<String> availableValues;
   final Function(List<String>) onChanged;
@@ -27,7 +27,7 @@ class MultiSelectChips extends StatelessWidget {
       children: [
         Row(
           children: [
-            PhosphorIcon(
+            Icon(
               icon,
               size: 20,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
