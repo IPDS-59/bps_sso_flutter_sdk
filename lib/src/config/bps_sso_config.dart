@@ -28,9 +28,15 @@ class BPSSsoConfig {
     required String internalClientId,
     required String externalClientId,
     String baseUrl = 'https://sso.bps.go.id',
-    List<String> responseTypes = const ['code'],
-    List<String> scopes = const ['openid', 'profile', 'email'],
-    String codeChallengeMethod = 'S256',
+    List<BPSOAuthResponseType> responseTypes = const [
+      BPSOAuthResponseType.code,
+    ],
+    List<BPSOAuthScope> scopes = const [
+      BPSOAuthScope.openid,
+      BPSOAuthScope.profile,
+      BPSOAuthScope.email,
+    ],
+    BPSCodeChallengeMethod codeChallengeMethod = BPSCodeChallengeMethod.s256,
     String? internalRealmName,
     String? externalRealmName,
     BPSSsoCustomTabsConfig? customTabsConfig,
@@ -44,7 +50,10 @@ class BPSSsoConfig {
       baseUrl: baseUrl,
       internal: BPSRealmConfig(
         clientId: internalClientId,
-        redirectUri: 'id.go.bps://$appName-sso-internal',
+        redirectUri: BPSRedirectUri(
+          scheme: 'id.go.bps',
+          host: '$appName-sso-internal',
+        ),
         realmType: BPSRealmType.internal,
         baseUrl: baseUrl,
         responseTypes: responseTypes,
@@ -54,7 +63,10 @@ class BPSSsoConfig {
       ),
       external: BPSRealmConfig(
         clientId: externalClientId,
-        redirectUri: 'id.go.bps://$appName-sso-eksternal',
+        redirectUri: BPSRedirectUri(
+          scheme: 'id.go.bps',
+          host: '$appName-sso-eksternal',
+        ),
         realmType: BPSRealmType.external,
         baseUrl: baseUrl,
         responseTypes: responseTypes,

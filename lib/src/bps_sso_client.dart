@@ -29,8 +29,9 @@ class BPSSsoClient {
   void initialize({
     required BPSSsoConfig config,
     Stream<String>? linkStream,
+    bool forceReinitialize = false,
   }) {
-    if (_initialized) return;
+    if (_initialized && !forceReinitialize) return;
 
     _config = config;
     _ssoService = BPSSsoService(

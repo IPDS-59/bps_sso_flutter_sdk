@@ -7,7 +7,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../cubits/authentication_cubit.dart';
 import '../cubits/configuration_cubit.dart';
@@ -34,11 +33,7 @@ class OperationsScreen extends StatelessWidget {
           SnackBar(
             content: Row(
               children: [
-                PhosphorIcon(
-                  PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
-                  color: Colors.white,
-                  size: 20,
-                ),
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
                 const Gap(8),
                 Expanded(
                   child: Text('Welcome ${state.currentUser!.displayName}!'),
@@ -128,11 +123,7 @@ class OperationsScreen extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            PhosphorIcon(
-              PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
-              color: Colors.white,
-              size: 20,
-            ),
+            Icon(Icons.check_circle, color: Colors.white, size: 20),
             const Gap(8),
             Expanded(child: Text(message)),
           ],
@@ -149,11 +140,7 @@ class OperationsScreen extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            PhosphorIcon(
-              PhosphorIcons.warning(PhosphorIconsStyle.fill),
-              color: Colors.white,
-              size: 20,
-            ),
+            Icon(Icons.warning_amber_outlined, color: Colors.white, size: 20),
             const Gap(8),
             Expanded(child: Text(message)),
           ],
@@ -170,11 +157,7 @@ class OperationsScreen extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            PhosphorIcon(
-              PhosphorIcons.warning(PhosphorIconsStyle.fill),
-              color: Colors.white,
-              size: 20,
-            ),
+            Icon(Icons.warning_amber_outlined, color: Colors.white, size: 20),
             const Gap(8),
             Expanded(child: Text(message)),
           ],
@@ -212,10 +195,7 @@ class OperationsScreen extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: () => context.router.pop(),
-                      icon: PhosphorIcon(
-                        PhosphorIcons.arrowLeft(PhosphorIconsStyle.bold),
-                        size: 24,
-                      ),
+                      icon: Icon(Icons.arrow_back, size: 24),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.surface,
                         foregroundColor: theme.colorScheme.onSurface,
@@ -256,12 +236,10 @@ class OperationsScreen extends StatelessWidget {
                           onPressed: () => context
                               .read<ConfigurationCubit>()
                               .togglePrivacyMode(),
-                          icon: PhosphorIcon(
+                          icon: Icon(
                             configState.privacyMode
-                                ? PhosphorIcons.eyeSlash(
-                                    PhosphorIconsStyle.duotone,
-                                  )
-                                : PhosphorIcons.eye(PhosphorIconsStyle.duotone),
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             size: 24,
                           ),
                           style: IconButton.styleFrom(
@@ -282,10 +260,7 @@ class OperationsScreen extends StatelessWidget {
                     IconButton(
                       onPressed: () =>
                           context.router.push(const ConfigurationRoute()),
-                      icon: PhosphorIcon(
-                        PhosphorIcons.gear(PhosphorIconsStyle.duotone),
-                        size: 24,
-                      ),
+                      icon: Icon(Icons.settings, size: 24),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.surface,
                         foregroundColor: theme.colorScheme.onSurface,
@@ -348,10 +323,8 @@ class OperationsScreen extends StatelessWidget {
                                 children: [
                                   Row(
                                     children: [
-                                      PhosphorIcon(
-                                        PhosphorIcons.globeHemisphereWest(
-                                          PhosphorIconsStyle.duotone,
-                                        ),
+                                      Icon(
+                                        Icons.public,
                                         size: 20,
                                         color: theme.colorScheme.primary,
                                       ),
@@ -374,12 +347,7 @@ class OperationsScreen extends StatelessWidget {
                                         label: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            PhosphorIcon(
-                                              PhosphorIcons.building(
-                                                PhosphorIconsStyle.duotone,
-                                              ),
-                                              size: 16,
-                                            ),
+                                            Icon(Icons.business, size: 16),
                                             const Gap(8),
                                             Expanded(
                                               child: const Text(
@@ -395,10 +363,8 @@ class OperationsScreen extends StatelessWidget {
                                         label: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            PhosphorIcon(
-                                              PhosphorIcons.users(
-                                                PhosphorIconsStyle.duotone,
-                                              ),
+                                            Icon(
+                                              Icons.group_outlined,
                                               size: 16,
                                             ),
                                             const Gap(8),
@@ -469,9 +435,7 @@ class OperationsScreen extends StatelessWidget {
                         return Column(
                           children: [
                             OperationCard(
-                              icon: PhosphorIcons.signIn(
-                                PhosphorIconsStyle.duotone,
-                              ),
+                              icon: Icons.login,
                               title: 'Login',
                               subtitle:
                                   'Authenticate with BPS SSO using selected realm',
@@ -495,12 +459,7 @@ class OperationsScreen extends StatelessWidget {
                                     child: ElevatedButton.icon(
                                       onPressed: () =>
                                           _cancelAuthentication(context),
-                                      icon: PhosphorIcon(
-                                        PhosphorIcons.x(
-                                          PhosphorIconsStyle.bold,
-                                        ),
-                                        size: 20,
-                                      ),
+                                      icon: Icon(Icons.close, size: 20),
                                       label: const Text(
                                         'Cancel Authentication',
                                       ),
@@ -537,9 +496,7 @@ class OperationsScreen extends StatelessWidget {
                         return Column(
                           children: [
                             OperationCard(
-                              icon: PhosphorIcons.arrowClockwise(
-                                PhosphorIconsStyle.duotone,
-                              ),
+                              icon: Icons.refresh,
                               title: 'Refresh Token',
                               subtitle: 'Refresh the current access token',
                               onPressed:
@@ -552,9 +509,7 @@ class OperationsScreen extends StatelessWidget {
                             const Gap(12),
 
                             OperationCard(
-                              icon: PhosphorIcons.shieldCheck(
-                                PhosphorIconsStyle.duotone,
-                              ),
+                              icon: Icons.verified_user_outlined,
                               title: 'Validate Token',
                               subtitle: 'Check if current token is still valid',
                               onPressed:
@@ -567,9 +522,7 @@ class OperationsScreen extends StatelessWidget {
                             const Gap(12),
 
                             OperationCard(
-                              icon: PhosphorIcons.user(
-                                PhosphorIconsStyle.duotone,
-                              ),
+                              icon: Icons.person_outline,
                               title: 'Show User Info',
                               subtitle: 'Display detailed user information',
                               onPressed: state.currentUser == null
@@ -581,9 +534,7 @@ class OperationsScreen extends StatelessWidget {
                             const Gap(12),
 
                             OperationCard(
-                              icon: PhosphorIcons.signOut(
-                                PhosphorIconsStyle.duotone,
-                              ),
+                              icon: Icons.logout,
                               title: 'Logout',
                               subtitle: 'Logout and revoke tokens',
                               onPressed:
@@ -597,9 +548,7 @@ class OperationsScreen extends StatelessWidget {
                             const Gap(12),
 
                             OperationCard(
-                              icon: PhosphorIcons.monitor(
-                                PhosphorIconsStyle.duotone,
-                              ),
+                              icon: Icons.desktop_windows_outlined,
                               title: 'HTTP Inspector',
                               subtitle: 'View network requests and responses',
                               onPressed: () {

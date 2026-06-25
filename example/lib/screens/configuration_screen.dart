@@ -1,12 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:auto_route/auto_route.dart';
+import 'package:bps_sso_sdk/bps_sso_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../cubits/configuration_cubit.dart';
 import '../routes/app_router.dart';
@@ -19,15 +19,17 @@ import '../widgets/section_card.dart';
 class ConfigurationScreen extends StatelessWidget {
   const ConfigurationScreen({super.key});
 
-  // Available OAuth options
-  static const List<String> _availableResponseTypes = [
-    'code',
-    'token',
-    'id_token',
+  static const _availableResponseTypes = BPSOAuthResponseType.values;
+  static const _internalScopes = [
+    BPSOAuthScope.openid,
+    BPSOAuthScope.profilePegawai,
   ];
-  static const List<String> _internalScopes = ['openid', 'profile-pegawai'];
-  static const List<String> _externalScopes = ['openid', 'email', 'profile'];
-  static const List<String> _availableCodeChallengeMethods = ['S256', 'plain'];
+  static const _externalScopes = [
+    BPSOAuthScope.openid,
+    BPSOAuthScope.email,
+    BPSOAuthScope.profile,
+  ];
+  static const _challengeMethods = BPSCodeChallengeMethod.values;
 
   Future<void> _initializeSDK(
     BuildContext context,
@@ -46,11 +48,7 @@ class ConfigurationScreen extends StatelessWidget {
         SnackBar(
           content: Row(
             children: [
-              PhosphorIcon(
-                PhosphorIcons.checkCircle(PhosphorIconsStyle.fill),
-                color: Colors.white,
-                size: 20,
-              ),
+              Icon(Icons.check_circle, color: Colors.white, size: 20),
               const Gap(8),
               const Text('SDK initialized successfully!'),
             ],
@@ -69,11 +67,7 @@ class ConfigurationScreen extends StatelessWidget {
         SnackBar(
           content: Row(
             children: [
-              PhosphorIcon(
-                PhosphorIcons.warning(PhosphorIconsStyle.fill),
-                color: Colors.white,
-                size: 20,
-              ),
+              Icon(Icons.warning_amber_outlined, color: Colors.white, size: 20),
               const Gap(8),
               Expanded(child: Text('Initialization failed: $e')),
             ],
@@ -115,10 +109,7 @@ class ConfigurationScreen extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: () => context.router.pop(),
-                      icon: PhosphorIcon(
-                        PhosphorIcons.arrowLeft(PhosphorIconsStyle.bold),
-                        size: 24,
-                      ),
+                      icon: Icon(Icons.arrow_back, size: 24),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.surface,
                         foregroundColor: theme.colorScheme.onSurface,
@@ -133,10 +124,7 @@ class ConfigurationScreen extends StatelessWidget {
                         final configCubit = context.read<ConfigurationCubit>();
                         configCubit.alice.showInspector();
                       },
-                      icon: PhosphorIcon(
-                        PhosphorIcons.monitor(PhosphorIconsStyle.duotone),
-                        size: 20,
-                      ),
+                      icon: Icon(Icons.desktop_windows_outlined, size: 20),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.primaryContainer,
                         foregroundColor: theme.colorScheme.onPrimaryContainer,
@@ -187,9 +175,7 @@ class ConfigurationScreen extends StatelessWidget {
                           return Column(
                             children: [
                               SectionCard(
-                                icon: PhosphorIcons.globe(
-                                  PhosphorIconsStyle.duotone,
-                                ),
+                                icon: Icons.language,
                                 title: 'General Configuration',
                                 subtitle: 'Base server settings',
                                 delay: 200.ms,
@@ -199,16 +185,14 @@ class ConfigurationScreen extends StatelessWidget {
                               const Gap(24),
 
                               SectionCard(
-                                icon: PhosphorIcons.building(
-                                  PhosphorIconsStyle.duotone,
-                                ),
+                                icon: Icons.business,
                                 title: 'Internal BPS Realm',
                                 subtitle: 'Configuration for BPS employees',
                                 delay: 400.ms,
                                 children: [
                                   _InternalClientIdField(state: state),
                                   const Gap(16),
-                                  _InternalRedirectUriField(state: state),
+                                  _InternalRedirectHostField(state: state),
                                   const Gap(16),
                                   _InternalRealmField(state: state),
                                 ],
@@ -217,56 +201,43 @@ class ConfigurationScreen extends StatelessWidget {
                               const Gap(24),
 
                               SectionCard(
-                                icon: PhosphorIcons.gearSix(
-                                  PhosphorIconsStyle.duotone,
-                                ),
+                                icon: Icons.settings,
                                 title: 'Internal OAuth Configuration',
                                 subtitle:
                                     'Advanced OAuth2 settings for internal realm',
                                 delay: 500.ms,
                                 children: [
-                                  MultiSelectChips(
+                                  MultiSelectChips<BPSOAuthResponseType>(
                                     title: 'Response Types',
-                                    icon: PhosphorIcons.code(
-                                      PhosphorIconsStyle.duotone,
-                                    ),
+                                    icon: Icons.code,
                                     selectedValues: state.internalResponseTypes,
                                     availableValues: _availableResponseTypes,
-                                    onChanged: (values) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateInternalResponseTypes(values);
-                                    },
+                                    labelOf: (e) => e.value,
+                                    onChanged: context
+                                        .read<ConfigurationCubit>()
+                                        .updateInternalResponseTypes,
                                   ),
                                   const Gap(16),
-                                  MultiSelectChips(
+                                  MultiSelectChips<BPSOAuthScope>(
                                     title: 'Scopes',
-                                    icon: PhosphorIcons.target(
-                                      PhosphorIconsStyle.duotone,
-                                    ),
+                                    icon: Icons.my_location,
                                     selectedValues: state.internalScopes,
                                     availableValues: _internalScopes,
-                                    onChanged: (values) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateInternalScopes(values);
-                                    },
+                                    labelOf: (e) => e.value,
+                                    onChanged: context
+                                        .read<ConfigurationCubit>()
+                                        .updateInternalScopes,
                                   ),
                                   const Gap(16),
-                                  DropdownField(
+                                  DropdownField<BPSCodeChallengeMethod>(
                                     title: 'Code Challenge Method',
-                                    icon: PhosphorIcons.shield(
-                                      PhosphorIconsStyle.duotone,
-                                    ),
+                                    icon: Icons.shield_outlined,
                                     value: state.internalCodeChallengeMethod,
-                                    items: _availableCodeChallengeMethods,
-                                    onChanged: (value) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateInternalCodeChallengeMethod(
-                                            value!,
-                                          );
-                                    },
+                                    items: _challengeMethods,
+                                    labelOf: (e) => e.value,
+                                    onChanged: (v) => context
+                                        .read<ConfigurationCubit>()
+                                        .updateInternalCodeChallengeMethod(v!),
                                   ),
                                 ],
                               ),
@@ -274,16 +245,14 @@ class ConfigurationScreen extends StatelessWidget {
                               const Gap(24),
 
                               SectionCard(
-                                icon: PhosphorIcons.users(
-                                  PhosphorIconsStyle.duotone,
-                                ),
+                                icon: Icons.group_outlined,
                                 title: 'External BPS Realm',
                                 subtitle: 'Configuration for external users',
                                 delay: 600.ms,
                                 children: [
                                   _ExternalClientIdField(state: state),
                                   const Gap(16),
-                                  _ExternalRedirectUriField(state: state),
+                                  _ExternalRedirectHostField(state: state),
                                   const Gap(16),
                                   _ExternalRealmField(state: state),
                                 ],
@@ -292,56 +261,43 @@ class ConfigurationScreen extends StatelessWidget {
                               const Gap(24),
 
                               SectionCard(
-                                icon: PhosphorIcons.gearSix(
-                                  PhosphorIconsStyle.duotone,
-                                ),
+                                icon: Icons.settings,
                                 title: 'External OAuth Configuration',
                                 subtitle:
                                     'Advanced OAuth2 settings for external realm',
                                 delay: 800.ms,
                                 children: [
-                                  MultiSelectChips(
+                                  MultiSelectChips<BPSOAuthResponseType>(
                                     title: 'Response Types',
-                                    icon: PhosphorIcons.code(
-                                      PhosphorIconsStyle.duotone,
-                                    ),
+                                    icon: Icons.code,
                                     selectedValues: state.externalResponseTypes,
                                     availableValues: _availableResponseTypes,
-                                    onChanged: (values) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateExternalResponseTypes(values);
-                                    },
+                                    labelOf: (e) => e.value,
+                                    onChanged: context
+                                        .read<ConfigurationCubit>()
+                                        .updateExternalResponseTypes,
                                   ),
                                   const Gap(16),
-                                  MultiSelectChips(
+                                  MultiSelectChips<BPSOAuthScope>(
                                     title: 'Scopes',
-                                    icon: PhosphorIcons.target(
-                                      PhosphorIconsStyle.duotone,
-                                    ),
+                                    icon: Icons.my_location,
                                     selectedValues: state.externalScopes,
                                     availableValues: _externalScopes,
-                                    onChanged: (values) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateExternalScopes(values);
-                                    },
+                                    labelOf: (e) => e.value,
+                                    onChanged: context
+                                        .read<ConfigurationCubit>()
+                                        .updateExternalScopes,
                                   ),
                                   const Gap(16),
-                                  DropdownField(
+                                  DropdownField<BPSCodeChallengeMethod>(
                                     title: 'Code Challenge Method',
-                                    icon: PhosphorIcons.shield(
-                                      PhosphorIconsStyle.duotone,
-                                    ),
+                                    icon: Icons.shield_outlined,
                                     value: state.externalCodeChallengeMethod,
-                                    items: _availableCodeChallengeMethods,
-                                    onChanged: (value) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateExternalCodeChallengeMethod(
-                                            value!,
-                                          );
-                                    },
+                                    items: _challengeMethods,
+                                    labelOf: (e) => e.value,
+                                    onChanged: (v) => context
+                                        .read<ConfigurationCubit>()
+                                        .updateExternalCodeChallengeMethod(v!),
                                   ),
                                 ],
                               ),
@@ -359,10 +315,8 @@ class ConfigurationScreen extends StatelessWidget {
                                   ),
                                   child: Row(
                                     children: [
-                                      PhosphorIcon(
-                                        PhosphorIcons.warning(
-                                          PhosphorIconsStyle.fill,
-                                        ),
+                                      Icon(
+                                        Icons.warning_amber_outlined,
                                         color: Colors.red.shade600,
                                         size: 20,
                                       ),
@@ -441,10 +395,8 @@ class ConfigurationScreen extends StatelessWidget {
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      PhosphorIcon(
-                                        PhosphorIcons.rocketLaunch(
-                                          PhosphorIconsStyle.duotone,
-                                        ),
+                                      Icon(
+                                        Icons.rocket_launch_outlined,
                                         size: 20,
                                         color: theme.colorScheme.onPrimary,
                                       ),
@@ -508,7 +460,7 @@ class _BaseUrlFieldState extends State<_BaseUrlField> {
       controller: _controller,
       label: 'Base URL',
       hint: 'https://sso.bps.go.id',
-      icon: PhosphorIcons.link(PhosphorIconsStyle.duotone),
+      icon: Icons.link,
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter base URL';
@@ -557,7 +509,7 @@ class _InternalClientIdFieldState extends State<_InternalClientIdField> {
       controller: _controller,
       label: 'Client ID',
       hint: 'your-internal-client-id',
-      icon: PhosphorIcons.key(PhosphorIconsStyle.duotone),
+      icon: Icons.key,
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter internal client ID';
@@ -568,25 +520,28 @@ class _InternalClientIdFieldState extends State<_InternalClientIdField> {
   }
 }
 
-class _InternalRedirectUriField extends StatefulWidget {
+class _InternalRedirectHostField extends StatefulWidget {
   final ConfigurationState state;
 
-  const _InternalRedirectUriField({required this.state});
+  const _InternalRedirectHostField({required this.state});
 
   @override
-  State<_InternalRedirectUriField> createState() =>
-      _InternalRedirectUriFieldState();
+  State<_InternalRedirectHostField> createState() =>
+      _InternalRedirectHostFieldState();
 }
 
-class _InternalRedirectUriFieldState extends State<_InternalRedirectUriField> {
+class _InternalRedirectHostFieldState
+    extends State<_InternalRedirectHostField> {
   late final TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.state.internalRedirectUri);
+    _controller = TextEditingController(
+      text: widget.state.internalRedirectHost,
+    );
     _controller.addListener(() {
-      context.read<ConfigurationCubit>().updateInternalRedirectUri(
+      context.read<ConfigurationCubit>().updateInternalRedirectHost(
         _controller.text,
       );
     });
@@ -602,12 +557,12 @@ class _InternalRedirectUriFieldState extends State<_InternalRedirectUriField> {
   Widget build(BuildContext context) {
     return CustomTextField(
       controller: _controller,
-      label: 'Redirect URI',
-      hint: 'id.go.bps.examplesso://sso-internal',
-      icon: PhosphorIcons.arrowBendDownRight(PhosphorIconsStyle.duotone),
+      label: 'Redirect Host',
+      hint: 'your-app-sso-internal',
+      icon: Icons.subdirectory_arrow_right,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter internal redirect URI';
+          return 'Please enter internal redirect host';
         }
         return null;
       },
@@ -650,7 +605,7 @@ class _ExternalClientIdFieldState extends State<_ExternalClientIdField> {
       controller: _controller,
       label: 'Client ID',
       hint: 'your-external-client-id',
-      icon: PhosphorIcons.key(PhosphorIconsStyle.duotone),
+      icon: Icons.key,
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter external client ID';
@@ -661,25 +616,28 @@ class _ExternalClientIdFieldState extends State<_ExternalClientIdField> {
   }
 }
 
-class _ExternalRedirectUriField extends StatefulWidget {
+class _ExternalRedirectHostField extends StatefulWidget {
   final ConfigurationState state;
 
-  const _ExternalRedirectUriField({required this.state});
+  const _ExternalRedirectHostField({required this.state});
 
   @override
-  State<_ExternalRedirectUriField> createState() =>
-      _ExternalRedirectUriFieldState();
+  State<_ExternalRedirectHostField> createState() =>
+      _ExternalRedirectHostFieldState();
 }
 
-class _ExternalRedirectUriFieldState extends State<_ExternalRedirectUriField> {
+class _ExternalRedirectHostFieldState
+    extends State<_ExternalRedirectHostField> {
   late final TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.state.externalRedirectUri);
+    _controller = TextEditingController(
+      text: widget.state.externalRedirectHost,
+    );
     _controller.addListener(() {
-      context.read<ConfigurationCubit>().updateExternalRedirectUri(
+      context.read<ConfigurationCubit>().updateExternalRedirectHost(
         _controller.text,
       );
     });
@@ -695,12 +653,12 @@ class _ExternalRedirectUriFieldState extends State<_ExternalRedirectUriField> {
   Widget build(BuildContext context) {
     return CustomTextField(
       controller: _controller,
-      label: 'Redirect URI',
-      hint: 'id.go.bps.examplesso://sso-eksternal',
-      icon: PhosphorIcons.arrowBendDownRight(PhosphorIconsStyle.duotone),
+      label: 'Redirect Host',
+      hint: 'your-app-sso-eksternal',
+      icon: Icons.subdirectory_arrow_right,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter external redirect URI';
+          return 'Please enter external redirect host';
         }
         return null;
       },
@@ -741,7 +699,7 @@ class _InternalRealmFieldState extends State<_InternalRealmField> {
       controller: _controller,
       label: 'Realm Name',
       hint: 'pegawai-bps (default)',
-      icon: PhosphorIcons.crown(PhosphorIconsStyle.duotone),
+      icon: Icons.workspace_premium,
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter internal realm name';
@@ -785,7 +743,7 @@ class _ExternalRealmFieldState extends State<_ExternalRealmField> {
       controller: _controller,
       label: 'Realm Name',
       hint: 'eksternal (default)',
-      icon: PhosphorIcons.crown(PhosphorIconsStyle.duotone),
+      icon: Icons.workspace_premium,
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter external realm name';

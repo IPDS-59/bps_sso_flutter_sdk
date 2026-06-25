@@ -197,7 +197,7 @@ mixin TokenOperationsMixin {
           'grant_type': 'authorization_code',
           'client_id': realmConfig.clientId,
           'code': authCode,
-          'redirect_uri': realmConfig.redirectUri,
+          'redirect_uri': realmConfig.redirectUri.toString(),
           'code_verifier': codeVerifier,
         },
         options: Options(
