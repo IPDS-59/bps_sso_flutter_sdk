@@ -70,7 +70,7 @@ mixin CustomTabsMixin {
         }
 
         final uri = Uri.parse(link);
-        final redirectUri = Uri.parse(realmConfig.redirectUri);
+        final redirectUri = realmConfig.redirectUri;
 
         if (uri.scheme == redirectUri.scheme && uri.host == redirectUri.host) {
           final code = uri.queryParameters['code'];

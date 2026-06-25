@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:auto_route/auto_route.dart';
+import 'package:bps_sso_sdk/bps_sso_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,15 +19,17 @@ import '../widgets/section_card.dart';
 class ConfigurationScreen extends StatelessWidget {
   const ConfigurationScreen({super.key});
 
-  // Available OAuth options
-  static const List<String> _availableResponseTypes = [
-    'code',
-    'token',
-    'id_token',
+  static const _availableResponseTypes = BPSOAuthResponseType.values;
+  static const _internalScopes = [
+    BPSOAuthScope.openid,
+    BPSOAuthScope.profilePegawai,
   ];
-  static const List<String> _internalScopes = ['openid', 'profile-pegawai'];
-  static const List<String> _externalScopes = ['openid', 'email', 'profile'];
-  static const List<String> _availableCodeChallengeMethods = ['S256', 'plain'];
+  static const _externalScopes = [
+    BPSOAuthScope.openid,
+    BPSOAuthScope.email,
+    BPSOAuthScope.profile,
+  ];
+  static const _challengeMethods = BPSCodeChallengeMethod.values;
 
   Future<void> _initializeSDK(
     BuildContext context,
@@ -189,7 +192,9 @@ class ConfigurationScreen extends StatelessWidget {
                                 children: [
                                   _InternalClientIdField(state: state),
                                   const Gap(16),
-                                  _InternalRedirectUriField(state: state),
+                                  _InternalRedirectSchemeField(state: state),
+                                  const Gap(16),
+                                  _InternalRedirectHostField(state: state),
                                   const Gap(16),
                                   _InternalRealmField(state: state),
                                 ],
@@ -204,42 +209,37 @@ class ConfigurationScreen extends StatelessWidget {
                                     'Advanced OAuth2 settings for internal realm',
                                 delay: 500.ms,
                                 children: [
-                                  MultiSelectChips(
+                                  MultiSelectChips<BPSOAuthResponseType>(
                                     title: 'Response Types',
                                     icon: Icons.code,
                                     selectedValues: state.internalResponseTypes,
                                     availableValues: _availableResponseTypes,
-                                    onChanged: (values) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateInternalResponseTypes(values);
-                                    },
+                                    labelOf: (e) => e.value,
+                                    onChanged: context
+                                        .read<ConfigurationCubit>()
+                                        .updateInternalResponseTypes,
                                   ),
                                   const Gap(16),
-                                  MultiSelectChips(
+                                  MultiSelectChips<BPSOAuthScope>(
                                     title: 'Scopes',
                                     icon: Icons.my_location,
                                     selectedValues: state.internalScopes,
                                     availableValues: _internalScopes,
-                                    onChanged: (values) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateInternalScopes(values);
-                                    },
+                                    labelOf: (e) => e.value,
+                                    onChanged: context
+                                        .read<ConfigurationCubit>()
+                                        .updateInternalScopes,
                                   ),
                                   const Gap(16),
-                                  DropdownField(
+                                  DropdownField<BPSCodeChallengeMethod>(
                                     title: 'Code Challenge Method',
                                     icon: Icons.shield_outlined,
                                     value: state.internalCodeChallengeMethod,
-                                    items: _availableCodeChallengeMethods,
-                                    onChanged: (value) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateInternalCodeChallengeMethod(
-                                            value!,
-                                          );
-                                    },
+                                    items: _challengeMethods,
+                                    labelOf: (e) => e.value,
+                                    onChanged: (v) => context
+                                        .read<ConfigurationCubit>()
+                                        .updateInternalCodeChallengeMethod(v!),
                                   ),
                                 ],
                               ),
@@ -254,7 +254,9 @@ class ConfigurationScreen extends StatelessWidget {
                                 children: [
                                   _ExternalClientIdField(state: state),
                                   const Gap(16),
-                                  _ExternalRedirectUriField(state: state),
+                                  _ExternalRedirectSchemeField(state: state),
+                                  const Gap(16),
+                                  _ExternalRedirectHostField(state: state),
                                   const Gap(16),
                                   _ExternalRealmField(state: state),
                                 ],
@@ -269,42 +271,37 @@ class ConfigurationScreen extends StatelessWidget {
                                     'Advanced OAuth2 settings for external realm',
                                 delay: 800.ms,
                                 children: [
-                                  MultiSelectChips(
+                                  MultiSelectChips<BPSOAuthResponseType>(
                                     title: 'Response Types',
                                     icon: Icons.code,
                                     selectedValues: state.externalResponseTypes,
                                     availableValues: _availableResponseTypes,
-                                    onChanged: (values) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateExternalResponseTypes(values);
-                                    },
+                                    labelOf: (e) => e.value,
+                                    onChanged: context
+                                        .read<ConfigurationCubit>()
+                                        .updateExternalResponseTypes,
                                   ),
                                   const Gap(16),
-                                  MultiSelectChips(
+                                  MultiSelectChips<BPSOAuthScope>(
                                     title: 'Scopes',
                                     icon: Icons.my_location,
                                     selectedValues: state.externalScopes,
                                     availableValues: _externalScopes,
-                                    onChanged: (values) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateExternalScopes(values);
-                                    },
+                                    labelOf: (e) => e.value,
+                                    onChanged: context
+                                        .read<ConfigurationCubit>()
+                                        .updateExternalScopes,
                                   ),
                                   const Gap(16),
-                                  DropdownField(
+                                  DropdownField<BPSCodeChallengeMethod>(
                                     title: 'Code Challenge Method',
                                     icon: Icons.shield_outlined,
                                     value: state.externalCodeChallengeMethod,
-                                    items: _availableCodeChallengeMethods,
-                                    onChanged: (value) {
-                                      context
-                                          .read<ConfigurationCubit>()
-                                          .updateExternalCodeChallengeMethod(
-                                            value!,
-                                          );
-                                    },
+                                    items: _challengeMethods,
+                                    labelOf: (e) => e.value,
+                                    onChanged: (v) => context
+                                        .read<ConfigurationCubit>()
+                                        .updateExternalCodeChallengeMethod(v!),
                                   ),
                                 ],
                               ),
@@ -527,25 +524,28 @@ class _InternalClientIdFieldState extends State<_InternalClientIdField> {
   }
 }
 
-class _InternalRedirectUriField extends StatefulWidget {
+class _InternalRedirectSchemeField extends StatefulWidget {
   final ConfigurationState state;
 
-  const _InternalRedirectUriField({required this.state});
+  const _InternalRedirectSchemeField({required this.state});
 
   @override
-  State<_InternalRedirectUriField> createState() =>
-      _InternalRedirectUriFieldState();
+  State<_InternalRedirectSchemeField> createState() =>
+      _InternalRedirectSchemeFieldState();
 }
 
-class _InternalRedirectUriFieldState extends State<_InternalRedirectUriField> {
+class _InternalRedirectSchemeFieldState
+    extends State<_InternalRedirectSchemeField> {
   late final TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.state.internalRedirectUri);
+    _controller = TextEditingController(
+      text: widget.state.internalRedirectScheme,
+    );
     _controller.addListener(() {
-      context.read<ConfigurationCubit>().updateInternalRedirectUri(
+      context.read<ConfigurationCubit>().updateInternalRedirectScheme(
         _controller.text,
       );
     });
@@ -561,12 +561,62 @@ class _InternalRedirectUriFieldState extends State<_InternalRedirectUriField> {
   Widget build(BuildContext context) {
     return CustomTextField(
       controller: _controller,
-      label: 'Redirect URI',
-      hint: 'id.go.bps.examplesso://sso-internal',
+      label: 'Redirect Scheme',
+      hint: 'id.go.bps',
+      icon: Icons.schema_outlined,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter internal redirect scheme';
+        }
+        return null;
+      },
+    );
+  }
+}
+
+class _InternalRedirectHostField extends StatefulWidget {
+  final ConfigurationState state;
+
+  const _InternalRedirectHostField({required this.state});
+
+  @override
+  State<_InternalRedirectHostField> createState() =>
+      _InternalRedirectHostFieldState();
+}
+
+class _InternalRedirectHostFieldState
+    extends State<_InternalRedirectHostField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.state.internalRedirectHost,
+    );
+    _controller.addListener(() {
+      context.read<ConfigurationCubit>().updateInternalRedirectHost(
+        _controller.text,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: _controller,
+      label: 'Redirect Host',
+      hint: 'your-app-sso-internal',
       icon: Icons.subdirectory_arrow_right,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter internal redirect URI';
+          return 'Please enter internal redirect host';
         }
         return null;
       },
@@ -620,25 +670,28 @@ class _ExternalClientIdFieldState extends State<_ExternalClientIdField> {
   }
 }
 
-class _ExternalRedirectUriField extends StatefulWidget {
+class _ExternalRedirectSchemeField extends StatefulWidget {
   final ConfigurationState state;
 
-  const _ExternalRedirectUriField({required this.state});
+  const _ExternalRedirectSchemeField({required this.state});
 
   @override
-  State<_ExternalRedirectUriField> createState() =>
-      _ExternalRedirectUriFieldState();
+  State<_ExternalRedirectSchemeField> createState() =>
+      _ExternalRedirectSchemeFieldState();
 }
 
-class _ExternalRedirectUriFieldState extends State<_ExternalRedirectUriField> {
+class _ExternalRedirectSchemeFieldState
+    extends State<_ExternalRedirectSchemeField> {
   late final TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.state.externalRedirectUri);
+    _controller = TextEditingController(
+      text: widget.state.externalRedirectScheme,
+    );
     _controller.addListener(() {
-      context.read<ConfigurationCubit>().updateExternalRedirectUri(
+      context.read<ConfigurationCubit>().updateExternalRedirectScheme(
         _controller.text,
       );
     });
@@ -654,12 +707,62 @@ class _ExternalRedirectUriFieldState extends State<_ExternalRedirectUriField> {
   Widget build(BuildContext context) {
     return CustomTextField(
       controller: _controller,
-      label: 'Redirect URI',
-      hint: 'id.go.bps.examplesso://sso-eksternal',
+      label: 'Redirect Scheme',
+      hint: 'id.go.bps',
+      icon: Icons.schema_outlined,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter external redirect scheme';
+        }
+        return null;
+      },
+    );
+  }
+}
+
+class _ExternalRedirectHostField extends StatefulWidget {
+  final ConfigurationState state;
+
+  const _ExternalRedirectHostField({required this.state});
+
+  @override
+  State<_ExternalRedirectHostField> createState() =>
+      _ExternalRedirectHostFieldState();
+}
+
+class _ExternalRedirectHostFieldState
+    extends State<_ExternalRedirectHostField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.state.externalRedirectHost,
+    );
+    _controller.addListener(() {
+      context.read<ConfigurationCubit>().updateExternalRedirectHost(
+        _controller.text,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: _controller,
+      label: 'Redirect Host',
+      hint: 'your-app-sso-eksternal',
       icon: Icons.subdirectory_arrow_right,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter external redirect URI';
+          return 'Please enter external redirect host';
         }
         return null;
       },
