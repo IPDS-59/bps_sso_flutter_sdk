@@ -15,7 +15,7 @@ class OperationCard extends StatelessWidget {
     required this.delay,
   });
 
-  final PhosphorIconData icon;
+  final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback? onPressed;
@@ -85,7 +85,7 @@ class OperationCard extends StatelessWidget {
                         : theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: PhosphorIcon(
+                  child: Icon(
                     icon,
                     size: 24,
                     color: isPrimary
@@ -127,7 +127,7 @@ class OperationCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                PhosphorIcon(
+                Icon(
                   Icons.arrow_forward,
                   size: 20,
                   color: isPrimary

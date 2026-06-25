@@ -30,7 +30,7 @@ class UserInfoScreen extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            PhosphorIcon(Icons.content_copy, color: Colors.white, size: 20),
+            Icon(Icons.content_copy, color: Colors.white, size: 20),
             const Gap(8),
             const Text('User data copied to clipboard'),
           ],
@@ -69,7 +69,7 @@ class UserInfoScreen extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: () => context.router.pop(),
-                      icon: PhosphorIcon(Icons.arrow_back, size: 24),
+                      icon: Icon(Icons.arrow_back, size: 24),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.surface,
                         foregroundColor: theme.colorScheme.onSurface,
@@ -105,7 +105,7 @@ class UserInfoScreen extends StatelessWidget {
                     ),
                     IconButton(
                       onPressed: () => _copyUserJson(context),
-                      icon: PhosphorIcon(Icons.content_copy, size: 24),
+                      icon: Icon(Icons.content_copy, size: 24),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: theme.colorScheme.onPrimary,
@@ -437,7 +437,7 @@ class _SectionCard extends StatelessWidget {
     required this.children,
   });
 
-  final PhosphorIconData icon;
+  final IconData icon;
   final String title;
   final Duration delay;
   final List<Widget> children;
@@ -473,7 +473,7 @@ class _SectionCard extends StatelessWidget {
                       color: theme.colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: PhosphorIcon(
+                    child: Icon(
                       icon,
                       size: 20,
                       color: theme.colorScheme.primary,
@@ -516,7 +516,7 @@ class _InfoTile extends StatelessWidget {
     this.isPrivacyMode = false,
   });
 
-  final PhosphorIconData icon;
+  final IconData icon;
   final String label;
   final String value;
   final Color? valueColor;
@@ -530,7 +530,7 @@ class _InfoTile extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PhosphorIcon(
+        Icon(
           icon,
           size: 16,
           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -571,7 +571,7 @@ class _TokenTile extends StatelessWidget {
     this.isPrivacyMode = false,
   });
 
-  final PhosphorIconData icon;
+  final IconData icon;
   final String label;
   final String value;
   final bool isPrivacyMode;
@@ -587,7 +587,7 @@ class _TokenTile extends StatelessWidget {
         SnackBar(
           content: Row(
             children: [
-              PhosphorIcon(Icons.content_copy, color: Colors.white, size: 20),
+              Icon(Icons.content_copy, color: Colors.white, size: 20),
               const Gap(8),
               Text('$label copied to clipboard'),
             ],
@@ -614,7 +614,7 @@ class _TokenTile extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PhosphorIcon(
+            Icon(
               icon,
               size: 16,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -660,7 +660,7 @@ class _TokenTile extends StatelessWidget {
                         ),
                       ),
                       const Gap(8),
-                      PhosphorIcon(
+                      Icon(
                         Icons.content_copy,
                         size: 14,
                         color: theme.colorScheme.primary,

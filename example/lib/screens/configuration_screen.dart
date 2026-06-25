@@ -45,7 +45,7 @@ class ConfigurationScreen extends StatelessWidget {
         SnackBar(
           content: Row(
             children: [
-              PhosphorIcon(Icons.check_circle, color: Colors.white, size: 20),
+              Icon(Icons.check_circle, color: Colors.white, size: 20),
               const Gap(8),
               const Text('SDK initialized successfully!'),
             ],
@@ -64,11 +64,7 @@ class ConfigurationScreen extends StatelessWidget {
         SnackBar(
           content: Row(
             children: [
-              PhosphorIcon(
-                Icons.warning_amber_outlined,
-                color: Colors.white,
-                size: 20,
-              ),
+              Icon(Icons.warning_amber_outlined, color: Colors.white, size: 20),
               const Gap(8),
               Expanded(child: Text('Initialization failed: $e')),
             ],
@@ -110,7 +106,7 @@ class ConfigurationScreen extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: () => context.router.pop(),
-                      icon: PhosphorIcon(Icons.arrow_back, size: 24),
+                      icon: Icon(Icons.arrow_back, size: 24),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.surface,
                         foregroundColor: theme.colorScheme.onSurface,
@@ -125,10 +121,7 @@ class ConfigurationScreen extends StatelessWidget {
                         final configCubit = context.read<ConfigurationCubit>();
                         configCubit.alice.showInspector();
                       },
-                      icon: PhosphorIcon(
-                        Icons.desktop_windows_outlined,
-                        size: 20,
-                      ),
+                      icon: Icon(Icons.desktop_windows_outlined, size: 20),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.primaryContainer,
                         foregroundColor: theme.colorScheme.onPrimaryContainer,
@@ -329,7 +322,7 @@ class ConfigurationScreen extends StatelessWidget {
                                   ),
                                   child: Row(
                                     children: [
-                                      PhosphorIcon(
+                                      Icon(
                                         Icons.warning_amber_outlined,
                                         color: Colors.red.shade600,
                                         size: 20,
@@ -409,7 +402,7 @@ class ConfigurationScreen extends StatelessWidget {
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      PhosphorIcon(
+                                      Icon(
                                         Icons.rocket_launch_outlined,
                                         size: 20,
                                         color: theme.colorScheme.onPrimary,

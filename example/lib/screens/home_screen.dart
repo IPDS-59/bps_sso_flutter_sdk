@@ -236,7 +236,7 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                       child: Row(
                                         children: [
-                                          PhosphorIcon(
+                                          Icon(
                                             Icons.warning_amber_outlined,
                                             size: 16,
                                             color: Colors.red.shade600,
@@ -409,7 +409,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildActionButton({
     required BuildContext context,
     required VoidCallback? onPressed,
-    required PhosphorIconData icon,
+    required IconData icon,
     required String label,
     required String subtitle,
     required bool isPrimary,
@@ -459,7 +459,7 @@ class HomeScreen extends StatelessWidget {
                         : theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: PhosphorIcon(
+                  child: Icon(
                     icon,
                     size: 14,
                     color: isPrimary
@@ -498,7 +498,7 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                PhosphorIcon(
+                Icon(
                   Icons.arrow_forward,
                   size: 14,
                   color: isPrimary
