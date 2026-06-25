@@ -241,6 +241,7 @@ class ConfigurationCubit extends HydratedCubit<ConfigurationState> {
       BPSSsoClient.instance.initialize(
         config: config,
         linkStream: _appLinks.stringLinkStream,
+        forceReinitialize: true,
       );
 
       updateInitializationStatus(isLoading: false, isInitialized: true);
