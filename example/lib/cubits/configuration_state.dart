@@ -21,14 +21,14 @@ class ConfigurationState extends Equatable {
 
   const ConfigurationState({
     this.baseUrl = 'https://sso.bps.go.id',
-    this.internalClientId = 'your-internal-client-id',
-    this.internalRedirectUri = 'id.go.bps://your-app-sso-internal',
+    this.internalClientId = '',
+    this.internalRedirectUri = '',
     this.internalRealm = 'pegawai-bps',
     this.internalResponseTypes = const ['code'],
     this.internalScopes = const ['openid', 'profile-pegawai'],
     this.internalCodeChallengeMethod = 'S256',
-    this.externalClientId = 'your-external-client-id',
-    this.externalRedirectUri = 'id.go.bps://your-app-sso-eksternal',
+    this.externalClientId = '',
+    this.externalRedirectUri = '',
     this.externalRealm = 'eksternal',
     this.externalResponseTypes = const ['code'],
     this.externalScopes = const ['openid', 'email', 'profile'],
@@ -110,10 +110,10 @@ class ConfigurationState extends Equatable {
     return ConfigurationState(
       baseUrl: json['baseUrl'] as String? ?? 'https://sso.bps.go.id',
       internalClientId:
-          json['internalClientId'] as String? ?? 'your-internal-client-id',
+          json['internalClientId'] as String? ?? '',
       internalRedirectUri:
           json['internalRedirectUri'] as String? ??
-          'id.go.bps://your-app-sso-internal',
+          '',
       internalRealm: json['internalRealm'] as String? ?? 'pegawai-bps',
       internalResponseTypes:
           (json['internalResponseTypes'] as List<dynamic>?)?.cast<String>() ??
@@ -124,10 +124,10 @@ class ConfigurationState extends Equatable {
       internalCodeChallengeMethod:
           json['internalCodeChallengeMethod'] as String? ?? 'S256',
       externalClientId:
-          json['externalClientId'] as String? ?? 'your-external-client-id',
+          json['externalClientId'] as String? ?? '',
       externalRedirectUri:
           json['externalRedirectUri'] as String? ??
-          'id.go.bps://your-app-sso-eksternal',
+          '',
       externalRealm: json['externalRealm'] as String? ?? 'eksternal',
       externalResponseTypes:
           (json['externalResponseTypes'] as List<dynamic>?)?.cast<String>() ??
