@@ -20,9 +20,7 @@ class BPSRedirectUri {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BPSRedirectUri &&
-          other.scheme == scheme &&
-          other.host == host;
+      other is BPSRedirectUri && other.scheme == scheme && other.host == host;
 
   @override
   int get hashCode => Object.hash(scheme, host);
