@@ -1,0 +1,7 @@
+version_files:
+  - path: "pubspec.yaml"
+    pattern: "^version:[[:space:]]*[^[:space:]]+"
+    replacement: "version: {version}"
+  - path: "lib/src/sdk_info.dart"
+    pattern: "static const String version = '[^']*';"
+    replacement: "static const String version = '{version}';"
