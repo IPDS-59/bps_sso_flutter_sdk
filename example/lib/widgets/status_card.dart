@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../cubits/configuration_cubit.dart';
 import 'authenticated_image.dart';
@@ -74,8 +73,8 @@ class StatusCard extends StatelessWidget {
                   ),
                   child: PhosphorIcon(
                     user != null
-                        ? PhosphorIcons.userCheck(PhosphorIconsStyle.duotone)
-                        : PhosphorIcons.userMinus(PhosphorIconsStyle.duotone),
+                        ? Icons.how_to_reg
+                        : Icons.person_remove_outlined,
                     size: 24,
                     color: user != null
                         ? Colors.green.shade600
@@ -129,7 +128,7 @@ class StatusCard extends StatelessWidget {
 
             // Primary user information
             _buildInfoRow(
-              icon: PhosphorIcons.user(PhosphorIconsStyle.duotone),
+              icon: Icons.person_outline,
               label: 'Full Name',
               value: user!.fullName,
               theme: theme,
@@ -138,7 +137,7 @@ class StatusCard extends StatelessWidget {
             ),
             const Gap(12),
             _buildInfoRow(
-              icon: PhosphorIcons.at(PhosphorIconsStyle.duotone),
+              icon: Icons.alternate_email,
               label: 'Username',
               value: user!.username,
               theme: theme,
@@ -147,7 +146,7 @@ class StatusCard extends StatelessWidget {
             const Gap(12),
             if (user!.email.isNotEmpty) ...[
               _buildInfoRow(
-                icon: PhosphorIcons.envelope(PhosphorIconsStyle.duotone),
+                icon: Icons.mail_outline,
                 label: 'Email',
                 value: user!.email,
                 theme: theme,
@@ -158,9 +157,7 @@ class StatusCard extends StatelessWidget {
             // Only show NIP for internal users
             if (user!.isInternal) ...[
               _buildInfoRow(
-                icon: PhosphorIcons.identificationCard(
-                  PhosphorIconsStyle.duotone,
-                ),
+                icon: Icons.credit_card,
                 label: 'NIP',
                 value: user!.nip,
                 theme: theme,
@@ -172,7 +169,7 @@ class StatusCard extends StatelessWidget {
             // Organization and position information (only for internal users)
             if (user!.isInternal) ...[
               _buildInfoRow(
-                icon: PhosphorIcons.building(PhosphorIconsStyle.duotone),
+                icon: Icons.business,
                 label: 'Organization',
                 value: user!.organization,
                 theme: theme,
@@ -181,7 +178,7 @@ class StatusCard extends StatelessWidget {
             ],
             if (user!.position != null && user!.position!.isNotEmpty) ...[
               _buildInfoRow(
-                icon: PhosphorIcons.briefcase(PhosphorIconsStyle.duotone),
+                icon: Icons.work_outline,
                 label: 'Position',
                 value: user!.position!,
                 theme: theme,
@@ -190,7 +187,7 @@ class StatusCard extends StatelessWidget {
             ],
             if (user!.rank != null && user!.rank!.isNotEmpty) ...[
               _buildInfoRow(
-                icon: PhosphorIcons.star(PhosphorIconsStyle.duotone),
+                icon: Icons.star_outline,
                 label: 'Rank',
                 value: user!.rank!,
                 theme: theme,
@@ -201,7 +198,7 @@ class StatusCard extends StatelessWidget {
             // Location information
             if (user!.region != null && user!.region!.isNotEmpty) ...[
               _buildInfoRow(
-                icon: PhosphorIcons.mapPin(PhosphorIconsStyle.duotone),
+                icon: Icons.location_on_outlined,
                 label: 'Region',
                 value: user!.region!,
                 theme: theme,
@@ -210,7 +207,7 @@ class StatusCard extends StatelessWidget {
             ],
             if (user!.province != null && user!.province!.isNotEmpty) ...[
               _buildInfoRow(
-                icon: PhosphorIcons.globe(PhosphorIconsStyle.duotone),
+                icon: Icons.language,
                 label: 'Province',
                 value: user!.province!,
                 theme: theme,
@@ -219,7 +216,7 @@ class StatusCard extends StatelessWidget {
             ],
             if (user!.address != null && user!.address!.isNotEmpty) ...[
               _buildInfoRow(
-                icon: PhosphorIcons.house(PhosphorIconsStyle.duotone),
+                icon: Icons.home_outlined,
                 label: 'Office Address',
                 value: user!.address!,
                 theme: theme,
@@ -229,9 +226,7 @@ class StatusCard extends StatelessWidget {
 
             // Realm and authentication information
             _buildInfoRow(
-              icon: PhosphorIcons.globeHemisphereWest(
-                PhosphorIconsStyle.duotone,
-              ),
+              icon: Icons.public,
               label: 'Realm',
               value: user!.realmDisplayName,
               theme: theme,
@@ -239,7 +234,7 @@ class StatusCard extends StatelessWidget {
             ),
             const Gap(12),
             _buildInfoRow(
-              icon: PhosphorIcons.fingerprint(PhosphorIconsStyle.duotone),
+              icon: Icons.fingerprint,
               label: 'User ID',
               value: user!.id,
               theme: theme,
@@ -248,9 +243,7 @@ class StatusCard extends StatelessWidget {
             const Gap(12),
             if (user!.oldNip != null && user!.oldNip!.isNotEmpty) ...[
               _buildInfoRow(
-                icon: PhosphorIcons.clockCounterClockwise(
-                  PhosphorIconsStyle.duotone,
-                ),
+                icon: Icons.history,
                 label: 'Old NIP',
                 value: user!.oldNip!,
                 theme: theme,
@@ -260,7 +253,7 @@ class StatusCard extends StatelessWidget {
 
             // Token information
             _buildInfoRow(
-              icon: PhosphorIcons.clock(PhosphorIconsStyle.duotone),
+              icon: Icons.access_time,
               label: 'Token expires',
               value: _formatDateTime(user!.tokenExpiry),
               theme: theme,
@@ -269,8 +262,8 @@ class StatusCard extends StatelessWidget {
             const Gap(12),
             _buildInfoRow(
               icon: user!.isTokenExpired
-                  ? PhosphorIcons.warning(PhosphorIconsStyle.duotone)
-                  : PhosphorIcons.checkCircle(PhosphorIconsStyle.duotone),
+                  ? Icons.warning_amber_outlined
+                  : Icons.check_circle,
               label: 'Token status',
               value: user!.isTokenExpired ? 'Expired' : 'Valid',
               theme: theme,
@@ -281,7 +274,7 @@ class StatusCard extends StatelessWidget {
             // Additional user properties
             const Gap(12),
             _buildInfoRow(
-              icon: PhosphorIcons.textAa(PhosphorIconsStyle.duotone),
+              icon: Icons.text_fields,
               label: 'Initials',
               value: user!.initials,
               theme: theme,
@@ -290,7 +283,7 @@ class StatusCard extends StatelessWidget {
             if (user!.firstName != null && user!.firstName!.isNotEmpty) ...[
               const Gap(12),
               _buildInfoRow(
-                icon: PhosphorIcons.userCircle(PhosphorIconsStyle.duotone),
+                icon: Icons.account_circle_outlined,
                 label: 'First Name',
                 value: user!.firstName!,
                 theme: theme,
@@ -299,7 +292,7 @@ class StatusCard extends StatelessWidget {
             if (user!.lastName != null && user!.lastName!.isNotEmpty) ...[
               const Gap(12),
               _buildInfoRow(
-                icon: PhosphorIcons.userCircle(PhosphorIconsStyle.duotone),
+                icon: Icons.account_circle_outlined,
                 label: 'Last Name',
                 value: user!.lastName!,
                 theme: theme,
@@ -308,7 +301,7 @@ class StatusCard extends StatelessWidget {
             if (user!.hasPhoto) ...[
               const Gap(12),
               _buildInfoRow(
-                icon: PhosphorIcons.image(PhosphorIconsStyle.duotone),
+                icon: Icons.image_outlined,
                 label: 'Has Photo',
                 value: 'Yes',
                 theme: theme,
@@ -324,7 +317,7 @@ class StatusCard extends StatelessWidget {
             Row(
               children: [
                 PhosphorIcon(
-                  PhosphorIcons.pulse(PhosphorIconsStyle.duotone),
+                  Icons.monitor_heart_outlined,
                   size: 16,
                   color: theme.colorScheme.primary,
                 ),

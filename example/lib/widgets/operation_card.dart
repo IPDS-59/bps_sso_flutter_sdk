@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class OperationCard extends StatelessWidget {
   const OperationCard({
@@ -129,7 +128,7 @@ class OperationCard extends StatelessWidget {
                   ),
                 ),
                 PhosphorIcon(
-                  PhosphorIcons.arrowRight(PhosphorIconsStyle.bold),
+                  Icons.arrow_forward,
                   size: 20,
                   color: isPrimary
                       ? theme.colorScheme.onPrimary.withValues(alpha: 0.8)
