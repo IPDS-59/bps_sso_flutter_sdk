@@ -13,8 +13,28 @@ on:
         type: boolean
 
 jobs:
+  verify-release-branch:
+    name: Verify tag is on main
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fail if this tag's commit isn't reachable from main
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag ${GITHUB_REF#refs/tags/} points to a commit not reachable from main. Releases must go through release/** -> PR -> main (see release.yml), not a direct tag on develop or any other branch. Merge to main first, then re-tag."
+            exit 1
+          fi
+          echo "OK: tagged commit is reachable from main."
+
   publish:
     name: Publish to pub.dev
+    needs: verify-release-branch
+    if: always() && (needs.verify-release-branch.result == 'success' || needs.verify-release-branch.result == 'skipped')
     permissions:
       id-token: write
     uses: banua-coder/banua-coder-workflow/.github/workflows/publish-dart.yml@v1
