@@ -53,11 +53,19 @@ mixin CustomTabsMixin {
     String expectedState,
     BPSRealmConfig realmConfig,
   ) async {
+    StreamSubscription<dynamic>? linkSubscription;
+    CustomTabsCancelObserver? cancelObserver;
     try {
       final completer = Completer<String?>();
-      StreamSubscription<dynamic>? linkSubscription;
 
       linkSubscription = linkStream?.listen((link) async {
+        // Login already ended (cancel/timeout): a late deep link must not
+        // re-complete it (StateError) or show an error snackbar.
+        if (completer.isCompleted) {
+          await linkSubscription?.cancel();
+          return;
+        }
+
         if (!securityManager.validateDeepLink(link, expectedState)) {
           await linkSubscription?.cancel();
           completer.complete(null);
@@ -111,6 +119,15 @@ mixin CustomTabsMixin {
         safariVCOptions: buildSafariOptions(),
       );
 
+      // flutter_custom_tabs has no close event, so an app resume without a
+      // deep link is treated as the user dismissing the tab.
+      cancelObserver = CustomTabsCancelObserver(
+        onCancelDetected: () {
+          if (!completer.isCompleted) completer.complete(null);
+        },
+      );
+      WidgetsBinding.instance.addObserver(cancelObserver);
+
       return await completer.future.timeout(
         config.authTimeout,
         onTimeout: () async {
@@ -123,6 +140,12 @@ mixin CustomTabsMixin {
       debugPrint('Custom Tabs auth failed: $e');
       scheduleCustomTabsClose();
       return null;
+    } finally {
+      await linkSubscription?.cancel();
+      if (cancelObserver != null) {
+        cancelObserver.dispose();
+        WidgetsBinding.instance.removeObserver(cancelObserver);
+      }
     }
   }
 
@@ -220,6 +243,62 @@ mixin CustomTabsMixin {
           'Please restart the login process.';
     } else {
       return 'Authentication failed. Please try again.';
+    }
+  }
+}
+
+/// Detects Custom Tabs / SFSafariViewController closing without a deep link
+/// (back press, swipe away, iOS "Done") by watching the app lifecycle.
+///
+/// Launching the tab moves the host app out of `resumed`; returning to
+/// `resumed` starts a 1.5 s grace timer before [onCancelDetected] fires.
+/// The grace period exists because on Android the `resumed` event and the
+/// deep-link delivery arrive in no fixed order; a successful deep link
+/// completes the login first and the cancel callback becomes a no-op.
+/// Leaving `resumed` again (system dialog, app switcher) cancels the timer.
+@visibleForTesting
+class CustomTabsCancelObserver with WidgetsBindingObserver {
+  /// Creates an observer. The host may already be paused when this is
+  /// attached (after `launchUrl`), so the current state is seeded here.
+  CustomTabsCancelObserver({required this.onCancelDetected}) {
+    _leftResumed = _isAway(WidgetsBinding.instance.lifecycleState);
+  }
+
+  /// Grace period between resume and the cancel callback.
+  static const gracePeriod = Duration(milliseconds: 1500);
+
+  /// Called once when a cancel is detected.
+  final VoidCallback onCancelDetected;
+
+  bool _leftResumed = false;
+  bool _fired = false;
+  Timer? _cancelTimer;
+
+  static bool _isAway(AppLifecycleState? state) =>
+      state == AppLifecycleState.inactive ||
+      state == AppLifecycleState.paused ||
+      state == AppLifecycleState.hidden;
+
+  /// Cancels any pending cancel-detection timer.
+  void dispose() {
+    _cancelTimer?.cancel();
+    _cancelTimer = null;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_fired) return;
+    if (_isAway(state)) {
+      dispose();
+      _leftResumed = true;
+      return;
+    }
+    if (state == AppLifecycleState.resumed && _leftResumed) {
+      _cancelTimer?.cancel();
+      _cancelTimer = Timer(gracePeriod, () {
+        _fired = true;
+        onCancelDetected();
+      });
     }
   }
 }

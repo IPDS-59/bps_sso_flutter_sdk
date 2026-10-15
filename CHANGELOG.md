@@ -1,4 +1,15 @@
 # Changelog
+## [1.6.0] - 2026-10-15
+
+### 🐛 Bug Fixes
+
+- fix(auth): treat closing the Custom Tab / SFSafariViewController without a deep link as a cancelled login. `showCustomTabsAuth` now returns `null` shortly (1.5 s grace) after the app resumes with no callback, instead of hanging until `authTimeout`.
+- fix(auth): ignore a deep link that arrives after the login already ended (cancel or timeout). Previously it could complete the login a second time (`StateError`) or show a spurious error snackbar. The deep-link subscription is now always cancelled when `showCustomTabsAuth` returns.
+
+### 🧪 Tests
+
+- test(auth): cover cancel-on-resume, late deep link after cancel, deep link racing the resume, and `authTimeout`.
+
 ## [1.5.0] - 2026-06-25
 
 ### ✨ Features
