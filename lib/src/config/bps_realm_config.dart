@@ -18,6 +18,7 @@ class BPSRealmConfig {
     ],
     this.codeChallengeMethod = BPSCodeChallengeMethod.s256,
     this.realmName,
+    this.display = BPSOAuthDisplay.touch,
   });
 
   /// OAuth2 client ID for this realm
@@ -45,6 +46,11 @@ class BPSRealmConfig {
   /// If null, uses realmType.value as the realm name
   final String? realmName;
 
+  /// OIDC `display` request parameter sent to the authorization
+  /// endpoint. Defaults to [BPSOAuthDisplay.touch] so Keycloak serves
+  /// its mobile-optimized login theme instead of the desktop default.
+  final BPSOAuthDisplay display;
+
   /// Get space-separated response type string for OAuth2 URL
   String get responseType => responseTypes.map((e) => e.value).join(' ');
 
@@ -62,6 +68,7 @@ class BPSRealmConfig {
       'scope': scope,
       'redirect_uri': redirectUri.toString(),
       'state': state,
+      'display': display.value,
     };
 
     if (responseTypes.contains(BPSOAuthResponseType.code)) {
