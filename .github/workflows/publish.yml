@@ -75,9 +75,11 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          # Passed via env, not inlined, so backticks in notes aren't executed.
+          NOTES: ${{ steps.release_notes.outputs.notes }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           gh release create "$VERSION" \
             --title "Release $VERSION" \
-            --notes "${{ steps.release_notes.outputs.notes }}" \
+            --notes "$NOTES" \
             --latest
