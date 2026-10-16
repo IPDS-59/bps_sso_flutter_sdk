@@ -22,6 +22,9 @@ class BPSSsoConfig {
   /// - [internalRealmName]: Custom realm name for internal BPS realm.
   ///   If null, defaults to 'pegawai-bps' (BPSRealmType.internal.value)
   /// - [externalRealmName]: Custom realm name for external BPS realm.
+  /// - [display]: OIDC `display` parameter sent to Keycloak, controls
+  ///   which login theme it serves. Defaults to touch (mobile-optimized);
+  ///   pass [BPSOAuthDisplay.page] to get the desktop theme instead.
   ///   If null, defaults to 'eksternal' (BPSRealmType.external.value)
   factory BPSSsoConfig.create({
     required String appName,
@@ -39,6 +42,7 @@ class BPSSsoConfig {
     BPSCodeChallengeMethod codeChallengeMethod = BPSCodeChallengeMethod.s256,
     String? internalRealmName,
     String? externalRealmName,
+    BPSOAuthDisplay display = BPSOAuthDisplay.touch,
     BPSSsoCustomTabsConfig? customTabsConfig,
     BPSSsoErrorConfig? errorConfig,
     BPSSsoSecurityConfig? securityConfig,
@@ -60,6 +64,7 @@ class BPSSsoConfig {
         scopes: scopes,
         codeChallengeMethod: codeChallengeMethod,
         realmName: internalRealmName,
+        display: display,
       ),
       external: BPSRealmConfig(
         clientId: externalClientId,
@@ -73,6 +78,7 @@ class BPSSsoConfig {
         scopes: scopes,
         codeChallengeMethod: codeChallengeMethod,
         realmName: externalRealmName,
+        display: display,
       ),
       customTabsConfig: customTabsConfig ?? const BPSSsoCustomTabsConfig(),
       errorConfig: errorConfig ?? const BPSSsoErrorConfig(),
