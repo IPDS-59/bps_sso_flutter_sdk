@@ -1,4 +1,10 @@
 # Changelog
+## [1.7.0] - 2026-10-16
+
+### ✨ Features
+
+- feat(auth): add the OIDC `display` parameter to the authorization request. Keycloak now serves its mobile-optimized (`touch`) login theme in Chrome Custom Tabs / SFSafariViewController. The default theme was desktop-style before this change. Set `BPSRealmConfig.display` or `BPSSsoConfig.create(display: ...)` to override the default of `BPSOAuthDisplay.touch`.
+
 ## [1.6.0] - 2026-10-15
 
 ### 🐛 Bug Fixes
